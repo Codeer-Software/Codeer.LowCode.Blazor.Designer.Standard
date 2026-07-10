@@ -68,6 +68,8 @@ Screen chats (ScreenChats)          per-editor entry points
 ```
 
 Prompts are single-sourced as embedded Markdown under `AIChat/Prompts/` and shared across functions.
+Field and script-object knowledge is injected dynamically from the designer's `FieldCatalog` / `ScriptObjectCatalog`
+(including docs registered by extension libraries), so extensions are reflected without editing prompts.
 
 ## License
 
