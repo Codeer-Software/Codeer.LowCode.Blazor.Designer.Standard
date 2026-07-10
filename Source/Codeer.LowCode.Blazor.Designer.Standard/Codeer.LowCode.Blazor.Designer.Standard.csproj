@@ -11,7 +11,7 @@
 
         <!-- OSS / NuGet パッケージ (MIT)。 -->
         <PackageId>Codeer.LowCode.Blazor.Designer.Standard</PackageId>
-        <Version>0.1.2</Version>
+        <Version>0.2.0</Version>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <Company>Codeer Software</Company>
@@ -33,7 +33,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Codeer.LowCode.Blazor.Designer" Version="1.3.10" />
+        <PackageReference Include="Codeer.LowCode.Blazor.Designer" Version="1.3.12" />
         <PackageReference Include="Microsoft.Extensions.AI" Version="10.7.0" />
         <!-- ExcelCheatSheet 用 -->
         <PackageReference Include="ClosedXML" Version="0.105.0" />

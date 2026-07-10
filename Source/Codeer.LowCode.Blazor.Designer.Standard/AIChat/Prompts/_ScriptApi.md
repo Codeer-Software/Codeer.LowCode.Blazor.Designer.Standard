@@ -214,4 +214,4 @@ if (Price.IsModified)
 - `[ScriptName("Name")]` 属性でスクリプト内の名前を変更できる
 - `[ScriptMethodToProperty("Name")]` 属性で非同期メソッドをプロパティとして公開できる
 
-詳細は [ScriptExtensions.md](../ScriptExtensions.md) を参照。
+登録した拡張がスクリプトからどう見えるかは、別途渡される「この環境で使えるスクリプトオブジェクト」カタログに反映される。

@@ -43,6 +43,13 @@ namespace Codeer.LowCode.Blazor.Designer.Standard.AIChat.Functions
                 if (!string.IsNullOrEmpty(context))
                     _messages.Add(new ChatMessage(ChatRole.System, context));
 
+                // この環境に実際に登録されているスクリプトオブジェクト(サービス/型/列挙型 + 登録ドキュメント)。
+                // 静的な ScriptExtensions.md の代わりに ScriptObjectCatalog から動的生成する
+                // (Extras / 独自ライブラリの追加・未導入が正確に反映される)。
+                var scriptObjects = ScriptObjectCatalogPrompt.Build();
+                if (!string.IsNullOrEmpty(scriptObjects))
+                    _messages.Add(new ChatMessage(ChatRole.System, scriptObjects));
+
                 // 独自フィールドのスクリプトAPI(公開メンバの挙動・例)が登録されていれば追加する(無ければ不変)。
                 var customScript = FieldCatalogPrompt.BuildSectionReference(FieldDocSection.Script);
                 if (!string.IsNullOrEmpty(customScript))
@@ -271,11 +278,12 @@ namespace Codeer.LowCode.Blazor.Designer.Standard.AIChat.Functions
             return string.IsNullOrEmpty(moduleName) ? null : moduleName;
         }
 
-        // スクリプト仕様(言語仕様・Module/Field API・組み込み/拡張サービス・規約)は Lib/AI 配下の各 .md を連結して読み込む。
+        // スクリプト仕様(言語仕様・Module/Field API・規約)は埋め込みの各 .md を連結して読み込む。
+        // 拡張サービス(Excel / WebApi / Toaster / Mail 等)は静的 md ではなく
+        // ScriptObjectCatalogPrompt(登録済みスクリプトオブジェクトの動的カタログ)が担う。
         static readonly string ScriptReference = EmbeddedDocs.Load(
             "Codeer.LowCode.Blazor.Designer.Standard.AIChat.Scripts.md",
             "Codeer.LowCode.Blazor.Designer.Standard.AIChat.ScriptGuidelines.md",
-            "Codeer.LowCode.Blazor.Designer.Standard.AIChat.ScriptExtensions.md",
             "Codeer.LowCode.Blazor.Designer.Standard.AIChat._ScriptApi.md");
 
         class AIResponse
