@@ -115,7 +115,7 @@ namespace Codeer.LowCode.Blazor.Designer.Standard.DbTableToModule
         {
             if (col.Name.ToLower() == SystemFieldNames.Id.ToLower()) return new IdFieldDesign();
 
-            var field = CreateFieldByNetType(col.NetTypeFullName);
+            var field = CreateFieldByNetType(col.NetTypeFullName, col.RawDbTypeName);
 
             // NOT NULL 列は必須にする。
             if (field is ValueFieldDesignBase valueField)
@@ -124,8 +124,13 @@ namespace Codeer.LowCode.Blazor.Designer.Standard.DbTableToModule
             return field;
         }
 
-        static FieldDesignBase CreateFieldByNetType(string netTypeFullName)
+        static FieldDesignBase CreateFieldByNetType(string netTypeFullName, string rawDbTypeName)
         {
+            // Oracle の INTERVAL YEAR (TO MONTH) は総月数(整数)として読み書きされるため NumberField
+            // (NetTypeFullName は未解決DB型マーカーになるので DB 元型名で判定する)。
+            if (rawDbTypeName.StartsWith("INTERVAL YEAR", StringComparison.OrdinalIgnoreCase))
+                return new NumberFieldDesign { MaxFractionDigits = 0 };
+
             var integerTypes = new[]
             {
                 typeof(byte).FullName!,
