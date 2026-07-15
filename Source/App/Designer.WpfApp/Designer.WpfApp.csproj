@@ -23,7 +23,7 @@
       <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.8" />
       <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.1.1" />
       <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2" />
-      <PackageReference Include="Codeer.LowCode.Blazor.Designer" Version="1.3.12" />
+      <PackageReference Include="Codeer.LowCode.Blazor.Designer" Version="1.3.14" />
       <ProjectReference Include="..\..\Codeer.LowCode.Blazor.Designer.Standard\Codeer.LowCode.Blazor.Designer.Standard.csproj" />
       <ProjectReference Include="..\WebApp.Client.Shared\WebApp.Client.Shared.csproj" />
       <ProjectReference Include="..\WebApp.Server.Shared\WebApp.Server.Shared.csproj" />

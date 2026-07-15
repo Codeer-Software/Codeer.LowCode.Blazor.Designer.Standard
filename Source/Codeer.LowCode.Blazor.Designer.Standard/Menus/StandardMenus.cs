@@ -32,6 +32,7 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
             AddCreateDdl(env);
             AddCreateFieldClass(env);
             AddCreateFieldDataClass(env);
+            AddCreateCSharpEnum(env);
             AddExportExcelPrintCheatSheet(env);
             AddDbColumnTransformDefaults(env);
         }
@@ -57,6 +58,10 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
         public static void AddCreateFieldDataClass(DesignerEnvironment env)
             => env.AddSolutionExplorerMenu(e => ShowModuleClass(env, e, ClassGenerator.ModuleDesignToDataFieldClass, "Module to Field Data Class"),
                 SolutionExplorerMenuTarget.Module, "Create FieldData Class");
+
+        /// <summary>enum右クリック &gt; Create C# Enum。デザインenumからC#のenum宣言を出力する。</summary>
+        public static void AddCreateCSharpEnum(DesignerEnvironment env)
+            => env.AddSolutionExplorerMenu(e => ShowCSharpEnum(env, e), SolutionExplorerMenuTarget.Enum, "Create C# Enum");
 
         /// <summary>モジュール右クリック &gt; Export Excel Print CheatSheet。</summary>
         public static void AddExportExcelPrintCheatSheet(DesignerEnvironment env)
@@ -186,6 +191,28 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
             {
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        //デザインenumからC#のenum宣言を生成して表示する(ModuleのCreate Field Class等と同じ表示方式)。
+        //生成はコアの EnumCSharpConverter (DisplayText/Value属性・Numberは数値初期化子) を使う
+        static void ShowCSharpEnum(DesignerEnvironment env, SolutionExplorerMenuClickEventArgs e)
+        {
+            //ツリーの表示名は "{名前}.enum.json" (Moduleの "{名前}.mod.json" と同じ流儀)
+            var name = e.Item.Split(".").First();
+            var enumDesign = env.GetDesignData().Enums.FirstOrDefault(x => x.Name == name);
+            if (enumDesign == null)
+            {
+                env.ShowToast("Enum not found", false);
+                return;
+            }
+
+            new TextDisplayWindow
+            {
+                DisplayText = EnumCSharpConverter.Generate(enumDesign),
+                Owner = Application.Current.MainWindow,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Title = "Enum to C# Code",
+            }.Show();
         }
 
         static ModuleDesign? FindModule(DesignerEnvironment env, SolutionExplorerMenuClickEventArgs e)
