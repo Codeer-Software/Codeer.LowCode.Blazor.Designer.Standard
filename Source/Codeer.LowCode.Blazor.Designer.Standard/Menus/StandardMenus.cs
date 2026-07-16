@@ -89,40 +89,47 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
                 return null;
             });
 
-        //Claude Code ワークスペースの展開・更新。展開先はデザインプロジェクトの親フォルダを既定として選ばせる。
+        //Claude Code ワークスペースの展開・更新。展開先には空のフォルダを指定させる
+        //(デザインプロジェクトの親フォルダに展開すると Documents 等を汚すため)。
+        //プロジェクト未オープンでも実行できる (この場合はデザインプロジェクトのフォルダ名を既定の "Design" とし、
+        //ユーザーは展開後にこのフォルダへデザインプロジェクトを置く)。
         //フレームワーク所有分は全上書き、ユーザー所有 (Project.md / LocalEnvironment.md / settings.local.json /
         //temporary / ddl) は不可侵 (詳細は ClaudeWorkspaceDeploy)。
         static void DeployClaudeWorkspace(DesignerEnvironment env)
         {
-            if (string.IsNullOrEmpty(env.CurrentFileDirectory)) return;
-
-            var projectDir = Path.GetFullPath(env.CurrentFileDirectory);
+            //プロジェクトが開いていればそのフォルダを relProject の算出に使う。未オープンでも実行可。
+            var projectDir = string.IsNullOrEmpty(env.CurrentFileDirectory)
+                ? null : Path.GetFullPath(env.CurrentFileDirectory);
             var dialog = new OpenFolderDialog
             {
-                Title = "Claude Code ワークスペースの場所 (デザインプロジェクトの親フォルダ推奨)",
+                Title = "Claude Code ワークスペースの場所 (空のフォルダを指定してください)",
             };
-            var parent = Path.GetDirectoryName(projectDir);
-            if (!string.IsNullOrEmpty(parent)) dialog.InitialDirectory = parent;
             if (dialog.ShowDialog() != true) return;
 
             try
             {
                 var workspace = dialog.FolderName;
-                //フック (ai-refresh 等) がワークスペースから見にいくデザインプロジェクトの相対パス
-                var relProject = Path.GetRelativePath(workspace, projectDir);
-                var result = ClaudeWorkspaceDeploy.Deploy(workspace, relProject);
+                //フック (ai-refresh 等) がワークスペースから見にいくデザインプロジェクトの相対パス。
+                //プロジェクト未オープン時は既定の "Design" (ユーザーが後でこのフォルダに置く)。
+                var relProject = projectDir == null
+                    ? "Design" : Path.GetRelativePath(workspace, projectDir);
+                ClaudeWorkspaceDeploy.Deploy(workspace, relProject);
 
-                var lines = new List<string> { $"更新 {result.Deployed.Count} ファイル (ドキュメント・フック)" };
-                if (result.Created.Count > 0) lines.Add("生成: " + string.Join(", ", result.Created));
-                if (result.Preserved.Count > 0) lines.Add("保持 (ユーザー編集分): " + string.Join(", ", result.Preserved));
-                lines.Add(string.Empty);
-                lines.Add($"このフォルダで Claude Code を起動してください: {workspace}");
-                MessageBox.Show(string.Join(Environment.NewLine, lines), "Claude Code Workspace",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                var lines = new List<string>
+                {
+                    "Claude Code ワークスペースを展開しました。",
+                    string.Empty,
+                    "このフォルダにデザインプロジェクトを置いてください。",
+                    "このフォルダで Claude Code を起動し、自然言語でモジュール・レイアウト・スクリプトの作成を指示できます。",
+                };
+                ClaudeCodeWorkspaceResultDialog.Show(string.Join(Environment.NewLine, lines));
+
+                //展開先フォルダをエクスプローラで開く (ユーザーがここにデザインプロジェクトを置ける)
+                Process.Start(new ProcessStartInfo { FileName = workspace, UseShellExecute = true });
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageWindow.Show(ex.Message, "Error");
             }
         }
 

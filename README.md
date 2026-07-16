@@ -1,53 +1,53 @@
 # Codeer.LowCode.Blazor.Designer.Standard
 
-The standard implementation for the **Codeer.LowCode.Blazor** Designer. It packages everything a designer application normally ships — project templates, tool menus, icon candidates, and an AI chat assistant — so the Visual Studio template output stays thin and updates arrive as a NuGet version bump instead of regenerated code.
+**Codeer.LowCode.Blazor** デザイナの標準実装です。プロジェクトテンプレート、ツールメニュー、アイコン候補、AI チャットアシスタントなど、デザイナアプリケーションが通常同梱する機能を一式パッケージ化しています。これにより Visual Studio のテンプレート出力を薄く保ち、機能更新はコードの再生成ではなく NuGet のバージョン更新として届きます。
 
-Distributed as open source under the **MIT License**.
+**MIT ライセンス**のもとオープンソースとして配布しています。
 
-## Features
+## 機能
 
-- **Project templates** (`StandardTemplates`) — empty / empty with auth / getting started / pattern showcase / auth patterns / inventory / SFA / project management, with bundled sample SQLite databases.
-- **Tool menus** (`StandardMenus`) — Import Modules from Database, Create DDL, Create Field Class, Create FieldData Class, Create C# Enum, Export Excel Print CheatSheet, Export PageObject (Selenium), plus the standard DB column transform (PostgreSQL `xmin` → optimistic locking).
-- **Icon candidates** (`StandardIcons`) — Bootstrap Icons list for the icon picker.
-- **Claude Code workspace** (`ClaudeWorkspaceDeploy` / Tools > Claude Code Workspace) — deploys and updates the Claude Code workspace (CLAUDE.md, docs, hooks, permission settings with the designer exe path baked in). The content ships inside this package (`ClaudeWorkspace/`), so the deployed docs always match the running designer version. Also available headless via the `claude-workspace` CLI verb.
-- **DDL generation** (`DbMapping`) — deterministic CREATE TABLE / diff ALTER TABLE generation from module designs.
-- **AI chat assistant** (`AIChat/`) — natural-language editing of CSS, scripts, SQL, module settings, fields, layouts (detail / list / search), and page frames.
-  - *Task-oriented*: an intent router splits a request into steps and dispatches each to the right editor function.
-  - *Self-correcting*: generated changes run through the Designer's design checks and are regenerated on errors before being applied.
-  - *Model-swappable*: built on the [`Microsoft.Extensions.AI`](https://learn.microsoft.com/dotnet/ai/) `IChatClient` abstraction — inject any provider.
-  - *Custom-field aware*: recognizes custom field types registered via the Designer's `FieldCatalog`.
-  - *Editable prompts*: specifications are loaded from the Designer's `SpecDocCatalog` and guidelines from the embedded Claude Code workspace docs; fork and rebuild with your own.
+- **プロジェクトテンプレート**（`StandardTemplates`）— 空 / 認証付きの空 / 入門 / パターンショーケース / 認証パターン / 在庫管理 / SFA / プロジェクト管理。サンプル SQLite データベースを同梱。
+- **ツールメニュー**（`StandardMenus`）— Import Modules from Database、Create DDL、Create Field Class、Create FieldData Class、Create C# Enum、Export Excel Print CheatSheet、Export PageObject（Selenium）、および標準の DB 列変換（PostgreSQL の `xmin` → 楽観的ロック）。
+- **アイコン候補**（`StandardIcons`）— アイコンピッカー用の Bootstrap Icons 一覧。
+- **Claude Code ワークスペース**（`ClaudeWorkspaceDeploy` / Tools > Claude Code Workspace）— Claude Code ワークスペース（`CLAUDE.md`・ドキュメント・フック・デザイナ exe パスを焼き込んだ許可設定）を展開・更新します。内容はこのパッケージ内（`ClaudeWorkspace/`）に同梱されているため、展開されるドキュメントは常に実行中のデザイナと同一バージョンになります。headless CLI の `claude-workspace` verb からも利用できます。使い方は [Claude Code でデザインプロジェクトを編集する](Docs/claude_code_designer.md) を参照してください。
+- **DDL 生成**（`DbMapping`）— モジュール定義からの決定的な CREATE TABLE / 差分 ALTER TABLE 生成。
+- **AI チャットアシスタント**（`AIChat/`）— CSS・スクリプト・SQL・モジュール設定・フィールド・レイアウト（詳細 / 一覧 / 検索）・ページフレームを自然言語で編集。
+  - *タスク指向*: インテントルーターが要求を手順に分解し、各手順を適切なエディタ機能へ振り分けます。
+  - *自己修正*: 生成された変更はデザイナのデザインチェックを通し、エラーがあれば適用前に再生成します。
+  - *モデル差し替え可能*: [`Microsoft.Extensions.AI`](https://learn.microsoft.com/dotnet/ai/) の `IChatClient` 抽象の上に構築。任意のプロバイダを注入できます。
+  - *カスタムフィールド対応*: デザイナの `FieldCatalog` に登録されたカスタムフィールド型を認識します。
+  - *プロンプト編集可能*: 仕様はデザイナの `SpecDocCatalog` から、ガイドラインは同梱の Claude Code ワークスペースのドキュメントから読み込みます。フォークして自前の内容でリビルドできます。
 
-## Installation
+## インストール
 
 ```
 dotnet add package Codeer.LowCode.Blazor.Designer.Standard
 ```
 
-Requires the Designer package (`Codeer.LowCode.Blazor.Designer`, matching version).
+デザイナパッケージ（`Codeer.LowCode.Blazor.Designer`、同一バージョン）が必要です。
 
-## Getting started
+## はじめに
 
-Register everything with two calls in your designer app — `SetupHeadless` **before** `base.OnStartup(e)` (project templates and CLI verbs are used by the headless CLI, which runs inside `base.OnStartup`), and `Setup` after it:
+デザイナアプリで 2 回の呼び出しを行い、すべてを登録します。`SetupHeadless` は `base.OnStartup(e)` の**前**に（プロジェクトテンプレートと CLI verb は `base.OnStartup` 内で動く headless CLI が使うため）、`Setup` はその後に呼びます。
 
 ```csharp
 protected override void OnStartup(StartupEventArgs e)
 {
-    // ... app-specific service / script type registrations ...
-    DesignerStandard.SetupHeadless(); // templates + claude-workspace CLI verb
+    // ... アプリ固有のサービス / スクリプト型の登録 ...
+    DesignerStandard.SetupHeadless(); // テンプレート + claude-workspace CLI verb
 
     base.OnStartup(e);
 
     DesignerStandard.Setup(DesignerEnvironment, new DesignerStandardOptions
     {
-        // null disables the AI chat. Provider choice and credentials stay in your app.
+        // null にすると AI チャットは無効。プロバイダの選択と資格情報はアプリ側に置く。
         CreateAiChatClient = () => new AzureOpenAIClient(endpoint, credential)
             .GetChatClient(model).AsIChatClient(),
     });
 }
 ```
 
-Or pick features individually — `Setup` is just the sum of public building blocks:
+あるいは機能を個別に選ぶこともできます（`Setup` は公開された構成要素の総和にすぎません）。
 
 ```csharp
 StandardIcons.AddBootstrapIcons();
@@ -57,23 +57,22 @@ DesignerChatRegistration.RegisterScreenChats(
     new DesignerEnvironmentChatHost(DesignerEnvironment), createAiChatClient);
 ```
 
-## AI chat architecture
+## AI チャットのアーキテクチャ
 
 ```
-Screen chats (ScreenChats)          per-editor entry points
+Screen chats (ScreenChats)          エディタごとの入口
         |
-   AiOrchestrator + IntentRouter    split a request into ordered steps
+   AiOrchestrator + IntentRouter    要求を順序付きの手順に分解する
         |
    Functions/ (IAiFunction)         field.create / field.edit / layout.* /
         |                           script.edit / sql.* / css.edit / db.update / ...
-   IDesignerChatHost                bridge to the designer
-                                    (DesignerEnvironmentChatHost is the standard implementation)
+   IDesignerChatHost                デザイナへのブリッジ
+                                    (DesignerEnvironmentChatHost が標準実装)
 ```
 
-Prompts are single-sourced: framework specifications come from the Designer package (`SpecDocCatalog`, same assembly and version as the implementation), and authoring guidelines come from the embedded Claude Code workspace (`ClaudeWorkspace/ClaudeCodeForDesigner/Docs/`) — the AI chat and Claude Code read the same documents.
-Field and script-object knowledge is injected dynamically from the designer's `FieldCatalog` / `ScriptObjectCatalog`
-(including docs registered by extension libraries), so extensions are reflected without editing prompts.
+プロンプトは単一ソースです。フレームワークの仕様はデザイナパッケージ（`SpecDocCatalog`、実装と同一アセンブリ・同一バージョン）から、作成ガイドラインは同梱の Claude Code ワークスペース（`ClaudeWorkspace/ClaudeCodeForDesigner/Docs/`）から取得します — AI チャットと Claude Code は同じドキュメントを読みます。
+フィールドとスクリプトオブジェクトの知識は、デザイナの `FieldCatalog` / `ScriptObjectCatalog`（拡張ライブラリが登録したドキュメントを含む）から動的に注入されるため、プロンプトを編集しなくても拡張が反映されます。
 
-## License
+## ライセンス
 
-MIT License. See [LICENSE](LICENSE).
+MIT ライセンス。[LICENSE](LICENSE) を参照してください。

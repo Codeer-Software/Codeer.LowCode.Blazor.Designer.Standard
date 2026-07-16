@@ -10,8 +10,7 @@
     ],
     "ask": [
       "Read(**/designer.settings.Development.json)",
-      "Edit(**/designer.settings.Development.json)",
-      "Write(**/designer.settings.Development.json)"
+      "Edit(**/designer.settings.Development.json)"
     ]
   }
 }

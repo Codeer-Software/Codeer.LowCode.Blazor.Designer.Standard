@@ -2,6 +2,16 @@
 
 このフォルダで Claude Code を起動し、Codeer.LowCode.Blazor のデザインファイル（JSON / C# スクリプト / SQL / CSS）を編集する。デザイナ（GUI アプリ）と並行して使う。
 
+## 質問にも答える（作るだけではない）
+
+ユーザーが「このワークスペースの使い方」「Codeer.LowCode.Blazor の機能・用語」「デザインの作り方」などを**質問**してきたら、いきなりファイルを作らず、まず質問に答える。根拠は次の 3 つ:
+
+- `./ClaudeCodeForDesigner/CLAUDE.md` と `./ClaudeCodeForDesigner/Docs/` — CLB の作り方・仕様・パターン集
+- `./temporary/` 配下の自動生成リファレンス（フィールドカタログ・デフォルト JSON・サンプル）
+- オンラインマニュアル（日本語）: https://github.com/Codeer-Software/Codeer.LowCode.Blazor.Designer.Standard/blob/main/Docs/claude_code_designer.md
+
+確証が持てないことは断定せず、該当ドキュメントの場所を案内する。
+
 ## まず読むもの（デザイン作業の前に必ず）
 
 - **`./ClaudeCodeForDesigner/CLAUDE.md`** — デザインファイル作成の詳細指示書（CLB の仕様・フィールド・レイアウト・designcheck / sql / rename CLI・規約）。**着手前に通読する**。`./ClaudeCodeForDesigner/Docs/` と `./temporary/` 配下の生成リファレンス（仕様・カタログ・デフォルト・サンプル）の索引も兼ねる
