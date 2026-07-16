@@ -33,18 +33,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Codeer.LowCode.Blazor.Designer" Version="1.3.14" />
+        <PackageReference Include="Codeer.LowCode.Blazor.Designer" Version="1.3.15" />
         <PackageReference Include="Microsoft.Extensions.AI" Version="10.7.0" />
         <!-- ExcelCheatSheet 用 -->
         <PackageReference Include="ClosedXML" Version="0.105.0" />
-    </ItemGroup>
-
-    <!-- AI 仕様プロンプト(.md)を埋め込む。LogicalName は "Codeer.LowCode.Blazor.Designer.Standard.AIChat.<ファイル名>" に固定し、
-         EmbeddedDocs.Load / 各 Function の GetManifestResourceStream 呼び出しと連動させる。 -->
-    <ItemGroup>
-        <EmbeddedResource Include="AIChat\Prompts\*.md">
-            <LogicalName>Codeer.LowCode.Blazor.Designer.Standard.AIChat.%(Filename)%(Extension)</LogicalName>
-        </EmbeddedResource>
     </ItemGroup>
 
     <!-- プロジェクトテンプレート(zip)とサンプルDB、アイコン一覧。
@@ -57,5 +49,17 @@
             <LogicalName>Codeer.LowCode.Blazor.Designer.Standard.Icons.bootstrap_icons.txt</LogicalName>
         </EmbeddedResource>
     </ItemGroup>
+
+    <!-- Claude Code ワークスペース (ClaudeWorkspace/ 配下のプロンプト・Docs・フック一式) を
+         ビルド時に zip 化して埋め込む。LogicalName は ClaudeWorkspace.ResourceName と連動。
+         リポジトリでは素のファイルとして編集し、配布はデザイナの claude-workspace verb / メニューが展開する。 -->
+    <Target Name="ZipClaudeWorkspace" BeforeTargets="BeforeBuild">
+        <ZipDirectory SourceDirectory="ClaudeWorkspace" DestinationFile="$(IntermediateOutputPath)ClaudeWorkspace.zip" Overwrite="true" />
+        <ItemGroup>
+            <EmbeddedResource Include="$(IntermediateOutputPath)ClaudeWorkspace.zip">
+                <LogicalName>Codeer.LowCode.Blazor.Designer.Standard.ClaudeWorkspace.zip</LogicalName>
+            </EmbeddedResource>
+        </ItemGroup>
+    </Target>
 
 </Project>

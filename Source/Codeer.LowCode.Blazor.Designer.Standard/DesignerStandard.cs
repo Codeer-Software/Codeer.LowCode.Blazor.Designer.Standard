@@ -26,6 +26,17 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
     /// </summary>
     public static class DesignerStandard
     {
+        /// <summary>
+        /// headless CLI から参照されるもの (プロジェクトテンプレート / claude-workspace verb) を登録する。
+        /// アプリの OnStartup で base.OnStartup(e) より前に呼ぶこと (headless 分岐がその中で走るため)。
+        /// Setup と併用しても二重登録にはならない (冪等)。
+        /// </summary>
+        public static void SetupHeadless()
+        {
+            StandardTemplates.AddAll();
+            ClaudeWorkspaceDeploy.RegisterCli();
+        }
+
         public static void Setup(DesignerEnvironment env, DesignerStandardOptions? options = null)
         {
             StandardIcons.AddBootstrapIcons();

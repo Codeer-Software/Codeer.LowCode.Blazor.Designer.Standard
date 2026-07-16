@@ -264,8 +264,8 @@ SubCategory.ReloadCandidates();
 ### 誤った用途
 
 - 画面上の明細行の集計 → `Rows` プロパティを使う（[CommonMistakes.md](CommonMistakes.md) の #4 参照）
-- **DB 全体の集計・件数を `ModuleSearcher` のループで出す** → N+1。`Execute()` は WASM のクライアント→サーバ→DB 往復なので、状態ごと・カテゴリごとにループで回すと往復が件数分発生する。**集計・件数は DB 側で 1 回**にまとめる（`QueryField` / `ExecuteSqlField` で `GROUP BY`。[QueryAndSql.md](QueryAndSql.md)）。例: ダッシュボードの「状態別件数」は状態の数だけ `ModuleSearcher` を回さず、`GROUP BY status` の 1 クエリにする。
-- **複数の独立した取得**を個別に投げる → `BatchSearcher` で 1 往復に束ねる（[Scripts.md](Scripts.md) の BatchSearcher）。実装前に「この処理は問い合わせが何回になるか」を見積もり、ループ内で I/O（DB / 通信）を回したら赤信号。詳細は [CommonMistakes.md](CommonMistakes.md) の #56 参照。
+- **DB 全体の集計・件数を `ModuleSearcher` のループで出す** → N+1。`Execute()` は WASM のクライアント→サーバ→DB 往復なので、状態ごと・カテゴリごとにループで回すと往復が件数分発生する。**集計・件数は DB 側で 1 回**にまとめる（`QueryField` / `ExecuteSqlField` で `GROUP BY`。[temporary/_specs/QueryAndSql.md](temporary/_specs/QueryAndSql.md)）。例: ダッシュボードの「状態別件数」は状態の数だけ `ModuleSearcher` を回さず、`GROUP BY status` の 1 クエリにする。
+- **複数の独立した取得**を個別に投げる → `BatchSearcher` で 1 往復に束ねる（[temporary/_specs/Scripts.md](temporary/_specs/Scripts.md) の BatchSearcher）。実装前に「この処理は問い合わせが何回になるか」を見積もり、ループ内で I/O（DB / 通信）を回したら赤信号。詳細は [CommonMistakes.md](CommonMistakes.md) の #56 参照。
 
 ---
 
@@ -357,7 +357,7 @@ void CustomExport_OnClick()
 
 ### Excel メソッド一覧
 
-全メソッドの正確なシグネチャ・使用例は、別途渡される「この環境で使えるスクリプトオブジェクト」カタログの Excel を参照。
+全メソッドの正確なシグネチャと使用例は [temporary/_script_catalog.md](../temporary/_script_catalog.md) の Excel セクションを参照。
 
 ---
 
@@ -431,7 +431,7 @@ for (int i = 0; i < list.Count; i++) {
 }
 ```
 
-単一引数ラムダ (`x => x.Value`) は `ModuleSearcher` の条件メソッドでのみ使える ([Docs/Scripts.md](Scripts.md) のラムダ式セクション参照)。
+単一引数ラムダ (`x => x.Value`) は `ModuleSearcher` の条件メソッドでのみ使える ([temporary/_specs/Scripts.md](temporary/_specs/Scripts.md) のラムダ式セクション参照)。
 
 ---
 

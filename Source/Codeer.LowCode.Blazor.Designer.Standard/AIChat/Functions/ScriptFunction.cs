@@ -281,10 +281,8 @@ namespace Codeer.LowCode.Blazor.Designer.Standard.AIChat.Functions
         // スクリプト仕様(言語仕様・Module/Field API・規約)は埋め込みの各 .md を連結して読み込む。
         // 拡張サービス(Excel / WebApi / Toaster / Mail 等)は静的 md ではなく
         // ScriptObjectCatalogPrompt(登録済みスクリプトオブジェクトの動的カタログ)が担う。
-        static readonly string ScriptReference = EmbeddedDocs.Load(
-            "Codeer.LowCode.Blazor.Designer.Standard.AIChat.Scripts.md",
-            "Codeer.LowCode.Blazor.Designer.Standard.AIChat.ScriptGuidelines.md",
-            "Codeer.LowCode.Blazor.Designer.Standard.AIChat._ScriptApi.md");
+        static readonly string ScriptReference = EmbeddedDocs.Spec("Scripts", "_ScriptApi")
+            + EmbeddedDocs.Guideline("ScriptGuidelines.md");
 
         class AIResponse
         {

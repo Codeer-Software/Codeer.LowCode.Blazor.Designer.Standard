@@ -492,10 +492,8 @@ namespace Codeer.LowCode.Blazor.Designer.Standard.AIChat.Functions
             return string.Join("\r\n", messages);
         }
 
-        static readonly string LayoutReference = EmbeddedDocs.Load(
-            "Codeer.LowCode.Blazor.Designer.Standard.AIChat.Layouts.md",
-            "Codeer.LowCode.Blazor.Designer.Standard.AIChat.LayoutGuidelines.md",
-            "Codeer.LowCode.Blazor.Designer.Standard.AIChat.JsonAbstractTypeFullName.md");
+        static readonly string LayoutReference = EmbeddedDocs.Spec("Layouts", "JsonAbstractTypeFullName")
+            + EmbeddedDocs.Guideline("LayoutGuidelines.md");
 
         class AIResponse
         {

@@ -34,8 +34,16 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
             AddCreateFieldDataClass(env);
             AddCreateCSharpEnum(env);
             AddExportExcelPrintCheatSheet(env);
+            AddClaudeWorkspace(env);
             AddDbColumnTransformDefaults(env);
         }
+
+        /// <summary>
+        /// Tools &gt; Claude Code Workspace。Claude Code 用ワークスペース (CLAUDE.md / Docs / フック一式) を
+        /// 展開・更新する。ドキュメントはこの exe と同一バージョンの埋め込みリソースから出るため常に整合する。
+        /// </summary>
+        public static void AddClaudeWorkspace(DesignerEnvironment env)
+            => env.AddMainMenu(() => DeployClaudeWorkspace(env), "Tools", "Claude Code Workspace");
 
         /// <summary>Tools &gt; Import Modules from Database。DB スキーマからモジュールを生成する。</summary>
         public static void AddImportModulesFromDatabase(DesignerEnvironment env)
@@ -80,6 +88,43 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
                     return new OptimisticLockingFieldDesign { Name = SystemFieldNames.OptimisticLocking, DbColumn = columnName };
                 return null;
             });
+
+        //Claude Code ワークスペースの展開・更新。展開先はデザインプロジェクトの親フォルダを既定として選ばせる。
+        //フレームワーク所有分は全上書き、ユーザー所有 (Project.md / LocalEnvironment.md / settings.local.json /
+        //temporary / ddl) は不可侵 (詳細は ClaudeWorkspaceDeploy)。
+        static void DeployClaudeWorkspace(DesignerEnvironment env)
+        {
+            if (string.IsNullOrEmpty(env.CurrentFileDirectory)) return;
+
+            var projectDir = Path.GetFullPath(env.CurrentFileDirectory);
+            var dialog = new OpenFolderDialog
+            {
+                Title = "Claude Code ワークスペースの場所 (デザインプロジェクトの親フォルダ推奨)",
+            };
+            var parent = Path.GetDirectoryName(projectDir);
+            if (!string.IsNullOrEmpty(parent)) dialog.InitialDirectory = parent;
+            if (dialog.ShowDialog() != true) return;
+
+            try
+            {
+                var workspace = dialog.FolderName;
+                //フック (ai-refresh 等) がワークスペースから見にいくデザインプロジェクトの相対パス
+                var relProject = Path.GetRelativePath(workspace, projectDir);
+                var result = ClaudeWorkspaceDeploy.Deploy(workspace, relProject);
+
+                var lines = new List<string> { $"更新 {result.Deployed.Count} ファイル (ドキュメント・フック)" };
+                if (result.Created.Count > 0) lines.Add("生成: " + string.Join(", ", result.Created));
+                if (result.Preserved.Count > 0) lines.Add("保持 (ユーザー編集分): " + string.Join(", ", result.Preserved));
+                lines.Add(string.Empty);
+                lines.Add($"このフォルダで Claude Code を起動してください: {workspace}");
+                MessageBox.Show(string.Join(Environment.NewLine, lines), "Claude Code Workspace",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
 
         static void ImportModulesFromDbTables(DesignerEnvironment env)
         {

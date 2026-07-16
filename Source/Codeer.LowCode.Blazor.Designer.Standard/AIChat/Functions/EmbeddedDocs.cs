@@ -1,33 +1,62 @@
+using Codeer.LowCode.Blazor.Designer.Extensibility;
 using System.IO;
-using System.Reflection;
+using System.IO.Compression;
 using System.Text;
 
 namespace Codeer.LowCode.Blazor.Designer.Standard.AIChat.Functions
 {
-    // Lib/AI 配下の仕様 .md(埋め込みリソース)を読み込むための共通ヘルパ。
-    // 各機能で重複していたリソース読み込み処理を集約する。リソースの論理名は
-    // csproj の EmbeddedResource で "Codeer.LowCode.Blazor.Designer.Standard.AIChat.<file>.md" になる。
+    // AIChat のプロンプトに注入する仕様・ガイドラインの読み込みヘルパ。自前コピーは持たない (単一ソース):
+    //  - Spec(...)      : フレームワーク仕様 → Designer 本体の SpecDocCatalog (実装と同一アセンブリ・同一バージョン)
+    //  - Guideline(...) : 作り方ガイドライン → このライブラリの ClaudeWorkspace.zip 内 Docs (Claude Code と同一ソース)
+    // 読み込めないものはスキップして残りを返す (プロンプトは部分欠落しても動くため)。
     static class EmbeddedDocs
     {
-        static readonly Assembly Asm = typeof(EmbeddedDocs).Assembly;
+        const string ZipResourceName = "Codeer.LowCode.Blazor.Designer.Standard.ClaudeWorkspace.zip";
+        const string DocsPrefix = "ClaudeCodeForDesigner/Docs/";
 
-        // 複数のリソースを連結して返す(読み込めないものはスキップ)。
-        public static string Load(params string[] resourceNames)
+        // 仕様ドキュメント (SpecDocCatalog の id、例: "Layouts", "_FieldCommon", "JsonAbstractTypeFullName")
+        public static string Spec(params string[] ids)
         {
             var sb = new StringBuilder();
-            foreach (var name in resourceNames)
+            foreach (var id in ids)
             {
                 try
                 {
-                    using var stream = Asm.GetManifestResourceStream(name);
+                    var doc = SpecDocCatalog.Load(id);
+                    if (string.IsNullOrEmpty(doc)) continue;
+                    sb.AppendLine(doc);
+                    sb.AppendLine();
+                }
+                catch
+                {
+                    // 読み込めないものはスキップ
+                }
+            }
+            return sb.ToString();
+        }
+
+        // 作り方ガイドライン (ClaudeWorkspace の Docs/ 相対名、例: "LayoutGuidelines.md")
+        public static string Guideline(params string[] fileNames)
+        {
+            var sb = new StringBuilder();
+            foreach (var fileName in fileNames)
+            {
+                try
+                {
+                    using var stream = typeof(EmbeddedDocs).Assembly.GetManifestResourceStream(ZipResourceName);
                     if (stream == null) continue;
-                    using var reader = new StreamReader(stream);
+                    using var zip = new ZipArchive(stream, ZipArchiveMode.Read);
+                    // zip 生成元によりエントリの区切りが '/' と '\' のどちらもありうるため正規化して探す
+                    var wanted = (DocsPrefix + fileName).Replace('\\', '/');
+                    var entry = zip.Entries.FirstOrDefault(e => e.FullName.Replace('\\', '/') == wanted);
+                    if (entry == null) continue;
+                    using var reader = new StreamReader(entry.Open());
                     sb.AppendLine(reader.ReadToEnd());
                     sb.AppendLine();
                 }
                 catch
                 {
-                    // 読み込めないファイルはスキップ
+                    // 読み込めないものはスキップ
                 }
             }
             return sb.ToString();

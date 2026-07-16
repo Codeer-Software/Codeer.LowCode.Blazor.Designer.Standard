@@ -152,7 +152,7 @@ namespace Codeer.LowCode.Blazor.Designer.Standard.AIChat.Functions
         }
 
         // CSSの仕様知識(DOM構造・セレクタ・スタイリングルール)は Lib/AI/AppCss.md を埋め込みリソースとして読み込む。
-        static readonly string CssReference = EmbeddedDocs.Load("Codeer.LowCode.Blazor.Designer.Standard.AIChat.AppCss.md");
+        static readonly string CssReference = EmbeddedDocs.Spec("AppCss");
 
         class AIResponse
         {

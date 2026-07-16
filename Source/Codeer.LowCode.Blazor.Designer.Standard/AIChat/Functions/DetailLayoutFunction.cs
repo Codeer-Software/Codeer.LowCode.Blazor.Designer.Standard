@@ -1124,10 +1124,8 @@ namespace Codeer.LowCode.Blazor.Designer.Standard.AIChat.Functions
 
         // レイアウト仕様(クラス定義・プロパティ・推奨ルール・IsViewOnly)は Lib/AI の Layouts.md / LayoutGuidelines.md を
         // 埋め込みリソースとして読み込んで連結する。各レイアウト機能で共有(SystemPromptにハードコードしない)。
-        static readonly string LayoutReference = EmbeddedDocs.Load(
-            "Codeer.LowCode.Blazor.Designer.Standard.AIChat.Layouts.md",
-            "Codeer.LowCode.Blazor.Designer.Standard.AIChat.LayoutGuidelines.md",
-            "Codeer.LowCode.Blazor.Designer.Standard.AIChat.JsonAbstractTypeFullName.md");
+        static readonly string LayoutReference = EmbeddedDocs.Spec("Layouts", "JsonAbstractTypeFullName")
+            + EmbeddedDocs.Guideline("LayoutGuidelines.md");
 
         class AIResponse
         {

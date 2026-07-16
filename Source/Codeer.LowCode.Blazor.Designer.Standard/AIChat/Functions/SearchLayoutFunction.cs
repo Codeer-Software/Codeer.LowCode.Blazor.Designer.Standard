@@ -710,10 +710,8 @@ namespace Codeer.LowCode.Blazor.Designer.Standard.AIChat.Functions
         // レイアウト仕様 Docs(詳細レイアウトと共有)
         // ===================================================================================
 
-        static readonly string LayoutReference = EmbeddedDocs.Load(
-            "Codeer.LowCode.Blazor.Designer.Standard.AIChat.Layouts.md",
-            "Codeer.LowCode.Blazor.Designer.Standard.AIChat.LayoutGuidelines.md",
-            "Codeer.LowCode.Blazor.Designer.Standard.AIChat.JsonAbstractTypeFullName.md");
+        static readonly string LayoutReference = EmbeddedDocs.Spec("Layouts", "JsonAbstractTypeFullName")
+            + EmbeddedDocs.Guideline("LayoutGuidelines.md");
 
         // Stage1 専用プロンプト: And/Or の論理構造だけを決める。見た目・ラベル・行列は一切考えない。
         const string ConditionSystemPrompt = @"

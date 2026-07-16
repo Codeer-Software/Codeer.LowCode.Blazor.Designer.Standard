@@ -381,11 +381,7 @@ namespace Codeer.LowCode.Blazor.Designer.Standard.AIChat.Functions
         }
 
         // モジュール設定仕様 Docs。
-        static readonly string ModuleReference = EmbeddedDocs.Load(
-            "Codeer.LowCode.Blazor.Designer.Standard.AIChat.ModuleDesign.md",
-            "Codeer.LowCode.Blazor.Designer.Standard.AIChat._FieldCommon.md",
-            "Codeer.LowCode.Blazor.Designer.Standard.AIChat.SearchConditions.md",
-            "Codeer.LowCode.Blazor.Designer.Standard.AIChat.JsonAbstractTypeFullName.md");
+        static readonly string ModuleReference = EmbeddedDocs.Spec("ModuleDesign", "_FieldCommon", "SearchConditions", "JsonAbstractTypeFullName");
 
         // 現在のモジュール設定を AI に見せる用のシリアライズ。null も省略せず出力する。
         static readonly JsonSerializerOptions ViewOptions = CreateViewOptions();

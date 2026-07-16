@@ -199,10 +199,7 @@ namespace Codeer.LowCode.Blazor.Designer.Standard.AIChat.Functions
 
         // ページフレームの仕様知識(構造・プロパティ定義)は Lib/AI/PageFrame.md を
         // 埋め込みリソースとして読み込む(csproj の EmbeddedResource を参照)。
-        static readonly string PageFrameReference = EmbeddedDocs.Load(
-            "Codeer.LowCode.Blazor.Designer.Standard.AIChat.PageFrame.md",
-            "Codeer.LowCode.Blazor.Designer.Standard.AIChat.SearchConditions.md",
-            "Codeer.LowCode.Blazor.Designer.Standard.AIChat.JsonAbstractTypeFullName.md");
+        static readonly string PageFrameReference = EmbeddedDocs.Spec("PageFrame", "SearchConditions", "JsonAbstractTypeFullName");
 
         class AIResponse
         {
