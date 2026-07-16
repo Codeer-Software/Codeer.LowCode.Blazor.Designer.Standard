@@ -20,7 +20,7 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
     ///
     /// 一部だけ使いたい場合はこのクラスを使わず、中身と同じコードを直接書けばよい:
     ///   StandardIcons.AddBootstrapIcons();
-    ///   DesignerTemplateCandidate.Templates.Add(StandardTemplates.PatternShowcase());
+    ///   ProjectCatalog.Add(StandardTemplates.PatternShowcase());
     ///   StandardMenus.AddCreateDdl(DesignerEnvironment);
     ///   DesignerChatRegistration.RegisterScreenChats(new DesignerEnvironmentChatHost(DesignerEnvironment), factory);
     /// </summary>

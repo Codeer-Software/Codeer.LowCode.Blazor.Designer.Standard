@@ -243,7 +243,7 @@ CLI 実行後は必ず次で成否を判定する:
 | [temporary/_script_catalog.md](temporary/_script_catalog.md) | スクリプトオブジェクトカタログ (後述) |
 | `temporary/_specs/*.md` | **フレームワーク仕様リファレンス**: ModuleDesign / Layouts / PageFrame / SearchConditions / Scripts / ScriptExtensions / QueryAndSql / AppCss / Authentication / ProjectSettings / BorderStyleGuide / _FieldCommon / _ScriptApi と、リフレクション生成の Enums (全列挙型・使用箇所付き) / JsonAbstractTypeFullName (全 TypeFullName 一覧) |
 | `temporary/_defaults/{型名}.json` | 全デザイン型の**デフォルト状態 JSON** (デザイナが新規追加時に書き出すものと一致。独自フィールドも含む)。新しい定義はゼロから書かず、これをコピーして必要なプロパティだけ上書きする |
-| `temporary/_samples/{Id}/` | 参照用サンプルプロジェクト (新規作成テンプレートと同一物): `PatternShowcase` (標準パターン集) / `PatternShowcaseAuth` (認証パターン集) / `GettingStarted` / `InventoryManagement` / `SFA` / `ProjectManagement` / `Empty` / `EmptyAuth`。各フォルダ直下の `_template.md` が説明 |
+| `temporary/_samples/{FolderName}/` | 参照用サンプルプロジェクト (新規作成テンプレートと同一物): `PatternShowcase` (標準パターン集) / `PatternShowcaseAuth` (認証パターン集) / `GettingStarted` / `InventoryManagement` / `SFA` / `ProjectManagement` / `Empty` / `EmptyAuth`。各フォルダ直下の `_template.md` が説明 |
 
 これらは `.claude/refresh-ai-workspace.ps1` フック (SessionStart / UserPromptSubmit) が **`ai-refresh` サブコマンド**でまとめて生成・更新する (デザイナ再ビルドの検知時のみ。1 回のプロジェクト読込で全部出る):
 
@@ -252,7 +252,7 @@ CLI 実行後は必ず次で成否を判定する:
 ```
 
 - ファイルが無い・古い疑いがあるときは手動で実行してよい (許可リスト済み・DB 接続不要)。終了コード: `0` = 成功 / `2` = 失敗
-- 個別に取り直したいときは `field-catalog` / `script-catalog` / `defaults "<projectDir>" --out-dir <dir>` / `template-list` / `template-extract --name <Id> --out-dir <dir>` の各サブコマンドもある
+- 個別に取り直したいときは `field-catalog` / `script-catalog` / `defaults "<projectDir>" --out-dir <dir>` / `template-list` / `template-extract --name <FolderName> --out-dir <dir>` の各サブコマンドもある
 - **ワークスペース自体** (この CLAUDE.md・Docs・フック) の更新は、デザイナのメニュー **Tools > Claude Code Workspace** (または `claude-workspace "<workspaceDir>"` サブコマンド)。デザイナを更新したらこれを再実行すると、ドキュメント一式もそのバージョンに揃う (Project.md / LocalEnvironment.md / settings.local.json / temporary / ddl はユーザー所有として保持される)
 
 ## フィールド型カタログ CLI (field-catalog) — このプロジェクトで使える全フィールド型

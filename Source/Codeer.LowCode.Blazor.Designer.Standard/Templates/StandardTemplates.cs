@@ -9,11 +9,10 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
     /// <summary>
     /// デザイナ標準のプロジェクトテンプレート。
     /// <see cref="AddAll"/> で全件登録できるほか、個別メソッドで必要なものだけ
-    /// DesignerTemplateCandidate.Templates に追加したり、Name / Description を
-    /// 書き換えてから登録することもできる。
+    /// ProjectCatalog.Add に渡したり、Name / Description を書き換えてから登録することもできる。
     ///
     /// headless CLI (template-list / template-extract / ai-refresh) からも参照されるため、
-    /// 登録はアプリの OnStartup で base.OnStartup(e) より前に行う (AddAll は冪等なので、
+    /// 登録はアプリの OnStartup で base.OnStartup(e) より前に行う (ProjectCatalog.Add は冪等なので、
     /// base.OnStartup 後の DesignerStandard.Setup と併用しても二重登録にはならない)。
     /// </summary>
     public static class StandardTemplates
@@ -21,47 +20,47 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
         const string ResourcePrefix = "Codeer.LowCode.Blazor.Designer.Standard.Templates.";
         const string LocalDataDir = @"C:\Codeer.LowCode.Blazor.Local\Data";
 
-        public static DesignerTemplate Empty() => Make(
+        public static ProjectCatalogEntry Empty() => Make(
             "Empty", "EmptyTemplate.bin", "sqlite_sample.db",
             "空のプロジェクト",
             "最小構成の空プロジェクト。モジュール / ページフレームを 1 から作りたいときに。");
 
-        public static DesignerTemplate EmptyAuth() => Make(
+        public static ProjectCatalogEntry EmptyAuth() => Make(
             "EmptyAuth", "EmptyAuthTemplate.bin", "sqlite_sample_auth.db",
             "空のプロジェクト（認証付き）",
             "Cookie 認証付きの空プロジェクト。AppUser モジュールとログインまわりの最小構成が組み込み済。初期ユーザーは admin/admin。\n※Visual Studio で新規ソリューションを作成するときは「Codeer.LowCode.Blazor.Cookie」で作成してください。その他のものとは整合しません。");
 
-        public static DesignerTemplate GettingStarted() => Make(
+        public static ProjectCatalogEntry GettingStarted() => Make(
             "GettingStarted", "GettingStartedTemplate.bin", "sqlite_sample.db",
             "入門サンプル",
             "Codeer.LowCode.Blazor を初めて触る方向けの入門用サンプル。著者管理・書籍登録などの最小限の業務画面を一通り含み、デザイナの基本操作を覚えるのに使えます。");
 
-        public static DesignerTemplate PatternShowcase() => Make(
+        public static ProjectCatalogEntry PatternShowcase() => Make(
             "PatternShowcase", "PatternShowcaseTemplate.bin", "sqlite_patterns_v4.db",
             "標準パターン集",
             "Codeer.LowCode.Blazor で実現できる標準パターンを集めたサンプル集 (データ操作 / 検索 / リスト / 一覧 / ダイアログ / レイアウト / 入力UX / 出力 / 別フレーム など 50 種以上)。各機能の実装例として参考にしてください。");
 
-        public static DesignerTemplate PatternShowcaseAuth() => Make(
+        public static ProjectCatalogEntry PatternShowcaseAuth() => Make(
             "PatternShowcaseAuth", "PatternShowcaseAuthTemplate.bin", "sqlite_patterns_auth_v3.db",
             "認証パターン集",
             "Cookie 認証を組み込んだ認証・権限パターンのサンプル集 (ユーザー管理 / マイプロフィール / アプリ権限 / PageFrame 権限 / 作成者更新者の自動記録 / 行レベルセキュリティ / 自分宛タスク など)。初期ユーザー: admin/admin、alice/test、bob/test、carol/test、dave/test。\n※Visual Studio で新規ソリューションを作成するときは「Codeer.LowCode.Blazor.Cookie」で作成してください。その他のものとは整合しません。");
 
-        public static DesignerTemplate InventoryManagement() => Make(
+        public static ProjectCatalogEntry InventoryManagement() => Make(
             "InventoryManagement", "InventoryManagementTemplate.bin", "inventory_v1.db",
             "在庫管理テンプレート",
             "倉庫の入庫・出庫・棚卸し・発注など、在庫管理業務を一通り含む業務テンプレート。複数倉庫や商品マスタの扱いの参考に。");
 
-        public static DesignerTemplate Sfa() => Make(
+        public static ProjectCatalogEntry Sfa() => Make(
             "SFA", "SFATemplate.bin", "sfa_v1.db",
             "営業支援 (SFA) テンプレート",
             "顧客 / 商談 / 活動履歴 / 案件パイプラインなど、営業支援 (SFA) 業務を一通り含む業務テンプレート。営業案件の進捗管理の参考に。");
 
-        public static DesignerTemplate ProjectManagement() => Make(
+        public static ProjectCatalogEntry ProjectManagement() => Make(
             "ProjectManagement", "ProjectManagementTemplate.bin", "project_management_v1.db",
             "プロジェクト管理テンプレート",
             "プロジェクト / タスク / 工数 / 進捗管理など、プロジェクト管理業務を一通り含む業務テンプレート。タスク階層やガントチャート的な可視化の参考に。");
 
-        public static List<DesignerTemplate> All() =>
+        public static List<ProjectCatalogEntry> All() =>
         [
             Empty(),
             EmptyAuth(),
@@ -74,22 +73,21 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
         ];
 
         /// <summary>
-        /// 標準テンプレートを全件 DesignerTemplateCandidate に登録する。
-        /// 同じ Id が登録済みのものはスキップする (冪等。base.OnStartup 前の登録と
+        /// 標準テンプレートを全件 ProjectCatalog に登録する
+        /// (冪等は ProjectCatalog.Add 側が保証。base.OnStartup 前の登録と
         /// DesignerStandard.Setup の両方から呼ばれても二重登録しない)。
         /// </summary>
         public static void AddAll()
         {
             foreach (var template in All())
             {
-                if (DesignerTemplateCandidate.Templates.Any(t => t.Id == template.Id)) continue;
-                DesignerTemplateCandidate.Templates.Add(template);
+                ProjectCatalog.Add(template);
             }
         }
 
-        static DesignerTemplate Make(string id, string templateResource, string sampleDbResource, string name, string description) => new()
+        static ProjectCatalogEntry Make(string folderName, string templateResource, string sampleDbResource, string name, string description) => new()
         {
-            Id = id,
+            FolderName = folderName,
             Name = name,
             Description = description,
             Create = path => CreateProject(path, templateResource, sampleDbResource),
