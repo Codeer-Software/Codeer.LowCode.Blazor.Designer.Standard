@@ -1,10 +1,10 @@
 # 可視化・ダッシュボードのパターン（ガント / タスクボード / グラフ）
 
-ガントチャート（`GanttField`）・タスクボード（`TaskBoardField`）・グラフ（`ApexChartField` 系）を業務アプリに組み込むときの**実用パターン**。各フィールドのプロパティ一覧は [GanttField](temporary/_field_catalog.md) / [TaskBoardField](temporary/_field_catalog.md) / [ApexChartField](temporary/_field_catalog.md) を参照。ここは「**どう結線して動く画面にするか**」をまとめる。
+ガントチャート（`GanttField`）・タスクボード（`TaskBoardField`）・グラフ（`ApexChartField` 系）を業務アプリに組み込むときの**実用パターン**。各フィールドのプロパティ一覧は [GanttField](ClaudeCodeForDesigner/_field_catalog.md) / [TaskBoardField](ClaudeCodeForDesigner/_field_catalog.md) / [ApexChartField](ClaudeCodeForDesigner/_field_catalog.md) を参照。ここは「**どう結線して動く画面にするか**」をまとめる。
 
 > いずれも外部ライブラリのフィールド。`app.clprj` の `Versions` に `Codeer.LowCode.Blazor.Extras`（ガント/ボード）・`Codeer.LowCode.Bindings.ApexCharts`（グラフ）を入れる。ガントとグラフはヘッドレスでは描画されないことがある（実機で確認）。
 
-> **実装サンプル（必読）**: [`temporary/_samples/ProjectManagement/`](../../temporary/_samples/ProjectManagement/Modules/) に実物がある。`プロジェクト.mod.json`＝ガント＋タスクボードを親詳細に埋め込んだ例（編集レイアウト・`DataOnlyFields`・`IsFillAvailable` 行まで）、`Home.mod.json`＝チャート群、`クエリ/` 配下＝集計クエリモジュール＋ GROUP BY SQL。本ページの結線はこのサンプルに基づく。複製して差分だけ直すのが速い。
+> **実装サンプル（必読）**: [`ClaudeCodeForDesigner/_samples/ProjectManagement/`](../../ClaudeCodeForDesigner/_samples/ProjectManagement/Modules/) に実物がある。`プロジェクト.mod.json`＝ガント＋タスクボードを親詳細に埋め込んだ例（編集レイアウト・`DataOnlyFields`・`IsFillAvailable` 行まで）、`Home.mod.json`＝チャート群、`クエリ/` 配下＝集計クエリモジュール＋ GROUP BY SQL。本ページの結線はこのサンプルに基づく。複製して差分だけ直すのが速い。
 
 ---
 
@@ -80,7 +80,7 @@
 
 ## 3. 高さの出し方（ガント/ボード/グラフ共通）
 
-ガント・タスクボードは `IFillHeightFieldDesign`。**フィールドを置く列の直上レイアウトを `IsFillAvailable: true` にして、フィールドをそのレイアウトの最終行に置く**だけで、親の残り高さを使い切る。GridRow 側に特別なフラグは要らない（`KeepInFillAvailableGrid` は `false` のまま。詳細は [../CommonMistakes.md](../CommonMistakes.md)・[temporary/_specs/Layouts.md](temporary/_specs/Layouts.md)）。
+ガント・タスクボードは `IFillHeightFieldDesign`。**フィールドを置く列の直上レイアウトを `IsFillAvailable: true` にして、フィールドをそのレイアウトの最終行に置く**だけで、親の残り高さを使い切る。GridRow 側に特別なフラグは要らない（`KeepInFillAvailableGrid` は `false` のまま。詳細は [../CommonMistakes.md](../CommonMistakes.md)・[ClaudeCodeForDesigner/_specs/Layouts.md](ClaudeCodeForDesigner/_specs/Layouts.md)）。
 
 ```json
 "ガント行": { "Layout": {
@@ -220,13 +220,13 @@ void ConfirmButton_OnClick()
 }
 ```
 
-> **二重計上の防止**: 「確定」ステータスへの更新と在庫増減を同一トランザクションにし、確定後は `OnAfterInitialization` で確定ボタンを非表示＋明細を `IsViewOnly` にして再確定不可にする。`OnTransaction` 内で在庫更新する方式もある（[temporary/_specs/Scripts.md](temporary/_specs/Scripts.md) の `OnTransaction` 例）。
+> **二重計上の防止**: 「確定」ステータスへの更新と在庫増減を同一トランザクションにし、確定後は `OnAfterInitialization` で確定ボタンを非表示＋明細を `IsViewOnly` にして再確定不可にする。`OnTransaction` 内で在庫更新する方式もある（[ClaudeCodeForDesigner/_specs/Scripts.md](ClaudeCodeForDesigner/_specs/Scripts.md) の `OnTransaction` 例）。
 
 ---
 
 ## 関連
 
-- フィールド詳細: [GanttField](temporary/_field_catalog.md) / [TaskBoardField](temporary/_field_catalog.md) / [ApexChartField](temporary/_field_catalog.md) / [ApexHBarChartField](temporary/_field_catalog.md) / [ApexRadialChartField](temporary/_field_catalog.md) / [QueryField](temporary/_field_catalog.md)
+- フィールド詳細: [GanttField](ClaudeCodeForDesigner/_field_catalog.md) / [TaskBoardField](ClaudeCodeForDesigner/_field_catalog.md) / [ApexChartField](ClaudeCodeForDesigner/_field_catalog.md) / [ApexHBarChartField](ClaudeCodeForDesigner/_field_catalog.md) / [ApexRadialChartField](ClaudeCodeForDesigner/_field_catalog.md) / [QueryField](ClaudeCodeForDesigner/_field_catalog.md)
 - ヘッダ＋明細の基本: [header_detail.md](header_detail.md) / [multi_nested.md](multi_nested.md)
-- クエリ/SQL: [temporary/_specs/QueryAndSql.md](temporary/_specs/QueryAndSql.md) ／ スクリプト: [temporary/_specs/Scripts.md](temporary/_specs/Scripts.md)
+- クエリ/SQL: [ClaudeCodeForDesigner/_specs/QueryAndSql.md](ClaudeCodeForDesigner/_specs/QueryAndSql.md) ／ スクリプト: [ClaudeCodeForDesigner/_specs/Scripts.md](ClaudeCodeForDesigner/_specs/Scripts.md)
 </content>

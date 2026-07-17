@@ -36,7 +36,7 @@ articles            article_tags                tags
 - 中間モジュール (`ArticleTag`) は、本体への FK を **`IdFieldDesign`** (`ArticleId`, `IsManualInput:false`)、相手マスタへの参照を **`LinkFieldDesign`** (`TagLink`) で持つ。本体保存時に `ArticleId` は CLB が自動セット
 - 本体 (`Article`) の Detail に **`ListField`** (表形式) で中間を内包。`SearchCondition.Condition` の `FieldVariableMatchCondition` (`SearchTargetVariable: "ArticleId.Value"` / `Variable: "Id.Value"` / `Equal`) で逆引き。**`DetailListField` ではない** ([CommonMistakes #53](../CommonMistakes.md))
 - ユーザーは各行の Tag リンク (`TagLink`) で紐付け先を選択
-- 正典: `temporary/_samples/PatternShowcase/Modules/Article.mod.json` (`Tags`＝`ListFieldDesign`) + `ArticleTag.mod.json` (`ArticleId`＝`IdFieldDesign` / `TagLink`＝`LinkFieldDesign`)
+- 正典: `ClaudeCodeForDesigner/_samples/PatternShowcase/Modules/Article.mod.json` (`Tags`＝`ListFieldDesign`) + `ArticleTag.mod.json` (`ArticleId`＝`IdFieldDesign` / `TagLink`＝`LinkFieldDesign`)
 
 ## 標準パターン集の対応
 
@@ -45,5 +45,5 @@ articles            article_tags                tags
 ## 関連ドキュメント
 
 - [アプリ作成パターン一覧](patterns.md) ─ 全パターンのインデックス
-- [モジュール定義の全体構造](temporary/_specs/ModuleDesign.md)
+- [モジュール定義の全体構造](ClaudeCodeForDesigner/_specs/ModuleDesign.md)
 - [Field リファレンス](../Fields/) ─ LinkField / ListField / DetailListField / ModuleField 等の詳細

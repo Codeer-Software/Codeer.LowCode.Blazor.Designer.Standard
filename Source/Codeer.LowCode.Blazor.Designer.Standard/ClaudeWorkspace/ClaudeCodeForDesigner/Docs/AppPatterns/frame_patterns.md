@@ -37,7 +37,7 @@
 
 複数のアプリケーションルートに **対象デバイス** (`TargetDevice`: Any/PC/Touch) と **適用開始幅** (`WidthFrom`) を設定すると、ルート URL (`/`) を開いたときの PageFrame を画面サイズやデバイスで出し分けできる。PC は通常のサイドバー型、スマホはコンパクト型、のような構成に。
 
-標準パターン集では `Main` に適用開始幅 900 を設定し、条件なしの `Compact` を追加。900px 未満でルート URL を開くと Compact 側が選ばれる。選択ルールや補足は [PageFrame のプロパティ](temporary/_specs/PageFrame.md) を参照。
+標準パターン集では `Main` に適用開始幅 900 を設定し、条件なしの `Compact` を追加。900px 未満でルート URL を開くと Compact 側が選ばれる。選択ルールや補足は [PageFrame のプロパティ](ClaudeCodeForDesigner/_specs/PageFrame.md) を参照。
 
 **標準パターン集の対応**: サイドバー **`別フレーム/画面幅で切替 → `DeviceFrameSample`** (説明) + `Compact` (別 PageFrame) + `CompactHome`
 
@@ -47,5 +47,5 @@
 
 - [アプリ作成パターン一覧](patterns.md) ─ 全パターンのインデックス
 - [レスポンシブ対応の実現方法](https://github.com/Codeer-Software/Codeer.LowCode.Blazor.Manual/blob/main/JP/look_and_feel/responsive.md) ─ 画面幅・デバイスへの追従に使う機能のまとめ
-- [モジュール定義の全体構造](temporary/_specs/ModuleDesign.md)
+- [モジュール定義の全体構造](ClaudeCodeForDesigner/_specs/ModuleDesign.md)
 - [Field リファレンス](../Fields/)

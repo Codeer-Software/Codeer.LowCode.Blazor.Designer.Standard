@@ -43,5 +43,5 @@ departments
 ## 関連ドキュメント
 
 - [アプリ作成パターン一覧](patterns.md) ─ 全パターンのインデックス
-- [モジュール定義の全体構造](temporary/_specs/ModuleDesign.md)
+- [モジュール定義の全体構造](ClaudeCodeForDesigner/_specs/ModuleDesign.md)
 - [Field リファレンス](../Fields/) ─ LinkField / ListField / DetailListField / ModuleField 等の詳細

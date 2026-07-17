@@ -105,7 +105,7 @@ DetailListField / TileListField で各レコードを並べる場合、**行 Mod
 }
 ```
 
-詳細は [DetailListField](temporary/_field_catalog.md) のカード化セクション参照。
+詳細は [DetailListField](ClaudeCodeForDesigner/_field_catalog.md) のカード化セクション参照。
 
 ---
 

@@ -24,7 +24,7 @@ app_users  (プレーンなユーザーテーブル。ASP.NET Identity ではな
 └── is_active   BOOLEAN
 ```
 
-`AppUser` は既定の Cookie 認証が使う**プレーンな `app_users` テーブル**に紐づく (ASP.NET Identity / `AspNetUsers` ではなく、独自ハッシュで照合する素朴な実装)。CLB の `app.clprj` の `CurrentUserModuleDesignName: "AppUser"` で「現在のログインユーザー = AppUser のレコード」と紐づけ、スクリプトから `CurrentUser.表示名.Value` のようにアクセスできるようになる。**認証の仕組み・テーブルの契約・必須フィールドの詳細は [認証の仕組み (Cookie 認証)](temporary/_specs/Authentication.md) を参照。**
+`AppUser` は既定の Cookie 認証が使う**プレーンな `app_users` テーブル**に紐づく (ASP.NET Identity / `AspNetUsers` ではなく、独自ハッシュで照合する素朴な実装)。CLB の `app.clprj` の `CurrentUserModuleDesignName: "AppUser"` で「現在のログインユーザー = AppUser のレコード」と紐づけ、スクリプトから `CurrentUser.表示名.Value` のようにアクセスできるようになる。**認証の仕組み・テーブルの契約・必須フィールドの詳細は [認証の仕組み (Cookie 認証)](ClaudeCodeForDesigner/_specs/Authentication.md) を参照。**
 
 ## モジュールとテーブルの対応
 

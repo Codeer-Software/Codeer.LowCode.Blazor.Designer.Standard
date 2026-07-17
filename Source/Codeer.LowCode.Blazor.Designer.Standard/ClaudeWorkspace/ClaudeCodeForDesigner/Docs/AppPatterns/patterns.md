@@ -70,7 +70,7 @@
 
 ガント (`GanttField`) / タスクボード (`TaskBoardField`) / グラフ (`ApexChart` 系) の実用結線: 親詳細への埋め込み (親FK自動セット・編集ダイアログ作法) / ステータス列 / 高さの出し方 / 横断ビューの保存制約 / ダッシュボード (集計クエリ＋チャート二層・チャートはフィールド `Name` 参照) / 他モジュール生成・更新の同時保存 (在庫自動増減)
 
-> 外部ライブラリ (Extras / ApexCharts) のフィールド。実装サンプルは [`temporary/_samples/ProjectManagement/`](../../temporary/_samples/ProjectManagement/Modules/) を開いて読む（`プロジェクト.mod.json` にガント＋タスクボード、`Home.mod.json` にチャート、`クエリ/` に集計クエリの実物）。
+> 外部ライブラリ (Extras / ApexCharts) のフィールド。実装サンプルは [`ClaudeCodeForDesigner/_samples/ProjectManagement/`](../../ClaudeCodeForDesigner/_samples/ProjectManagement/Modules/) を開いて読む（`プロジェクト.mod.json` にガント＋タスクボード、`Home.mod.json` にチャート、`クエリ/` に集計クエリの実物）。
 
 ### I. [出力のパターン](output_patterns.md)
 
@@ -110,7 +110,7 @@
 ## 関連ドキュメント
 
 - [業務テンプレート一覧](https://github.com/Codeer-Software/Codeer.LowCode.Blazor.Manual/blob/main/JP/templates/templates.md) — 完成形のアプリをまるごとコピーして自社向けに改造する起点（在庫管理 / SFA / プロジェクト管理）
-- [モジュール定義の全体構造](temporary/_specs/ModuleDesign.md) — モジュールファイル `*.mod.json` の構成
+- [モジュール定義の全体構造](ClaudeCodeForDesigner/_specs/ModuleDesign.md) — モジュールファイル `*.mod.json` の構成
 - [Field リファレンス](../Fields/) — 各フィールド型の詳細
 - [一覧ページパターン集](../ListPagePatterns.md) — 一覧ページ系の追加パターン
 - [認証 / 認可の概要](https://github.com/Codeer-Software/Codeer.LowCode.Blazor.Manual/blob/main/JP/authorization/authorization.md)

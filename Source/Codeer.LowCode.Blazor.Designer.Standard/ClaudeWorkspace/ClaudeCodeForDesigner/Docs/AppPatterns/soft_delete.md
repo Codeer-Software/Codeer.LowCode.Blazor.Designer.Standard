@@ -67,7 +67,7 @@ soft_delete_items
 - 退避先テーブルは元テーブルと同じ列 + 任意の削除日時・削除者列で用意する
 - **論理削除 (`LogicalDelete` / `DeletedAt` / `Deleter`) とは併用不可** — 併存させると designcheck がエラーにする。どちらか一方を選ぶ
 
-プロパティ・JSON 例・designcheck が見る項目は [DeleteArchiveField](temporary/_field_catalog.md) を参照。
+プロパティ・JSON 例・designcheck が見る項目は [DeleteArchiveField](ClaudeCodeForDesigner/_field_catalog.md) を参照。
 
 ## 落とし穴
 
@@ -79,5 +79,5 @@ soft_delete_items
 ## 関連ドキュメント
 
 - [アプリ作成パターン一覧](patterns.md) ─ 全パターンのインデックス
-- [モジュール定義の全体構造](temporary/_specs/ModuleDesign.md)
+- [モジュール定義の全体構造](ClaudeCodeForDesigner/_specs/ModuleDesign.md)
 - [Field リファレンス](../Fields/) ─ LinkField / ListField / DetailListField / ModuleField 等の詳細

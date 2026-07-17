@@ -53,5 +53,5 @@ PageFrame の分割で実現するため、モジュール側というよりは 
 ## 関連ドキュメント
 
 - [認証パターン集 一覧](auth_patterns.md)
-- [PageFrame の設定](temporary/_specs/PageFrame.md)
+- [PageFrame の設定](ClaudeCodeForDesigner/_specs/PageFrame.md)
 - [認証 / 認可の概要](https://github.com/Codeer-Software/Codeer.LowCode.Blazor.Manual/blob/main/JP/authorization/authorization.md)

@@ -46,5 +46,5 @@ import_exports
 ## 関連ドキュメント
 
 - [アプリ作成パターン一覧](patterns.md) ─ 全パターンのインデックス
-- [モジュール定義の全体構造](temporary/_specs/ModuleDesign.md)
-- [PageFrame の設定](temporary/_specs/PageFrame.md)
+- [モジュール定義の全体構造](ClaudeCodeForDesigner/_specs/ModuleDesign.md)
+- [PageFrame の設定](ClaudeCodeForDesigner/_specs/PageFrame.md)

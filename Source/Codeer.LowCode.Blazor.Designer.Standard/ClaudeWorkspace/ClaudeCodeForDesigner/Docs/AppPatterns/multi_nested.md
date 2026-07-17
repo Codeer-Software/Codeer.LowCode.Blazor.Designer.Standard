@@ -54,5 +54,5 @@ projects                phases                          tasks
 
 - [アプリ作成パターン一覧](patterns.md) ─ 全パターンのインデックス
 - [ヘッダ詳細 (1:N)](header_detail.md) ─ 2 段の親子関係 (多段ネストの基本形)
-- [モジュール定義の全体構造](temporary/_specs/ModuleDesign.md)
+- [モジュール定義の全体構造](ClaudeCodeForDesigner/_specs/ModuleDesign.md)
 - [Field リファレンス](../Fields/) ─ ListField / DetailListField の詳細

@@ -64,7 +64,7 @@
 
 Row の `IsProportionalScale: true` で、その行の各列の `Width` を**固定 px ではなく比率**として扱う。`100 / 200 / 100` なら常に行幅の 25% / 50% / 25% で、画面を広げても狭めても比率が保たれる。ヘッダ行や帳票風レイアウトなど、画面幅に追従させつつ列の配分を固定したいときに。
 
-行内の全列に `Width` 必須、`MinWidth`/`MaxWidth`・リサイズ・折り返しとは併用不可 ([詳細](temporary/_specs/Layouts.md))。
+行内の全列に `Width` 必須、`MinWidth`/`MaxWidth`・リサイズ・折り返しとは併用不可 ([詳細](ClaudeCodeForDesigner/_specs/Layouts.md))。
 
 **標準パターン集の対応**: サイドバー **`レイアウト/列幅を比率で拡大縮小 → `ProportionalScaleSample``**
 
@@ -101,5 +101,5 @@ Row の `IsProportionalScale: true` で、その行の各列の `Width` を**固
 
 - [アプリ作成パターン一覧](patterns.md) ─ 全パターンのインデックス
 - [レスポンシブ対応の実現方法](https://github.com/Codeer-Software/Codeer.LowCode.Blazor.Manual/blob/main/JP/look_and_feel/responsive.md) ─ 画面幅・デバイスへの追従に使う機能のまとめ
-- [モジュール定義の全体構造](temporary/_specs/ModuleDesign.md)
+- [モジュール定義の全体構造](ClaudeCodeForDesigner/_specs/ModuleDesign.md)
 - [Field リファレンス](../Fields/)

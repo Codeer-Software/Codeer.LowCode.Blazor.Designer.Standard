@@ -51,14 +51,14 @@ TileListField ──┘                                     ├─ DetailLayouts
 3. **選択状態のスタイリング**
    - 親モジュール側で `CanSelect: true` を設定すると、各行に `.can-select` クラス、
      選択中の行には `.selected` クラスが付与される。
-   - CSS セレクタは [temporary/_specs/AppCss.md](temporary/_specs/AppCss.md) の「選択可能行 (.can-select)」セクションを参照
+   - CSS セレクタは [ClaudeCodeForDesigner/_specs/AppCss.md](ClaudeCodeForDesigner/_specs/AppCss.md) の「選択可能行 (.can-select)」セクションを参照
      （`table tr.can-select.selected` / `div.can-select.selected` / `.tile.selected`）。
    - `IsBordered: true` の行は `.card` クラスで描画されるが、`.card` の背景は
      **デフォルトで透過**になっているため、選択状態の青背景がカード越しに見える。
 
 ## 完全な例: テスト/デモ用の List/DetailList/TileList を 1 画面に並べる
 
-実例: `temporary/_samples/PatternShowcase/Modules/` の `ListFieldOverview` / `DetailListFieldOverview` / `TileListFieldOverview`
+実例: `ClaudeCodeForDesigner/_samples/PatternShowcase/Modules/` の `ListFieldOverview` / `DetailListFieldOverview` / `TileListFieldOverview`
 （行モジュール `LookupCustomer`（List/Tile で共有）/ `DetailListDemoChild`（DetailList 用）を参照する構成）を参照。
 
 ### 1. 行モジュール (`CardItem.mod.json`)

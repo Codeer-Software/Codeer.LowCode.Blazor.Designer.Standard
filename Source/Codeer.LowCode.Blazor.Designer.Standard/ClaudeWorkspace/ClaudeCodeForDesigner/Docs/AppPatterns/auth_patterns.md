@@ -8,7 +8,7 @@
 
 <!-- 画像参照: Manual の Image/web/patterns/create_new.png (ここではコメントアウト) -->
 
-- Cookie 認証 (プレーンな `app_users` テーブル + 独自ハッシュ。詳細は [認証の仕組み](temporary/_specs/Authentication.md)) で alice / bob / carol / dave / admin の 5 ユーザーが seed されている (パスワード: `test`、admin は `admin`)
+- Cookie 認証 (プレーンな `app_users` テーブル + 独自ハッシュ。詳細は [認証の仕組み](ClaudeCodeForDesigner/_specs/Authentication.md)) で alice / bob / carol / dave / admin の 5 ユーザーが seed されている (パスワード: `test`、admin は `admin`)
 - 一般ユーザー画面 (`Main` フレーム) と管理者画面 (`AdminFrame`) の 2 つの PageFrame で構成
 
 > **⚠ Visual Studio 側のソリューションは「Codeer.LowCode.Blazor.Cookie」で作成してください。その他のものとは整合しません。** 「空のプロジェクト（認証付き）」テンプレートも同様です。
@@ -32,4 +32,4 @@
 
 - [標準パターン集 一覧](patterns.md) ─ 認証なしの全パターン
 - [認証 / 認可の概要](https://github.com/Codeer-Software/Codeer.LowCode.Blazor.Manual/blob/main/JP/authorization/authorization.md)
-- [PageFrame の設定](temporary/_specs/PageFrame.md)
+- [PageFrame の設定](ClaudeCodeForDesigner/_specs/PageFrame.md)
