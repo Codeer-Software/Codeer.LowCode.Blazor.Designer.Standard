@@ -13,6 +13,11 @@
 **標準パターン集の対応**: サイドバー **`入力UX/入力検証 → `ValidationSample``**
 
 ---
+## 固定候補の共有 (デザイン enum)
+
+「受注/出荷済/完了」のような固定候補が**複数モジュールで使われる、またはスクリプトが候補値で分岐する**場合は、各 SelectField の `Candidates` 直書きではなく、プロジェクト共有の **enum 定義** (`Enums/{名前}.enum.json`) を作って `SelectFieldDesign.EnumName` で参照する。候補の変更が 1 箇所で済み、スクリプトから `Status.Value = OrderStatus.Received;` のように保存値を型安全に参照できる (enum に無い値の代入・比較は designcheck が検出)。その画面限りの候補なら `Candidates` 直書きでよい。ファイル形式・省略ルール・リネーム (`rename-enum` / `rename-enum-member`) は [ClaudeCodeForDesigner/_specs/DesignEnums.md](ClaudeCodeForDesigner/_specs/DesignEnums.md) を参照。
+
+---
 ## 連動入力 (カスケーディング選択)
 
 <!-- 画像参照: Manual の Image/web/patterns/input_cascade.png (ここではコメントアウト) -->

@@ -151,6 +151,15 @@ namespace Codeer.LowCode.Blazor.Designer.Standard.AIChat.Functions
                     lines.Add("");
                 }
 
+                if (designData.Enums.Count > 0)
+                {
+                    lines.Add("## プロジェクト内の enum 定義一覧");
+                    lines.Add("スクリプトから `Enum名.メンバー名` で保存値 (string) を参照できる (例: Status.Value = OrderStatus.Received;)。メンバー表記は 名前=保存値。enum に無い値の代入・比較はデザインチェックエラーになる:");
+                    foreach (var e in designData.Enums)
+                        lines.Add($"- {e.Name} ({e.ValueType}): {string.Join(", ", e.Members.Select(m => $"{m.Name}={m.GetValue()}"))}");
+                    lines.Add("");
+                }
+
                 var moduleName = GetModuleName();
                 if (!string.IsNullOrEmpty(moduleName))
                 {
@@ -281,7 +290,7 @@ namespace Codeer.LowCode.Blazor.Designer.Standard.AIChat.Functions
         // スクリプト仕様(言語仕様・Module/Field API・規約)は埋め込みの各 .md を連結して読み込む。
         // 拡張サービス(Excel / WebApi / Toaster / Mail 等)は静的 md ではなく
         // ScriptObjectCatalogPrompt(登録済みスクリプトオブジェクトの動的カタログ)が担う。
-        static readonly string ScriptReference = EmbeddedDocs.Spec("Scripts", "_ScriptApi")
+        static readonly string ScriptReference = EmbeddedDocs.Spec("Scripts", "_ScriptApi", "DesignEnums")
             + EmbeddedDocs.Guideline("ScriptGuidelines.md");
 
         class AIResponse

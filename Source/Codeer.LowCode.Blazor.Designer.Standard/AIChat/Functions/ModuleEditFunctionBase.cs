@@ -371,6 +371,14 @@ namespace Codeer.LowCode.Blazor.Designer.Standard.AIChat.Functions
                     foreach (var ds in dataSources)
                         lines.Add($"- {ds.Name} ({ds.DataSourceType})");
                 }
+
+                if (designData.Enums.Any())
+                {
+                    lines.Add("\n### enum 定義一覧（SelectFieldDesign.EnumName に指定可能。メンバー表記は 名前=保存値）");
+                    lines.Add("固定候補がこの一覧にある場合は Candidates 直書きでなく EnumName で参照する。");
+                    foreach (var e in designData.Enums)
+                        lines.Add($"- {e.Name} ({e.ValueType}): {string.Join(", ", e.Members.Select(m => $"{m.Name}={m.GetValue()}"))}");
+                }
             }
             catch
             {
@@ -381,7 +389,7 @@ namespace Codeer.LowCode.Blazor.Designer.Standard.AIChat.Functions
         }
 
         // モジュール設定仕様 Docs。
-        static readonly string ModuleReference = EmbeddedDocs.Spec("ModuleDesign", "_FieldCommon", "SearchConditions", "JsonAbstractTypeFullName");
+        static readonly string ModuleReference = EmbeddedDocs.Spec("ModuleDesign", "_FieldCommon", "SearchConditions", "DesignEnums", "JsonAbstractTypeFullName");
 
         // 現在のモジュール設定を AI に見せる用のシリアライズ。null も省略せず出力する。
         static readonly JsonSerializerOptions ViewOptions = CreateViewOptions();

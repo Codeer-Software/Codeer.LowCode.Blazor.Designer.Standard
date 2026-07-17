@@ -22,7 +22,8 @@
 ## 作業の進め方（常時このルールで動く）
 
 ### 1. 外部ツールはデザイナがセットアップ済み・以後は確認なし
-- このワークスペースは**デザイナの「Claude Code Workspace」メニュー（または `claude-workspace` CLI）が展開したもの**で、デザイナ exe のパスは `.claude/settings.local.json` と `LocalEnvironment.md` に**焼き込み済み**。exe パスを自分で探さない。もしこれらが無い・パスが古い場合は、デザイナのメニュー Tools > Claude Code Workspace の再実行をユーザーに案内する（`settings.local.json` を消してから実行するとパスが再生成される）
+- このワークスペースは**デザイナの「Claude Code Workspace」メニュー（または `claude-workspace` CLI）が展開したもの**で、デザイナ exe のパスは `.claude/settings.local.json` と `LocalEnvironment.md` に**焼き込み済み**。exe パスを自分で探さない
+- **exe に繋がらないとき（パスに実在しない・CLI が動かない）は、ディスクを探索して勝手に直さず、ユーザーに正しいパスを確認する**。ユーザーから「exe のパスを変えて」「新しいパスは○○」と指示されたら自分で書き換えてよい: ① `LocalEnvironment.md` の `DesignerExePath:` 行 ② `.claude/settings.local.json` 内の旧パスの**全出現**（許可リストとフック。JSON 文字列内なので `\` は `\\` にエスケープ、ユーザーが追記した他の許可は温存）。書き換え後は `template-list` など軽いサブコマンドで疎通確認し、許可が効かないようならセッションの再起動を案内する。デザイナのメニュー Tools > Claude Code Workspace の再実行（`settings.local.json` を消してから実行するとパスが再生成される）を案内するのでもよい
 - **`designcheck` / `sql` / `rename-*`（rename-field / rename-module / rename-pageframe / rename-layout / rename-enum / rename-enum-member / 一括の rename-batch）/ `ai-refresh` / `defaults` / `template-list` / `template-extract` は確認なしで実行してよい**。どの DB に SQL を流せるかは、各データソースの `designer.settings.json` の **`AllowCliSqlAccess`**（ユーザーが設定済み）が決める。`false` のデータソースには CLI からそもそも実行できないので、これが安全境界。`sql` と `designcheck` 以外は DB 接続せず完結する（詳細は `./ClaudeCodeForDesigner/CLAUDE.md`）
 - **`designer.settings.Development.json` は基本読まない・書かない（許可制）。** 接続文字列・デプロイ設定（秘密情報）の置き場で、デザイン作業でこの中身が必要になることは無い — データソースの名前と種別は `designer.settings.json`（秘密なし）にあり、DB のスキーマ・データ確認は `sql` / `designcheck` CLI が接続文字列を内部で解決してくれる。扱うのはユーザーが明示的に依頼したときだけ（`.claude/settings.json` の ask 設定で確認が出る）。**その場合も、許可を求める前に「このファイルの内容（接続文字列やパスワード）は読むと LLM への送信と会話ログへの記録が発生する」ことを一言伝え、リスクを了解したうえで承認してもらう**。データソースやデプロイ設定の追加は、デザイナのソリューションツリーで設定ファイルを右クリック（「データソースの追加」等）からもできるので、そちらを案内するのも良い
 - **このワークスペースはデザイナ 1.3.15 以降が前提**。古い exe に未知のサブコマンドを渡すと GUI が起動してしまい `--out` が生成されない。`--out` の JSON が出来ていない／ウィンドウが開いた場合は「その版が未対応」と判断し、**作業を進めずユーザーにデザイナのバージョンアップと Tools > Claude Code Workspace の再実行を促す**（ワークスペースはデザイナと同一バージョンの内容に更新される）
@@ -36,7 +37,7 @@
 - **広域なファイル探索をしない**（`C:\` 全走査等。遅く・アクセス拒否でエラー終了する）。必要な情報は最小の取得で済ませる
 
 ### 3. ファイル配置
-- **`Design/` 直下には設計ファイルのみ**（`app.clprj` / `designer.settings*.json` / `Modules` / `PageFrames` / `Resources`）。作業ファイルを混ぜない
+- **`Design/` 直下には設計ファイルのみ**（`app.clprj` / `designer.settings*.json` / `Modules` / `PageFrames` / `Enums` / `Resources`）。作業ファイルを混ぜない
 - **DDL（CREATE TABLE 等）→ `ddl/`**
 - **作業物（seed SQL・CLI の `--out` JSON・スクショ・検証スクリプト）→ 自分のスクラッチパッド（セッションの一時領域）**。ワークスペースに作業ファイルを置かない
 - **依存（Playwright 等の `npm install`）→ `tools/`**。プロジェクト直下に `node_modules` を作らない
