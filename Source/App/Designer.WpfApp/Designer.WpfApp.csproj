@@ -17,7 +17,7 @@
       <PackageReference Include="Azure.AI.OpenAI" Version="2.1.0" />
       <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.7.0" />
       <PackageReference Include="Codeer.LowCode.Bindings.Blazor-ApexCharts.Designer" Version="0.25.3" />
-      <PackageReference Include="Codeer.LowCode.Blazor.Extras.Designer" Version="0.1.2" />
+      <PackageReference Include="Codeer.LowCode.Blazor.Extras.Designer" Version="0.4.0" />
       <PackageReference Include="System.Net.Http.WinHttpHandler" Version="8.0.0" />
       <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.8" />
       <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.8" />
