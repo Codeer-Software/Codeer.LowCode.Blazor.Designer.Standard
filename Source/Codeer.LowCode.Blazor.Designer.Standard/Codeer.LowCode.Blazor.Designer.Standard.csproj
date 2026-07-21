@@ -12,6 +12,11 @@
         <!-- OSS / NuGet パッケージ (MIT)。 -->
         <PackageId>Codeer.LowCode.Blazor.Designer.Standard</PackageId>
         <Version>0.4.0</Version>
+        <PackageReleaseNotes>
+- "Create C# Enum": generate C# enum code from a low-code enum definition.
+- AI chat assistant improvements.
+- AI documentation resources now ship with the Designer-side package, keeping them out of the WebAssembly download.
+        </PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <Company>Codeer Software</Company>
