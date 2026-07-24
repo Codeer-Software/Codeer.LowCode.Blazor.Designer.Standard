@@ -1,3 +1,4 @@
+using Codeer.LowCode.Blazor.Designer.Extensibility;
 using Codeer.LowCode.Blazor.Designer.Models;
 using System.IO;
 using System.IO.Compression;
@@ -106,6 +107,9 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
         {
             using var stream = LoadResource(templateResource);
             ZipFile.ExtractToDirectory(stream, path);
+            //展開後、設計 JSON を保存経路と同じシリアライザで正規化する。
+            //テンプレート作成後に増えた既定値プロパティを先出しし、「開いて保存しただけでメンバーが増える」差分を防ぐ。
+            DesignJsonNormalizer.Normalize(path);
         }
 
         static Stream LoadResource(string name)
