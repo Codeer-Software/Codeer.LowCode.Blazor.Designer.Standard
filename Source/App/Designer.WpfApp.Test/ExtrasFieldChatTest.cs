@@ -1,4 +1,5 @@
 using Codeer.LowCode.Blazor.DesignLogic;
+using Codeer.LowCode.Blazor.Designer.Extensibility;
 using Codeer.LowCode.Blazor.Json;
 using Codeer.LowCode.Blazor.Repository.Design;
 using Codeer.LowCode.Blazor.SystemSettings;
@@ -15,14 +16,17 @@ namespace Designer.WpfApp.Test
     [TestFixture]
     public class ExtrasFieldChatTest
     {
+        // Extras の登録は全テストより前 (TestSetup) で済ませている。ここでは
+        // 「AI に渡すカタログに Extras の型が載っていること」を前提として確認する
+        // (載っていなければ AI の選択ミスではなく登録・列挙側の問題)。
         [OneTimeSetUp]
-        public void RegisterExtrasDocs()
+        public void ExtrasFieldsAreInCatalog()
         {
-            // Extras の型ロード + フィールドドキュメントを FieldCatalog へ登録する
-            // (実アプリの App.xaml.cs と同じ登録。CSS は不要なので引数なし版でよい)。
-#pragma warning disable CS0618
-            Codeer.LowCode.Blazor.Extras.Designer.ExtrasDesignerInitializer.Initialize();
-#pragma warning restore CS0618
+            var typeNames = FieldCatalog.GetTypeFullNames();
+            Assert.That(typeNames.Any(n => n.EndsWith(".QrCodeFieldDesign")), Is.True,
+                "Extras の QrCodeFieldDesign がフィールド型カタログに載っていない (登録順・型列挙キャッシュの問題)");
+            Assert.That(typeNames.Any(n => n.EndsWith(".CsvFileFormatFieldDesign")), Is.True,
+                "Extras の CsvFileFormatFieldDesign がフィールド型カタログに載っていない (登録順・型列挙キャッシュの問題)");
         }
 
         static (FakeChatHost host, ModuleDesign module) BuildProductProject()
