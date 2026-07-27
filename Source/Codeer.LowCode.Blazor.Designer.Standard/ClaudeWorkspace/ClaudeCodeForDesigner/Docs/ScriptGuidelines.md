@@ -15,7 +15,7 @@ CLB のスクリプトは C# ライクな構文だが、**ビルドして機械�
 
 - **ループの回数と、ループ内でやる仕事を最小化する。** 少数件のループ（画面上の明細を数十件回す程度）は問題なく、ある程度のループは避けられない。避けるべきは「**大量件数のループ**」「**ネストした多重ループ**」「**ループ内での I/O・重い処理**」。
 - **件数に比例して膨らむ処理は、スクリプトのループで書かず、宣言・集約・一括の仕組みへ寄せる**:
-  - **集計・件数** → スクリプトで回さず **DB 側で 1 回**（`QueryField` / `ExecuteSqlField` の `GROUP BY` 等。→ `_specs/QueryAndSql.md`）
+  - **集計・件数** → スクリプトで回さず **DB 側で 1 回**（読み取りは `QueryField` の `GROUP BY` 等。→ `_specs/QueryAndSql.md`）
   - **複数の独立した取得** → 個別に投げず **1 往復に束ねる**（後述「[通信をまとめる: BatchSearcher](#通信をまとめる-独立した複数の取得は-batchsearcher-で-1-往復に)」）
   - **明細の合計等** → DB に問い合わせず **画面上の `Rows` を使う**（次節）
 - **実装前に「この処理はループが何周・通信が何回になるか」を見積もる。** 件数に比例して増える I/O やループを見つけたら、上記のどれかに置き換えられないか先に考える。
@@ -316,7 +316,7 @@ SubCategory.ReloadCandidates();
 ### 誤った用途
 
 - 画面上の明細行の集計 → `Rows` プロパティを使う（[CommonMistakes.md](CommonMistakes.md) の #4 参照）
-- **DB 全体の集計・件数を `ModuleSearcher` のループで出す** → N+1。`Execute()` は WASM のクライアント→サーバ→DB 往復なので、状態ごと・カテゴリごとにループで回すと往復が件数分発生する。**集計・件数は DB 側で 1 回**にまとめる（`QueryField` / `ExecuteSqlField` で `GROUP BY`。[ClaudeCodeForDesigner/_specs/QueryAndSql.md](ClaudeCodeForDesigner/_specs/QueryAndSql.md)）。例: ダッシュボードの「状態別件数」は状態の数だけ `ModuleSearcher` を回さず、`GROUP BY status` の 1 クエリにする。
+- **DB 全体の集計・件数を `ModuleSearcher` のループで出す** → N+1。`Execute()` は WASM のクライアント→サーバ→DB 往復なので、状態ごと・カテゴリごとにループで回すと往復が件数分発生する。**集計・件数は DB 側で 1 回**にまとめる（`QueryField` で `GROUP BY`。[ClaudeCodeForDesigner/_specs/QueryAndSql.md](ClaudeCodeForDesigner/_specs/QueryAndSql.md)）。例: ダッシュボードの「状態別件数」は状態の数だけ `ModuleSearcher` を回さず、`GROUP BY status` の 1 クエリにする。**集計に `ExecuteSqlField` を使わない** — `Standalone` の実行にはモジュールの `UserWriteCondition` (書き込み権限) が必要なので、読み取り目的なら `QueryField` が正しい置き場所。
 - **複数の独立した取得**を個別に投げる → `BatchSearcher` で 1 往復に束ねる（[ClaudeCodeForDesigner/_specs/Scripts.md](ClaudeCodeForDesigner/_specs/Scripts.md) の BatchSearcher）。実装前に「この処理は問い合わせが何回になるか」を見積もり、ループ内で I/O（DB / 通信）を回したら赤信号。詳細は [CommonMistakes.md](CommonMistakes.md) の #56 参照。
 
 ---

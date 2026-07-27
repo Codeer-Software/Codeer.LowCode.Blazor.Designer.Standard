@@ -22,7 +22,7 @@
 | パターン | 内容 |
 |---|---|
 | [ユーザーモジュールと認証連動](auth_user_module.md) | `AppUser` 定義、ログイン中ユーザー (`CurrentUser`) の参照、パスワード変更 |
-| [個人データのフィルタと権限](auth_personal_data.md) | 自分が作ったレコードだけ見せる (`DataReadCondition`)、検索初期値で自分のデータ絞り込み |
+| [個人データのフィルタと権限](auth_personal_data.md) | 自分が作ったレコードだけ見せる (`DataReadCondition`)、検索初期値で自分のデータ絞り込み、投函フォーム (読み取りは管理者だけ / 書き込みは全員) |
 | [承認フローのワークフロー](auth_workflow.md) | 申請 (休暇/経費) → 承認フロー → 履歴のテンプレート駆動ワークフロー |
 | [一般画面と管理画面の分離 (複数 PageFrame)](auth_admin_frame.md) | `Main` フレームと `AdminFrame` の使い分け、`UserReadCondition` で管理者だけ入れる画面 |
 

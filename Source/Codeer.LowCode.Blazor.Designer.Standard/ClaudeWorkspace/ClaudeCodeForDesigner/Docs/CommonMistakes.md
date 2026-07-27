@@ -1891,7 +1891,7 @@ OrderNo.Value = "R" + today.ToString("yyMMdd") + "-" + (cnt + 1).ToString("D3");
 **原因 / 正しい判断軸:** `ModuleSearcher.Execute()` は WASM の**クライアント→サーバ→DB 往復**。ループ内で回すと典型的な **N+1 (ファンアウト)** になる。実装前に「**この処理は問い合わせが何回になるか**」を見積もり、**ループ内で I/O (DB / 通信) を回したら赤信号**。
 
 **正解:**
-- **集計・件数は DB 側で 1 回** — `QueryField` / `ExecuteSqlField` で `GROUP BY` する ([ClaudeCodeForDesigner/_specs/QueryAndSql.md](ClaudeCodeForDesigner/_specs/QueryAndSql.md))。例: `SELECT status, COUNT(*) FROM repair_order GROUP BY status` の 1 クエリ。
+- **集計・件数は DB 側で 1 回** — `QueryField` で `GROUP BY` する ([ClaudeCodeForDesigner/_specs/QueryAndSql.md](ClaudeCodeForDesigner/_specs/QueryAndSql.md))。例: `SELECT status, COUNT(*) FROM repair_order GROUP BY status` の 1 クエリ。読み取り目的で `ExecuteSqlField` は使わない (`Standalone` の実行にはモジュールの書き込み権限が必要)。
 - **画面上の明細行の集計**は DB に行かず `Rows` を使う (#4 参照)。
 - **複数の独立した取得**は `BatchSearcher` で 1 往復に束ねる ([ClaudeCodeForDesigner/_specs/Scripts.md](ClaudeCodeForDesigner/_specs/Scripts.md) の BatchSearcher)。
 - これはフレームワーク非依存の一般原則 (N+1 を避ける) の CLB 版。詳細は [ScriptGuidelines.md](ScriptGuidelines.md) の「ModuleSearcher の正しい使い方 / 誤った用途」。
@@ -1906,3 +1906,35 @@ OrderNo.Value = "R" + today.ToString("yyMMdd") + "-" + (cnt + 1).ToString("D3");
 - 担当割当は `AppUser` への参照 (`LinkField` で `AppUser` を検索ピッカー、または `CurrentUser` 系) にする。reflex で新マスタを並行に作らない。
 - 作成者・更新者は予約名 `Creator` / `Updater` で CLB が自動セット (#42-A / [ScriptGuidelines.md](ScriptGuidelines.md) の予約名フィールド)。スクリプトで代入しない。
 - 既存資産 (テーブル / 認証基盤) を見つけたら、自分の設計と**重複を照合してからモデルを確定**する。「気づいたが後回し」で橋渡し列を生やして継ぎ足さない。
+
+## 58. サマリー行・セル結合を設定したのに表示されない
+
+**症状:** `AddSummaryRow` / `MergeRows` / `MergeSameRows` / `MergeHeaderColumns` を呼んでいるのに画面に反映されない。エラーも出ない。
+
+**原因:** これらは条件を満たさないとき**エラーにならず黙って通常表示に倒れる**仕様。よくある原因は次のどれか。
+
+1. ListLayout が 1 行構成でない (Elements の行が 2 つ以上、または ColumnSpan/RowSpan の結合がある) — サマリー行・縦結合・ヘッダー横結合・列固定はすべて無効になる
+2. 縦結合 (`MergeRows` / `MergeSameRows`) の対象列が編集可能 — 結合できるのは ViewOnly の列だけ。列の `IsViewOnly: true` (またはリスト自体の `CanUpdate: false`) が必要
+3. 横結合 (`MergeHeaderColumns` / サマリー行の `MergeColumns`) が列固定 (`FixedColumnCount`) の境界を跨いでいる — 固定領域内で完結するか、完全に外なら有効
+4. ソート・ページング・検索・行の増減の後に組み直していない — 位置指定は自動追従しない。`OnDataChanged` 等で `ClearRowMerges()` / `ClearSummaryRows()` から再設定する
+
+**ルール:** 効かないときは上の 4 点を順に確認する。詳細は [グループ集計表パターン](AppPatterns/list_summary_merge.md)。
+
+---
+
+## 59. 整数除算のつもりで書いた式が decimal になる
+
+**症状:** 連番からグループ番号を計算したら「1.25」「1.75」のような端数になり、同値のはずの行がすべて別値になる (`MergeSameRows` がまとまらない、グループ判定が壊れる等)。
+
+**原因:** スクリプトの `/` は**整数同士でも decimal 除算**になる (C# と違い切り捨てられない)。`5 / 2` は `2` ではなく `2.5`。
+
+```csharp
+// ❌ 誤り: (i - 1) / 4 が 0.25, 0.5, ... と端数になる
+var group = (i - 1) / 4 + 1;
+
+// ✅ 正しい: Math.Floor で整数の商にする
+var group = Math.Floor((i - 1) / 4) + 1;
+```
+
+**ルール:** 整数の商が欲しい割り算は必ず `Math.Floor` を通す。剰余 (`%`) はそのまま使える。
+

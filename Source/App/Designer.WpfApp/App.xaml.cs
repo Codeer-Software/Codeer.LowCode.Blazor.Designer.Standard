@@ -2,6 +2,7 @@ using Azure.AI.OpenAI;
 using Codeer.LowCode.Bindings.ApexCharts.Designer;
 using Codeer.LowCode.Blazor.Components.AppParts.Loading;
 using Codeer.LowCode.Blazor.Designer;
+using Codeer.LowCode.Blazor.Designer.Extensibility;
 using Codeer.LowCode.Blazor.Designer.Standard;
 using Codeer.LowCode.Blazor.Extras.Designer;
 using Codeer.LowCode.Blazor.Repository.Data;
@@ -37,6 +38,9 @@ public partial class App : DesignerApp
         //プロジェクトテンプレートと claude-workspace verb は headless CLI からも参照されるため、
         //headless 分岐が走る base.OnStartup より前に登録する (冪等)。
         DesignerStandard.SetupHeadless();
+
+        //アプリ固有 (概念) ドキュメント。ai-refresh が _app/<id>.md に書き出し AI が読む
+        AppDocCatalog.RegisterEmbeddedAll(typeof(App).Assembly, "Designer.WpfApp.AppDocs.");
         ApexChartsDesignerInitializer.Initialize(BlazorRuntime);
         ExtrasDesignerInitializer.Initialize(BlazorRuntime);
 

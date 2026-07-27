@@ -47,6 +47,7 @@ ListField の一覧レイアウト (ListLayout) の列の **詳細レイアウ�
 
 ## 関連ドキュメント
 
+- [グループ集計表 (サマリー行・セル結合)](list_summary_merge.md) ─ 小計・合計行、同値セルの縦結合、ヘッダーのグループ見出し (スクリプト駆動)
 - [アプリ作成パターン一覧](patterns.md) ─ 全パターンのインデックス
 - [モジュール定義の全体構造](ClaudeCodeForDesigner/_specs/ModuleDesign.md)
 - [Field リファレンス](../Fields/)

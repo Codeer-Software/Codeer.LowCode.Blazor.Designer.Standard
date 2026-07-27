@@ -249,6 +249,7 @@ CLI 実行後は必ず次で成否を判定する:
 | [ClaudeCodeForDesigner/_field_catalog.md](ClaudeCodeForDesigner/_field_catalog.md) | 全フィールド型カタログ (次節) |
 | [ClaudeCodeForDesigner/_script_catalog.md](ClaudeCodeForDesigner/_script_catalog.md) | スクリプトオブジェクトカタログ (後述) |
 | `ClaudeCodeForDesigner/_specs/*.md` | **フレームワーク仕様リファレンス**: ModuleDesign / Layouts / PageFrame / SearchConditions / Scripts / ScriptExtensions / QueryAndSql / AppCss / Authentication / ProjectSettings / BorderStyleGuide / DesignEnums / _FieldCommon / _ScriptApi と、リフレクション生成の Enums (全列挙型・使用箇所付き) / JsonAbstractTypeFullName (全 TypeFullName 一覧) |
+| `ClaudeCodeForDesigner/_app/*.md` | **アプリ固有ドキュメント** (存在する場合のみ): このデザイナが業務アプリ (生産管理パッケージ等) の一部として配布されているとき、そのアプリのドメイン用語・データモデルの考え方・設計原則・推奨/禁止パターン。**存在するときは最初に `_app/README.md` を読み、書かれている前提・原則をフレームワークの一般論より優先して設計する**。素の Codeer.LowCode.Blazor ではこのフォルダは存在しない |
 | `ClaudeCodeForDesigner/_defaults/{型名}.json` | 全デザイン型の**デフォルト状態 JSON** (デザイナが新規追加時に書き出すものと一致。独自フィールドも含む)。ファイルのルート文書型 (`ModuleDesign` = *.mod.json / `PageFrameDesign` = *.frm.json / `EnumDesign` = *.enum.json / `AppSettingsDesign` = app.clprj) も含む。新しい定義はゼロから書かず、これをコピーして必要なプロパティだけ上書きする |
 | `ClaudeCodeForDesigner/_samples/{FolderName}/` | 参照用サンプルプロジェクト (新規作成テンプレートと同一物): `PatternShowcase` (標準パターン集) / `PatternShowcaseAuth` (認証パターン集) / `GettingStarted` / `InventoryManagement` / `SFA` / `ProjectManagement` / `Empty` / `EmptyAuth`。各フォルダ直下の `_template.md` が説明 |
 
