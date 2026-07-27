@@ -13,10 +13,8 @@
         <PackageId>Codeer.LowCode.Blazor.Designer.Standard</PackageId>
         <Version>0.5.0</Version>
         <PackageReleaseNotes>
-- "Create C# Enum": generate C# enum code from a low-code enum definition.
-- AI chat assistant improvements.
-- AI documentation resources now ship with the Designer-side package, keeping them out of the WebAssembly download.
 - Project templates now normalize their design JSON on extraction (via the Designer's DesignJsonNormalizer), so opening and saving a freshly created project no longer produces spurious member additions caused by newly added default-valued properties.
+- Claude Code workspace documentation updated: a new "grouped summary table" pattern (summary rows, vertical cell merging and header group captions), new common-mistake entries, guidance on the reworked permission rules, and awareness of the application-specific documentation (_app/) that a host application can provide.
         </PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
