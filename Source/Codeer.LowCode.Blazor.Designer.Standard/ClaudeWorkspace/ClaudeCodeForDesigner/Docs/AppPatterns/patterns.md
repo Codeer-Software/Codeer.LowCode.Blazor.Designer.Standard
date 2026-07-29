@@ -48,7 +48,7 @@
 
 ### C. [リスト系フィールドの使い分け](list_patterns.md)
 
-複数レコード表示 3 種 (`ListField` 表 / `DetailListField` フォーム並び / `TileListField` タイル並び) の選び方 + セルに詳細レイアウト (ListField 応用) + [グループ集計表 (サマリー行・セル結合)](list_summary_merge.md) ─ 小計・合計行、同値セルの縦結合、ヘッダーのグループ見出し (スクリプト駆動)
+複数レコード表示 3 種 (`ListField` 表 / `DetailListField` フォーム並び / `TileListField` タイル並び) の選び方 + セルに詳細レイアウト・列見出しのカスタムコンポーネント (全選択チェックボックス等、ListField 応用) + [グループ集計表 (サマリー行・セル結合)](list_summary_merge.md) ─ 小計・合計行、同値セルの縦結合、ヘッダーのグループ見出し (スクリプト駆動)
 
 ### D. [一覧ページのパターン](listpage_patterns.md)
 

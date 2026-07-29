@@ -11,10 +11,8 @@
 
         <!-- OSS / NuGet パッケージ (MIT)。 -->
         <PackageId>Codeer.LowCode.Blazor.Designer.Standard</PackageId>
-        <Version>0.5.0</Version>
+        <Version>0.5.1</Version>
         <PackageReleaseNotes>
-- Project templates now normalize their design JSON on extraction (via the Designer's DesignJsonNormalizer), so opening and saving a freshly created project no longer produces spurious member additions caused by newly added default-valued properties.
-- Claude Code workspace documentation updated: a new "grouped summary table" pattern (summary rows, vertical cell merging and header group captions), new common-mistake entries, guidance on the reworked permission rules, and awareness of the application-specific documentation (_app/) that a host application can provide.
         </PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -37,7 +35,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Codeer.LowCode.Blazor.Designer" Version="1.3.16" />
+        <PackageReference Include="Codeer.LowCode.Blazor.Designer" Version="1.3.17" />
         <PackageReference Include="Microsoft.Extensions.AI" Version="10.7.0" />
         <!-- ExcelCheatSheet 用 -->
         <PackageReference Include="ClosedXML" Version="0.105.0" />

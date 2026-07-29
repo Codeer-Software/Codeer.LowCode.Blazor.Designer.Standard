@@ -44,6 +44,16 @@ ListField の一覧レイアウト (ListLayout) の列の **詳細レイアウ�
 **標準パターン集の対応**: サイドバー **`リスト/セル内詳細 → `DetailInListSample``** (行モジュール側は `ListSampleItems` の `DetailLayouts["InListCell"]` + `ListLayouts["DetailInList"]`)
 
 ---
+## 列見出しのカスタムコンポーネント (ListField の応用)
+
+一覧レイアウト (ListLayout) の列の `ListElementComponent` にクラス名を指定すると、その列の**見出し (ヘッダーセル)** が既定のラベルの代わりにカスタムコンポーネントで描画される。行 (データセル) 側は通常どおり `FieldName` のフィールドが描画されるため併用できる。定番はチェックボックス列 (BooleanField) の見出しに全選択チェックボックスを置き、クリックで全行を一括 ON/OFF する UI。
+
+指定できるクラス名と JSON 例は [_specs/ListElementComponents.md](ClaudeCodeForDesigner/_specs/ListElementComponents.md) (プロジェクトの参照ライブラリから生成される。自作コンポーネントもここに載る)。
+
+- 選択列に使う BooleanField は行モジュールの Fields に定義する (DB 列に保存しない一時的な選択状態なら行モジュールの `DataOnlyFields` に入れる)
+- 選択した行への一括処理は、ボタンの `OnClick` スクリプトで行を走査して選択フィールドの `.Value` を見る形で組む
+
+---
 
 ## 関連ドキュメント
 

@@ -53,6 +53,14 @@ namespace Codeer.LowCode.Blazor.Designer.Standard.AIChat.Functions
             var fields = _editor.GetModuleDesign().Fields;
             var knownFieldNames = new HashSet<string>(fields.Select(f => f.Name), StringComparer.Ordinal);
 
+            // 利用可能な ListElementComponent (一覧ヘッダーのカスタムコンポーネント)。
+            // 既存レイアウトで使用中の名前は (このプロセスで解決できなくても) 温存を許す。
+            var knownComponents = new HashSet<string>(ProCodeCatalog.GetListElementComponentNames(), StringComparer.Ordinal);
+            foreach (var row in list.Elements)
+                foreach (var cell in row)
+                    if (!string.IsNullOrEmpty(cell.ListElementComponent))
+                        knownComponents.Add(cell.ListElementComponent);
+
             // システム列でも、ユーザーが名指し(Name か DisplayName)で「出して/並べて」と求めたものは配置を許す。
             var explicitlyRequestedSystemFields = fields
                 .Where(f => ListSystemExcludeFieldNames.Contains(f.Name))
@@ -167,6 +175,23 @@ namespace Codeer.LowCode.Blazor.Designer.Standard.AIChat.Functions
                     }
                     return FunctionResult.NothingToDo($"存在しないフィールド({string.Join(", ", unknownRefs)})を参照する列が生成されたため、変更は適用していません。" +
                         "そのフィールドは『全体設定』で追加してから列に出してください。");
+                }
+
+                // 存在しない ListElementComponent を参照する列は不具合(名前解決に失敗し、見出しが既定ラベルのまま
+                // = 頼まれたカスタムコンポーネントが出ないのに成功扱いになる)。再生成へ回す。
+                var unknownComponents = CollectComponentRefs(response.Elements)
+                    .Where(n => !knownComponents.Contains(n)).Distinct().ToList();
+                if (unknownComponents.Count > 0)
+                {
+                    if (attempt < maxAttempts)
+                    {
+                        _messages.Add(new ChatMessage(ChatRole.User,
+                            $"一覧に、存在しないカスタムコンポーネントを参照する列があります: {string.Join(", ", unknownComponents)}。" +
+                            "ListElementComponent には「レイアウト仕様」の ListElementComponent 一覧にある名前だけを指定して全体を再度出力してください。" +
+                            "該当するコンポーネントが無ければ ListElementComponent を空にしてください。"));
+                        continue;
+                    }
+                    return FunctionResult.NothingToDo($"存在しないカスタムコンポーネント({string.Join(", ", unknownComponents)})を参照する列が生成されたため、変更は適用していません。");
                 }
 
                 // システム列(Id/LogicalDelete/OptimisticLocking)は、明示要求が無い限り一覧に出さない。
@@ -319,6 +344,16 @@ namespace Codeer.LowCode.Blazor.Designer.Standard.AIChat.Functions
             foreach (var row in elements)
                 foreach (var cell in row)
                     if (!string.IsNullOrEmpty(cell.FieldName)) names.Add(cell.FieldName);
+            return names;
+        }
+
+        static List<string> CollectComponentRefs(List<List<ListElement>>? elements)
+        {
+            var names = new List<string>();
+            if (elements == null) return names;
+            foreach (var row in elements)
+                foreach (var cell in row)
+                    if (!string.IsNullOrEmpty(cell.ListElementComponent)) names.Add(cell.ListElementComponent);
             return names;
         }
 
@@ -492,7 +527,7 @@ namespace Codeer.LowCode.Blazor.Designer.Standard.AIChat.Functions
             return string.Join("\r\n", messages);
         }
 
-        static readonly string LayoutReference = EmbeddedDocs.Spec("Layouts", "JsonAbstractTypeFullName")
+        static readonly string LayoutReference = EmbeddedDocs.Spec("Layouts", "JsonAbstractTypeFullName", "ListElementComponents")
             + EmbeddedDocs.Guideline("LayoutGuidelines.md");
 
         class AIResponse
@@ -529,6 +564,7 @@ ListElement のプロパティ・Elements の構造([[列, 列, ...]] = 1行ヘ�
   - **特に幅・結合の指定が無いときは `ColumnSpan` を付けない(すべて1)**。行ごとの列数を揃える処理はツールが行います。
   - 特定のセルを広げたい/横結合したいと言われたときだけ `ColumnSpan` を使ってください(`RowSpan` は使わない。行番号列の縦マージはツールが行います)。
 - Elements の各セル(ListElement)には表示対象(FieldName / DetailLayoutName / ListElementComponent のいずれか)を持たせます。**単一行(1行だけ)の一覧では、3つとも空のセルを作らないでください**(空白列になり不具合)。二段以上で列数を合わせる空セルはツールが入れるので、あなたが空セルを入れる必要はありません。
+- `ListElementComponent` は列の見出し(ヘッダーセル)を既定のラベルの代わりにカスタムコンポーネントで描画するプロパティです(行側は通常どおり FieldName のフィールドが描画されるため FieldName と併用できます)。**「レイアウト仕様」の ListElementComponent 一覧にある名前だけを指定できます**(一覧に無い名前は書かない)。定番はチェックボックス列(BooleanField)の見出しに置く全選択チェックボックスで、「全選択」「一括チェック」等の依頼は一覧に該当するコンポーネント(各説明を参照)があればそれで実現します(無ければできない旨を断る)。ユーザーが求めていないのに勝手に設定せず、既存列に設定済みのものは指示が無い限り温存してください。
 - **できない依頼は最初の応答で簡潔に断る**: 一覧に出せないフィールドの新規追加やフィールドのプロパティ編集(必須・最大長など)を求められたら、`Elements` を **空(要素なし)** にして現在の列を保持し、`Explanation` に簡潔な断りと対処(『全体設定』で追加/デザイナで手動)を書いてください。「変更しました」等のできたフリは禁止。
 
 ## 出力JSON形式（このチャット固有）

@@ -77,6 +77,31 @@ namespace Designer.WpfApp.Test
             Assert.That(cols, Does.Contain("CustomerName"));
         }
 
+        [Test]
+        public async Task 全選択チェックボックスを列見出しに付ける()
+        {
+            var settings = TestEnv.RequireChatClientFactory();
+            var fields = new List<FieldDesignBase>
+            {
+                new IdFieldDesign { Name = "Id", DbColumn = "id" },
+                new BooleanFieldDesign { Name = "IsSelected", DbColumn = "is_selected", DisplayName = "選択" },
+                new TextFieldDesign { Name = "CustomerName", DbColumn = "customer_name", DisplayName = "顧客名" },
+            };
+            var editor = new FakeListLayoutEditor(fields);
+            var chat = new ListLayoutFunction(settings, editor);
+
+            var reply = await chat.ProcessMessage(
+                "選択列(IsSelected)と顧客名を並べて、選択列の見出しは全行を一括チェックできる全選択チェックボックスにしてください。");
+            TestContext.WriteLine(reply);
+            TestContext.WriteLine(JsonConverterEx.SerializeObject(editor.List.Elements));
+
+            var cell = editor.List.Elements.SelectMany(r => r).FirstOrDefault(c => c.FieldName == "IsSelected");
+            Assert.That(cell, Is.Not.Null, "IsSelected 列が無い");
+            // 存在しない名前は検証で弾かれるので、適用されていれば実在コンポーネント。Extras 提供の全選択が選ばれること。
+            Assert.That(cell!.ListElementComponent, Is.EqualTo("SelectAllCheckBoxListElementComponent"),
+                "全選択チェックボックスのカスタムコンポーネントが見出しに設定されていない");
+        }
+
         // 行番号要求の語彙認識(AI不要の決定的テスト)。「No」「番号」も ListNo と理解する。
         [Test]
         [TestCase("No追加", true)]
