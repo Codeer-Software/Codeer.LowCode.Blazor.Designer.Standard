@@ -1,0 +1,12 @@
+{
+  "DataSources": [
+    {
+      "Name": "Sfa",
+      "DataSourceType": "SQLite",
+      "AllowCliSqlAccess": true
+    }
+  ],
+  "FileStorageNames": [
+    "Local"
+  ]
+}

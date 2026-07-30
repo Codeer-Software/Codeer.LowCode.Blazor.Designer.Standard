@@ -9,7 +9,8 @@ ListField をスクリプトで装飾して、Excel 帳票風の「グループ�
 | 小計行 | `InsertSummaryRow(int 行index)` | データ行の直後に表示専用の行を挿入 |
 | 縦セル結合 | `MergeRows(列名, 開始行, 行数)` / `MergeSameRows(列名)` | 列内の連続セルを 1 セルに結合 (値は先頭行・縦中央) |
 | ヘッダー横結合 | `MergeHeaderColumns(列名, 列数[, 見出しテキスト])` | 列ヘッダーのセルを横に結合してグループ見出しに |
-| 解除 | `ClearSummaryRows()` / `ClearRowMerges()` / `ClearHeaderMerges()` | それぞれ全解除 |
+| ヘッダー見出しの上書き | `SetHeaderText(列名, テキスト)` | ヘッダーの表示テキストをデザインのラベルより優先して差し替え (「数量(kg)」等の動的見出し。null で解除) |
+| 解除 | `ClearSummaryRows()` / `ClearRowMerges()` / `ClearHeaderMerges()` / `ClearHeaderTexts()` | それぞれ全解除 |
 
 ---
 

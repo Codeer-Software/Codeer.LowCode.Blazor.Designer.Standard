@@ -1,0 +1,12 @@
+{
+  "DataSources": [
+    {
+      "Name": "Inventory",
+      "DataSourceType": "SQLite",
+      "AllowCliSqlAccess": true
+    }
+  ],
+  "FileStorageNames": [
+    "Local"
+  ]
+}
