@@ -25,6 +25,7 @@ CLB のスクリプトは C# ライクな構文だが、**ビルドして機械�
 | やりたいこと | 手段 | 節 |
 |---|---|---|
 | 通信をまとめる（往復を減らす） | `BatchSearcher` / DB 側集約 | [BatchSearcher](#通信をまとめる-独立した複数の取得は-batchsearcher-で-1-往復に) |
+| 大量行の取得・変換・一括投入を軽くする | `ModuleData`（Raw 系 API） | [ModuleData](#大量行は-moduledataraw-系で扱う) |
 | UI の再描画を止める（チラつき・無駄描画を防ぐ） | `SuspendNotifyStateChanged()` | [Suspend + StartLoading](#複数フィールド更新--通信は-suspendnotifystatechanged--startloading-でまとめる) |
 | ローディングインジケータを消す・まとめる | `LoadingService.StartLoading(delay)` | [同上](#複数フィールド更新--通信は-suspendnotifystatechanged--startloading-でまとめる) |
 
@@ -53,6 +54,32 @@ var products  = res.GetAt(2);
 
 - 「一覧を出す → 各行についてまた検索」のような**ループ内検索は N+1 往復**になり最も遅い。まず必要な集合を 1〜数回でまとめて取り、以降はメモリ上で突き合わせる。集計・件数なら DB 側 `GROUP BY` に寄せる。
 - 正確な戻り値・シグネチャは `_specs/Scripts.md` の「BatchSearcher」を参照。
+
+---
+
+## 大量行は ModuleData（Raw 系）で扱う
+
+`ModuleSearcher.Execute()` は行ごとに `Module` 実体を作る（約 0.3ms/行 = 1万行で約3秒）。
+**参照や値の書換だけなら実体は不要**で、`ExecuteRaw()`（`List<ModuleData>`）ならこのコストが消える。
+フィールド値へのアクセスは ModuleData でも `行.フィールド名.Value` の型付きで書ける（補完・リネーム追従も効く）。
+
+```csharp
+// 大量行の変換: ModuleData のまま (実体化コストなし)
+var search = new ModuleSearcher<Order>();
+var rows = search.ExecuteRaw();
+foreach (var row in rows)
+{
+    row.Code.Value = "P-" + row.Code.Value;
+}
+```
+
+- **使い分け**: 大量行（目安: 数百行以上）の参照・変換・一括保存・ファイル出力 → `ModuleData` ／
+  画面表示・単票操作・モジュールの機能（`Submit` / `SetError` / ダイアログ等）→ `Module`。少数件なら常に `Module` でよい
+- 一括入出力のスクリプト部品（ファイル取込・一括保存・一括ダウンロード）は `ModuleData` 列を**直接受け渡しできる**
+  （各部品の使い方は `_script_catalog.md` を参照）
+- 注意: **値のないフィールドは `FieldData` 自体が無く、触ると実行時エラー**（DB の NULL 列など）。
+  値の有無が不定なフィールドを扱う処理は `Module`（全フィールドが常に実体化されている）で行う
+- 詳細は `_specs/Scripts.md` の「Module と ModuleData の使い分け」
 
 ---
 
