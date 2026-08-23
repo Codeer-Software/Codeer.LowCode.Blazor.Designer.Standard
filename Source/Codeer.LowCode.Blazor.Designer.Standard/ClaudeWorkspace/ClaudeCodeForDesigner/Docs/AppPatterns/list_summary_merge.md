@@ -76,6 +76,10 @@ void RebuildView()
     sum.SetText("Amount", total.ToString("#,0"));
     sum.BackgroundColor = "#FFF8E1";
     sum.SetColor("Amount", "#D32F2F");
+    //横アライメント(セル単位): 未指定のセルは列の設定に従う。
+    //値はレイアウトと同じ HorizontalAlignment enum (Start/Center/End。Stretch=指定なし=解除)
+    sum.SetHorizontalAlignment("Category", HorizontalAlignment.Center);
+    sum.SetHorizontalAlignment("Amount", HorizontalAlignment.End);
 
     //縦結合: 隣接する同値セルをまとめる。小計行の位置では自動で分断されるので順序を意識しなくてよい
     Items.MergeSameRows("Category");

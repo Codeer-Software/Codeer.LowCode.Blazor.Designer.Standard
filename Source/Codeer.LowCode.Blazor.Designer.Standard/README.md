@@ -7,7 +7,7 @@ Distributed as open source under the **MIT License**.
 ## Features
 
 - **Project templates** (`StandardTemplates`) — empty / empty with auth / getting started / pattern showcase / auth patterns / inventory / SFA / project management, with bundled sample SQLite databases.
-- **Tool menus** (`StandardMenus`) — Import Modules from Database, Create DDL, Create Field Class, Create FieldData Class, Create C# Enum, Export Excel Print CheatSheet, Export PageObject (Selenium), plus the standard DB column transform (PostgreSQL `xmin` → optimistic locking).
+- **Tool menus** (`StandardMenus`) — Import Modules from Database, Create DDL, Create Field Class, Create FieldData Class, Export Excel Print CheatSheet, Export PageObject (Selenium), plus the standard DB column transform (PostgreSQL `xmin` → optimistic locking).
 - **Icon candidates** (`StandardIcons`) — Bootstrap Icons list for the icon picker.
 - **Claude Code workspace** (`ClaudeWorkspaceDeploy` / Tools > Claude Code Workspace) — deploys and updates the Claude Code workspace (CLAUDE.md, docs, hooks, permission settings with the designer exe path baked in). The docs ship inside this package (`ClaudeWorkspace/`), and deployment also runs `ai-refresh` to emit the generated references (field catalog, specs, default JSONs, samples) into `ClaudeCodeForDesigner/`; a hook detects designer updates and replaces that folder wholesale, so the deployed content always matches the running designer version. Also available headless via the `claude-workspace` CLI verb.
 - **DDL generation** (`DbMapping`) — deterministic CREATE TABLE / diff ALTER TABLE generation from module designs.
