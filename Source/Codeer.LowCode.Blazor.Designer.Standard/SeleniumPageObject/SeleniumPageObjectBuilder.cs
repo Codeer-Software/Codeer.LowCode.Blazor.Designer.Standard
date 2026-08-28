@@ -11,6 +11,34 @@ namespace Codeer.LowCode.Blazor.Designer.Standard.SeleniumPageObject
         public string TargetPath { get; set; } = string.Empty;
         public string Namespace { get; set; } = string.Empty;
 
+        /// <summary>
+        /// フィールドデザインの名前空間 → そのフィールドの Selenium ドライバの名前空間。
+        /// 既定で本体 / Extras / ApexCharts を登録済み。他のバインディングは <see cref="AddDriverNamespace"/> で追加する。
+        /// 未登録の名前空間は「末尾の Designs / Design / Repository.Design を落として .SeleniumDrivers を付ける」規約で解決する。
+        /// </summary>
+        public static IReadOnlyDictionary<string, string> DriverNamespaces => _driverNamespaces;
+
+        static readonly Dictionary<string, string> _driverNamespaces = new()
+        {
+            ["Codeer.LowCode.Blazor.Repository.Design"] = "Codeer.LowCode.Blazor.SeleniumDrivers",
+            ["Codeer.LowCode.Blazor.Extras.Designs"] = "Codeer.LowCode.Blazor.Extras.SeleniumDrivers",
+            ["Codeer.LowCode.Bindings.ApexCharts.Designs"] = "Codeer.LowCode.Bindings.ApexCharts.SeleniumDrivers",
+        };
+
+        public static void AddDriverNamespace(string designNamespace, string driverNamespace)
+            => _driverNamespaces[designNamespace] = driverNamespace;
+
+        internal static string ResolveDriverNamespace(Type fieldDesignType)
+        {
+            var ns = fieldDesignType.Namespace ?? string.Empty;
+            if (_driverNamespaces.TryGetValue(ns, out var driverNs)) return driverNs;
+            foreach (var suffix in new[] { ".Repository.Design", ".Designs", ".Design" })
+            {
+                if (ns.EndsWith(suffix, StringComparison.Ordinal)) return ns[..^suffix.Length] + ".SeleniumDrivers";
+            }
+            return ns + ".SeleniumDrivers";
+        }
+
         public void Build(DesignData designData)
         {
             if (string.IsNullOrEmpty(TargetPath))
@@ -50,6 +78,16 @@ namespace Codeer.LowCode.Blazor.Designer.Standard.SeleniumPageObject
                 },
                 Namespace = Namespace,
             };
+
+            //Extras / ApexCharts 等、本体以外のフィールドを使っていればそのドライバの名前空間も using する
+            foreach (var ns in design.Fields.Where(HasDriverField)
+                         .Select(f => ResolveDriverNamespace(f.GetType()))
+                         .Where(ns => !source.UsingNamespaces.Contains(ns))
+                         .Distinct()
+                         .OrderBy(ns => ns, StringComparer.Ordinal))
+            {
+                source.UsingNamespaces.Insert(source.UsingNamespaces.IndexOf("OpenQA.Selenium"), ns);
+            }
 
             switch (type)
             {
@@ -345,6 +383,8 @@ namespace Codeer.LowCode.Blazor.Designer.Standard.SeleniumPageObject
             foreach (var field in layout.GetDescendantFields(design))
             {
                 if (!HasDriverField(field)) continue;
+                //検索コントロールを持たないフィールド (Extras の大半・ボタン類) には SearchDriver が無い
+                if (string.IsNullOrEmpty(field.GetSearchWebComponentTypeFullName())) continue;
                 var propertyDecl = new ExpressionPropertyDecl
                 {
                     Type = AsSearchDriverName(design, field),

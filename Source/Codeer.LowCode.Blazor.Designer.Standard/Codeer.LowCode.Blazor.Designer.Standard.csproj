@@ -11,8 +11,9 @@
 
         <!-- OSS / NuGet パッケージ (MIT)。 -->
         <PackageId>Codeer.LowCode.Blazor.Designer.Standard</PackageId>
-        <Version>0.7.0</Version>
+        <Version>0.8.0</Version>
         <PackageReleaseNotes>
+- Export PageObject: generated page objects now add the using directives for the Selenium driver namespaces of every field library in use (Codeer.LowCode.Blazor.Extras.SeleniumDrivers, Codeer.LowCode.Bindings.Blazor-ApexCharts.SeleniumDrivers; other bindings via SeleniumPageObjectBuilder.AddDriverNamespace or the ".SeleniumDrivers" naming convention), and no longer emit search drivers for fields that have no search control.
         </PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
