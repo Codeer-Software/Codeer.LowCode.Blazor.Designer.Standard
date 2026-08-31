@@ -35,6 +35,7 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
         {
             StandardTemplates.AddAll();
             ClaudeWorkspaceDeploy.RegisterCli();
+            SeleniumTestCli.RegisterCli();
         }
 
         public static void Setup(DesignerEnvironment env, DesignerStandardOptions? options = null)

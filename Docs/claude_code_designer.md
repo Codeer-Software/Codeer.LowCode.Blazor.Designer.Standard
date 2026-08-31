@@ -24,6 +24,8 @@ Claude Code 用の **ワークスペース**（作業ルール `CLAUDE.md`・CLB
 
 この操作は**デザインプロジェクトを開いていなくても実行できます**。先にワークスペースだけ展開しておき、あとからプロジェクトを作成しても構いません。
 
+> **ホストソリューションのフォルダに展開する場合**（[Codeer.LowCode.Blazor.Starter](https://github.com/Codeer-Software/Codeer.LowCode.Blazor.Starter) やテンプレートから作った `LowCodeApp.sln` のあるフォルダ）: そのフォルダに既に `CLAUDE.md` があればそれは上書きせず、ワークスペースの作業ルールは `ClaudeCodeForDesigner/WorkspaceRules.md` に置かれます（Designer.Standard 0.8.1 以降）。デザイン作業と C# ソースの編集を同じフォルダの Claude Code から行えます。Starter の場合は `docs/claude-code-setup.md` の手順（Claude Code が実行）で、この展開まで自動で行われます。
+
 展開後のフォルダ構成:
 
 ```

@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>LowCodeApp.SeleniumTest</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="NUnit.Framework" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- testsettings.json (共有) と testsettings.local.json (接続文字列などマシン固有・gitignore) を出力先へ -->
+    <None Update="testsettings*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Codeer.LowCode.Blazor のフィールド/ページ用 Selenium ドライバ (PageObject が使う) -->
+    <PackageReference Include="Codeer.LowCode.Blazor.SeleniumDrivers" Version="0.29.0" />
+    <PackageReference Include="Codeer.LowCode.Blazor.Extras.SeleniumDrivers" Version="0.1.0" />
+    <PackageReference Include="Codeer.LowCode.Bindings.Blazor-ApexCharts.SeleniumDrivers" Version="0.1.0" />
+    <PackageReference Include="Selenium.StandardControls" Version="0.61.0" />
+    <!-- テストデータ (DataManager): 本体と同じマルチ DB アクセス層 -->
+    <PackageReference Include="Codeer.LowCode.Blazor.DbAccess" Version="0.1.0" />
+    <PackageReference Include="Dapper" Version="2.1.35" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="NUnit" Version="4.3.2" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+    <PackageReference Include="NUnit.Analyzers" Version="4.6.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>

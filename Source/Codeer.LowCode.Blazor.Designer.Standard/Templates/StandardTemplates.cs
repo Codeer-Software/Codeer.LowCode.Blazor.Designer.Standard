@@ -94,6 +94,8 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
             Create = path => CreateProject(path, templateResource, sampleDbResource),
             // headless CLI の参照用サンプル展開。プロジェクトファイルのみ (サンプル DB 配置・UI なし)。
             ExtractProjectFiles = path => ExtractZip(path, templateResource),
+            // headless CLI (template-create --data-dir) のサンプル DB 配置。UI なし・失敗は例外。既存ファイルは上書きしない
+            ExtractSampleData = dataDir => ExtractSampleDbTo(Path.Combine(dataDir, sampleDbResource), sampleDbResource),
         };
 
         // テンプレート zip を展開し、テンプレートが参照するサンプル DB をローカルに展開する。
@@ -112,6 +114,16 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
             DesignJsonNormalizer.Normalize(path);
         }
 
+        // サンプル DB を dbPath に展開する (無い / 0 byte のときだけ)。UI を出さない版
+        static void ExtractSampleDbTo(string dbPath, string resourceName)
+        {
+            if (File.Exists(dbPath) && new FileInfo(dbPath).Length > 0) return;
+            Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);
+            using var stream = LoadResource(resourceName);
+            using var file = File.Create(dbPath);
+            stream.CopyTo(file);
+        }
+
         static Stream LoadResource(string name)
             => typeof(StandardTemplates).Assembly.GetManifestResourceStream(ResourcePrefix + name)
                ?? throw new InvalidOperationException($"embedded resource not found: {ResourcePrefix + name}");
@@ -122,13 +134,9 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
         /// </summary>
         static void EnsureSampleDbExtracted(string dbPath, string resourceName)
         {
-            if (File.Exists(dbPath) && new FileInfo(dbPath).Length > 0) return;
             try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);
-                using var stream = LoadResource(resourceName);
-                using var file = File.Create(dbPath);
-                stream.CopyTo(file);
+                ExtractSampleDbTo(dbPath, resourceName);
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {

@@ -1,0 +1,22 @@
+{
+  "_comment": "Selenium テストの共有設定。接続文字列など秘密情報は同じフォルダの testsettings.local.json (gitignore 対象) に書く。同名キーは local が優先。",
+  "BaseUrl": "https://localhost:7137",
+  "Login": {
+    "_comment": "認証あり (Cookie) のアプリでテスト開始時にログインするユーザー。認証なしなら UserName を空にする",
+    "UserName": "admin",
+    "Password": "admin"
+  },
+  "Browser": {
+    "Headless": false,
+    "WindowWidth": 1600,
+    "WindowHeight": 1000
+  },
+  "DataSources": [
+    {
+      "_comment": "デザインプロジェクトの designer.settings.json の DataSources と同じ Name / DataSourceType。接続文字列は testsettings.local.json の ConnectionStrings:<Name>",
+      "Name": "SampleSQLite",
+      "DataSourceType": "SQLite"
+    }
+  ],
+  "ConnectionStrings": {}
+}

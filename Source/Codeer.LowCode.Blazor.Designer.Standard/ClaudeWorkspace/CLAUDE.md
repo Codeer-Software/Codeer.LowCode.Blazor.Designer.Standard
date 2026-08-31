@@ -19,14 +19,20 @@
 
 下の「作業の進め方」はこのワークスペースで**常に効く運用ルール**。デザインの中身の作り方は `ClaudeCodeForDesigner/` を見る。
 
+## 基本姿勢: 設定 → スクリプト → C# の順
+
+- **ローコード (デザイン設定) で済ませる。** フィールド・レイアウト・条件・リンク・集計などの設定で表現できることに、スクリプトを書かない
+- **スクリプトは最小限。** 設定で表せない挙動だけに、短く書く。書く前に「既存のフィールド／プロパティで代替できないか」を必ず問う（スクリプトを書きすぎる傾向があるので意識的に抑える）
+- **ホスト (C# ソリューション) を触るのは最後の手段。** フィールド型そのものが無い・性能をコードで改善したい・独自 API が要るなど、ローコードの範囲で不可能と確定したときだけ。やり方は `./ClaudeCodeForDesigner/_specs/HostCustomization.md`
+
 ## 作業の進め方（常時このルールで動く）
 
 ### 1. 外部ツールはデザイナがセットアップ済み・以後は確認なし
 - このワークスペースは**デザイナの「Claude Code Workspace」メニュー（または `claude-workspace` CLI）が展開したもの**で、デザイナ exe のパスは `.claude/settings.local.json` と `LocalEnvironment.md` に**焼き込み済み**。exe パスを自分で探さない
 - **exe に繋がらないとき（パスに実在しない・CLI が動かない）は、ディスクを探索して勝手に直さず、ユーザーに正しいパスを確認する**。ユーザーから「exe のパスを変えて」「新しいパスは○○」と指示されたら自分で書き換えてよい: ① `LocalEnvironment.md` の `DesignerExePath:` 行 ② `.claude/settings.local.json` 内の旧パスの**全出現**（許可リストとフック。JSON 文字列内なので `\` は `\\` にエスケープ、ユーザーが追記した他の許可は温存）。書き換え後は `template-list` など軽いサブコマンドで疎通確認し、許可が効かないようならセッションの再起動を案内する。デザイナのメニュー Tools > Claude Code Workspace の再実行（`settings.local.json` を消してから実行するとパスが再生成される）を案内するのでもよい
-- **`designcheck` / `sql` / `rename-*`（rename-field / rename-module / rename-pageframe / rename-layout / rename-enum / rename-enum-member / 一括の rename-batch）/ `ai-refresh` / `defaults` / `template-list` / `template-extract` は確認なしで実行してよい**。どの DB に SQL を流せるかは、各データソースの `designer.settings.json` の **`AllowCliSqlAccess`**（ユーザーが設定済み）が決める。`false` のデータソースには CLI からそもそも実行できないので、これが安全境界。`sql` と `designcheck` 以外は DB 接続せず完結する（詳細は `./ClaudeCodeForDesigner/CLAUDE.md`）
+- **`designcheck` / `sql` / `rename-*`（rename-field / rename-module / rename-pageframe / rename-layout / rename-enum / rename-enum-member / 一括の rename-batch）/ `ai-refresh` / `defaults` / `template-list` / `template-extract` / `template-create` / `api` / `selenium-test-init` / `pageobject` は確認なしで実行してよい**（`dotnet build` / `dotnet test` も）。`deploy`（現在のデプロイ先へ App.zip を書き出す＝デザイナの「送信」。FileSystem 方式のみ）は、デプロイ先がこのマシンの開発サーバーの `DesignFileDirectory` であることを確認できているときは確認なしでよい。共有フォルダ等を指しているときはユーザーに諮る。どの DB に SQL を流せるかは、各データソースの `designer.settings.json` の **`AllowCliSqlAccess`**（ユーザーが設定済み）が決める。`false` のデータソースには CLI からそもそも実行できないので、これが安全境界。`sql` と `designcheck` 以外は DB 接続せず完結する（詳細は `./ClaudeCodeForDesigner/CLAUDE.md`）
 - **`designer.settings.Development.json` は基本読まない・書かない（許可制）。** 接続文字列・デプロイ設定（秘密情報）の置き場で、デザイン作業でこの中身が必要になることは無い — データソースの名前と種別は `designer.settings.json`（秘密なし）にあり、DB のスキーマ・データ確認は `sql` / `designcheck` CLI が接続文字列を内部で解決してくれる。扱うのはユーザーが明示的に依頼したときだけ（`.claude/settings.json` の ask 設定で確認が出る）。**その場合も、許可を求める前に「このファイルの内容（接続文字列やパスワード）は読むと LLM への送信と会話ログへの記録が発生する」ことを一言伝え、リスクを了解したうえで承認してもらう**。データソースやデプロイ設定の追加は、デザイナのソリューションツリーで設定ファイルを右クリック（「データソースの追加」等）からもできるので、そちらを案内するのも良い
-- **このワークスペースはデザイナ 1.3.15 以降が前提**。古い exe に未知のサブコマンドを渡すと GUI が起動してしまい `--out` が生成されない。`--out` の JSON が出来ていない／ウィンドウが開いた場合は「その版が未対応」と判断し、**作業を進めずユーザーにデザイナのバージョンアップと Tools > Claude Code Workspace の再実行を促す**（ワークスペースはデザイナと同一バージョンの内容に更新される）
+- **このワークスペースはデザイナ 1.3.15 以降が前提**（`template-create` / `deploy` / `api` は 1.3.24 以降）。古い exe に未知のサブコマンドを渡すと GUI が起動してしまい `--out` が生成されない。`--out` の JSON が出来ていない／ウィンドウが開いた場合は「その版が未対応」と判断し、**作業を進めずユーザーにデザイナのバージョンアップと Tools > Claude Code Workspace の再実行を促す**（ワークスペースはデザイナと同一バージョンの内容に更新される）
 - **動作確認のサーバ URL は、ブラウザ確認に着手する時点で必ずユーザーに聞く**（毎回これで良いか確認）。依存の導入（Playwright 等）や `.claude` の許可追加も、勝手に広げずユーザーに諮る
 
 ### 2. ツールの使い方（許可ブロック・エラーを増やさない）
@@ -45,7 +51,7 @@
 ### 4. 動作確認（ブラウザ / Playwright）は必要時のみ
 - **既定はやらない。** designcheck（読み込み妥当性）＋必要なら DB の中身確認・ロジックレビューで足りるならスキップする（1 回数十秒かかる）
 - やるのは「見た目・レイアウト崩れ／意味的バグ（合計計算・状態による表示出し分け等、designcheck で拾えない挙動）を実際に見る必要があるとき」「ユーザーが求めたとき」「大きめの UI 変更で挙動が読めないとき」
-- **稼働サーバが自分の編集を配信しているとは限らない。** `Design/` への直接編集は稼働サーバに自動反映されない。反映には**デザイナからの送信（デプロイ）**が必要で、**`*.mod.cs`（スクリプト）変更時・スキーマ変更時はサーバ再起動が必須**。スクショ判定の前に、サイドバー構造を dump して「いま何が配信されているか」を突き合わせる
+- **稼働サーバが自分の編集を配信しているとは限らない。** `Design/` への直接編集は稼働サーバに自動反映されない。反映には**デプロイ（デザイナの「送信」、または CLI の `deploy "<Design のフォルダ>"`＝FileSystem 方式のみ）**が必要で、**`*.mod.cs`（スクリプト）変更時・スキーマ変更時はサーバ再起動が必須**。スクショ判定の前に、サイドバー構造を dump して「いま何が配信されているか」を突き合わせる
 - UI 自動操作は**構造を dump → セレクタ確定**の順（決め打ちセレクタは複製・非表示要素で失敗する）。導入したパッケージと使う API を一致させる（`playwright` 本体と `@playwright/test` は別物）
 
 ### 5. スコープ（求められないものを作らない）
@@ -56,6 +62,17 @@
 - テーブル作成（DDL）・テストデータ投入・中身確認（件数 / 列 / 親子の紐付け）は、自前で DB 接続せず **`sql` サブコマンド**で行う（詳細: `./ClaudeCodeForDesigner/CLAUDE.md`「SQL 実行 CLI」、`./ClaudeCodeForDesigner/Docs/DatabaseGuidelines.md`）
 - **モジュールを作ったらテーブルも用意する**（無いと designcheck が「列が存在しない」と報告する）
 - **DB 主キーは `INTEGER`（long）+ 自動採番が原則。`TEXT`/`VARCHAR` で GUID を保存する設計にしない**（詳細: `./ClaudeCodeForDesigner/Docs/DatabaseGuidelines.md`）
+
+### 7. Selenium テスト（求められたときに作る）
+- ユーザーが「テストを書いて」「自動テストしたい」と言ったら、`./ClaudeCodeForDesigner/Docs/SeleniumTestGuide.md` の手順で行う: `selenium-test-init` でテストプロジェクトを展開（既にあれば再利用）→ `pageobject` で PageObject を生成 → `Scenario/` にテストを書く → `dotnet test`
+- テストデータは **DataManager**（テストプロジェクト同梱。`sql` CLI と同じ DB にアプリと同じアクセス層で入る）で、そのテストが触るテーブルだけ初期化・投入する
+- テストプロジェクトの置き場は、ホストソリューションがあればその隣（`Tests/<App>.SeleniumTest`）、無ければワークスペース直下の `SeleniumTest/`
+- 実行にはサーバーが起動している必要がある。URL は既存ルールどおりユーザーに確認して `testsettings.json` の `BaseUrl` に書く
+
+### 8. ホストソリューション (C#) と同居しているとき
+- このワークスペースがホストソリューション（`LowCodeApp.sln` 等。Codeer.LowCode.Blazor.Starter やテンプレートから作ったもの）のルートに展開されている場合、ルートの `CLAUDE.md` は**ホスト側の所有**で、この規約は `./ClaudeCodeForDesigner/WorkspaceRules.md` として置かれている。両方に従う（矛盾したらホスト側の `CLAUDE.md` が優先）
+- サーバー・クライアント・デザイナの構成、appsettings の項目、ビルドと起動の手順はホスト側の `CLAUDE.md` に書いてある。デザイン作業でホストの再ビルドは要らない（デザインファイルは `deploy` で反映、スクリプト変更はサーバー再起動）
+- C# に手を入れるのは上記「基本姿勢」の最後の手段に該当するときだけ。入れたら `dotnet build` が通る状態で止め、サーバー／デザイナの再起動が必要なことをユーザーに伝える
 
 ## プロジェクト固有の知見を貯める
 

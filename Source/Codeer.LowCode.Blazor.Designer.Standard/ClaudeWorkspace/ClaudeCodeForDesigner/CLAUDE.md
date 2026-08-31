@@ -21,6 +21,7 @@ Claude Code を活用することで、自然言語の指示からアプリケ�
 
 デザインファイルは「JSON 構文として妥当」でも「業務的に間違い」になりうる。`LimitCount: 0` で明細が 0 件になる、システム項目を編集欄に出す、といった**意味的バグは designcheck では検出できない**（JSON として妥当なため素通りする）。これを着手段階で防ぐためのルール:
 
+0. **まず設定、次にスクリプト、C# は最後の手段**。フィールド／レイアウト／検索条件／権限条件などの**デザイン設定で表現できることはスクリプトを書かない**（`IsEnabled` 条件・`VisibleCondition`・リンク・集計フィールド等で足りることが多い）。スクリプトは設定で表せない挙動だけに最小限で書き、書く前に「既存フィールド／プロパティで代替できないか」を必ず問う。ホスト (C#) を触るのは、フィールド型そのものが無い・性能をコードで改善したい・独自 API が要るなど、ローコードの範囲で不可能と確定したときだけ（[ClaudeCodeForDesigner/_specs/HostCustomization.md](ClaudeCodeForDesigner/_specs/HostCustomization.md)）。
 1. **規約（Guidelines）が正、JSON 例は参考**。両者が食い違う場合は必ず Guidelines に従う。各 Fields ドキュメントの JSON 例は最小サンプルであり、値が常に最適とは限らない。
 2. **着手前に最低限これを読む**: [Docs/CommonMistakes.md](Docs/CommonMistakes.md) / [Docs/LayoutGuidelines.md](Docs/LayoutGuidelines.md) / [Docs/SearchConditionGuidelines.md](Docs/SearchConditionGuidelines.md) / [Docs/ScriptGuidelines.md](Docs/ScriptGuidelines.md) ＋ 作るものに該当する [Docs/AppPatterns/](Docs/AppPatterns/) のパターン。必要箇所だけ grep で拾うのではなく、関連 Guidelines を通読してから書く。
 3. **既存をコピーして改変する（ゼロから JSON を組まない）**。
@@ -229,9 +230,9 @@ DDL (CREATE / ALTER / DROP) は実行されるが `recordsAffected` は `-1` か
 
 `designcheck` と同じ (上記「デザイナ exe のパス」を参照)。
 
-## デザイナのバージョン前提 (1.3.15 以降)
+## デザイナのバージョン前提 (1.3.15 以降 / template-create・deploy・api は 1.3.24 以降)
 
-このワークスペースは**それを展開したデザイナと同一バージョンの内容**であり、デザイナ 1.3.15 以降の CLI サブコマンドを前提とする。古い exe に未知のサブコマンドを渡すと、headless として認識されず**GUI ウィンドウが起動してしまう**ことがある (エラーで即終了せず、`--out` の JSON も作られない)。
+このワークスペースは**それを展開したデザイナと同一バージョンの内容**であり、デザイナ 1.3.15 以降の CLI サブコマンドを前提とする (`template-create` / `deploy` / `api` は 1.3.24 以降)。古い exe に未知のサブコマンドを渡すと、headless として認識されず**GUI ウィンドウが起動してしまう**ことがある (エラーで即終了せず、`--out` の JSON も作られない)。
 
 CLI 実行後は必ず次で成否を判定する:
 
@@ -248,7 +249,7 @@ CLI 実行後は必ず次で成否を判定する:
 |---|---|
 | [ClaudeCodeForDesigner/_field_catalog.md](ClaudeCodeForDesigner/_field_catalog.md) | 全フィールド型カタログ (次節) |
 | [ClaudeCodeForDesigner/_script_catalog.md](ClaudeCodeForDesigner/_script_catalog.md) | スクリプトオブジェクトカタログ (後述) |
-| `ClaudeCodeForDesigner/_specs/*.md` | **フレームワーク仕様リファレンス**: ModuleDesign / Layouts / PageFrame / SearchConditions / Scripts / ScriptExtensions / QueryAndSql / AppCss / Authentication / ProjectSettings / BorderStyleGuide / DesignEnums / _FieldCommon / _ScriptApi と、リフレクション生成の Enums (全列挙型・使用箇所付き) / JsonAbstractTypeFullName (全 TypeFullName 一覧) |
+| `ClaudeCodeForDesigner/_specs/*.md` | **フレームワーク仕様リファレンス**: ModuleDesign / Layouts / PageFrame / SearchConditions / Scripts / ScriptExtensions / QueryAndSql / AppCss / Authentication / ProjectSettings / BorderStyleGuide / DesignEnums / HostCustomization (ホスト C# 側の拡張点。最後の手段) / _FieldCommon / _ScriptApi と、リフレクション生成の Enums (全列挙型・使用箇所付き) / JsonAbstractTypeFullName (全 TypeFullName 一覧) |
 | `ClaudeCodeForDesigner/_app/*.md` | **アプリ固有ドキュメント** (存在する場合のみ): このデザイナが業務アプリ (生産管理パッケージ等) の一部として配布されているとき、そのアプリのドメイン用語・データモデルの考え方・設計原則・推奨/禁止パターン。**存在するときは最初に `_app/README.md` を読み、書かれている前提・原則をフレームワークの一般論より優先して設計する**。素の Codeer.LowCode.Blazor ではこのフォルダは存在しない |
 | `ClaudeCodeForDesigner/_defaults/{型名}.json` | 全デザイン型の**デフォルト状態 JSON** (デザイナが新規追加時に書き出すものと一致。独自フィールドも含む)。ファイルのルート文書型 (`ModuleDesign` = *.mod.json / `PageFrameDesign` = *.frm.json / `EnumDesign` = *.enum.json / `AppSettingsDesign` = app.clprj) も含む。新しい定義はゼロから書かず、これをコピーして必要なプロパティだけ上書きする |
 | `ClaudeCodeForDesigner/_samples/{FolderName}/` | 参照用サンプルプロジェクト (新規作成テンプレートと同一物): `PatternShowcase` (標準パターン集) / `PatternShowcaseAuth` (認証パターン集) / `GettingStarted` / `InventoryManagement` / `SFA` / `ProjectManagement` / `Empty` / `EmptyAuth`。各フォルダ直下の `_template.md` が説明 |
@@ -266,6 +267,10 @@ CLI 実行後は必ず次で成否を判定する:
 
 - 終了コード: `0` = 成功 / `2` = 失敗
 - 個別に取り直したいときは `field-catalog` / `script-catalog` / `defaults "<projectDir>" --out-dir <dir>` / `template-list` / `template-extract --name <FolderName> --out-dir <dir>` の各サブコマンドもある
+- `template-create --name <FolderName> --out-dir <新規プロジェクトフォルダ> [--data-dir <サンプルDB配置先>] [--deploy-dir <サーバーの DesignFileDirectory>]` は**実際に使うプロジェクトをテンプレートから作る** (template-extract は参照用サンプル)。既存プロジェクトがある場所には作らない (空フォルダのみ)
+- `deploy "<プロジェクトのルートフォルダ>" [--out <json>]` は現在のデプロイ先 (designer.settings.Development.json の CurrentDeployInfoName、**FileSystem 方式のみ**) に App.zip を書き出す = デザイナの「送信」と同じ。ローカルの開発サーバーに自分の編集を反映してブラウザで確認したいときに使う。デプロイ先がローカル開発サーバーの `DesignFileDirectory` であることを確認してから実行し、共有フォルダ等を指しているときはユーザーに諮る。リモート (Azure/FTPS) は CLI から実行できない
+- `api --type <TypeFullName>` / `api --assembly <AssemblyName> [--namespace <prefix>]` はライブラリの公開 API (シグネチャ) を Markdown で出す。ホスト (C#) 側を触るときだけ使う
+- `selenium-test-init --out-dir <dir> [--name <App>] [--project <Design>] [--base-url <url>]` / `pageobject "<Design>" --out-dir <dir> --namespace <ns>` は Selenium テスト用 (テストプロジェクト雛形の展開 / PageObject 生成)。使い方は [Docs/SeleniumTestGuide.md](Docs/SeleniumTestGuide.md)
 
 ## フィールド型カタログ CLI (field-catalog) — このプロジェクトで使える全フィールド型
 
@@ -335,6 +340,7 @@ field-catalog と同じ扱い: **出力先は `ClaudeCodeForDesigner/_script_cat
 | [ClaudeCodeForDesigner/_specs/Scripts.md](ClaudeCodeForDesigner/_specs/Scripts.md) | C#スクリプト (*.mod.cs) 文法リファレンス、組み込みサービス、Module/Field API |
 | [ClaudeCodeForDesigner/_specs/ScriptExtensions.md](ClaudeCodeForDesigner/_specs/ScriptExtensions.md) | スクリプト拡張の仕組みと独自拡張の追加方法 (登録済みサービスの一覧・使い方は `ClaudeCodeForDesigner/_script_catalog.md`) |
 | [ClaudeCodeForDesigner/_specs/ProjectSettings.md](ClaudeCodeForDesigner/_specs/ProjectSettings.md) | プロジェクト設定 (app.clprj, designer.settings.json) |
+| [ClaudeCodeForDesigner/_specs/HostCustomization.md](ClaudeCodeForDesigner/_specs/HostCustomization.md) | **ホスト (C#) 側のカスタマイズ** (最後の手段): 独自フィールド型 / ProCode / スクリプトサービス追加 / サーバーフック (ModuleDataIO・IFileStorage・IMailSender) / デザイナ拡張点 / `api` CLI |
 | [ClaudeCodeForDesigner/_specs/Authentication.md](ClaudeCodeForDesigner/_specs/Authentication.md) | 認証の仕組み (既定の Cookie 認証)。ログインの流れ・ユーザーテーブルの契約 (`PasswordCheckUserTableInfo`)・`AppUser` モジュールの必須構成・パスワードハッシュ・`CurrentUser`・権限の出し分け |
 | [ClaudeCodeForDesigner/_specs/Enums.md](ClaudeCodeForDesigner/_specs/Enums.md) | 全列挙型リファレンス (デザイン JSON のプロパティに書く C# enum 値の一覧) |
 | [ClaudeCodeForDesigner/_specs/DesignEnums.md](ClaudeCodeForDesigner/_specs/DesignEnums.md) | **デザイン enum (`Enums/{名前}.enum.json`)**: SelectField の固定候補をプロジェクト単位で共有する列挙型定義。ファイル形式・省略ルール・`SelectField.EnumName`・スクリプトからの参照 (`OrderStatus.Received`)・リネーム |
@@ -344,6 +350,7 @@ field-catalog と同じ扱い: **出力先は `ClaudeCodeForDesigner/_script_cat
 | [Docs/ListPagePatterns.md](Docs/ListPagePatterns.md) | 一覧ページ・カスタム一覧パターン集 (パターン1〜5: 基本/一括処理/Detail/Tile表示/既定条件/カスタム自前構成)。パターン名でレシピを引ける |
 | [Docs/CommonMistakes.md](Docs/CommonMistakes.md) | よくある間違いと対策（JSON型、Elements構造、LinkFieldパス等） |
 | [Docs/ScriptGuidelines.md](Docs/ScriptGuidelines.md) | スクリプト作成時の規約・注意事項 |
+| [Docs/SeleniumTestGuide.md](Docs/SeleniumTestGuide.md) | **Selenium (NUnit) 自動テスト**: テストプロジェクト雛形の展開 (`selenium-test-init`)・PageObject 生成 (`pageobject`)・シナリオの書き方・DataManager によるテストデータ・実行 |
 | [Docs/SearchConditionGuidelines.md](Docs/SearchConditionGuidelines.md) | SearchCondition の LimitCount 設定ガイドライン |
 | [Docs/DatabaseGuidelines.md](Docs/DatabaseGuidelines.md) | テーブル作成時の規約（主キー、命名規則、型対応） |
 | [ClaudeCodeForDesigner/_specs/BorderStyleGuide.md](ClaudeCodeForDesigner/_specs/BorderStyleGuide.md) | カラム枠線（BorderStyle）の設定方法、罫線重複回避ルール、検索グリッドのカード化 |

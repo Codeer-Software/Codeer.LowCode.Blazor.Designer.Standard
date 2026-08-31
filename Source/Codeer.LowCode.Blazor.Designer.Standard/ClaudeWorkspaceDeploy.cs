@@ -43,6 +43,9 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
         const string ProjectPlaceholder = "<デザインプロジェクトのフォルダ>";
         const string FrameworkDirName = "ClaudeCodeForDesigner";
         const string StampFileName = "_ai_refresh.stamp";
+        // ワークスペース規約 (zip の CLAUDE.md) の 1 行目。展開先の CLAUDE.md がこれで始まらなければ「別の所有者 (ホストソリューション等) の CLAUDE.md」と判断して保持する
+        const string WorkspaceClaudeMdMarker = "# Codeer.LowCode.Blazor デザインワークスペース";
+        const string WorkspaceRulesFileName = "WorkspaceRules.md";
 
         /// <summary>headless CLI に claude-workspace verb を登録する (base.OnStartup 前に呼ぶ)。</summary>
         public static void RegisterCli() => HeadlessCliVerbs.Register(Verb, RunCli);
@@ -114,6 +117,11 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
             var frameworkDir = Path.Combine(workspaceDir, FrameworkDirName);
             if (Directory.Exists(frameworkDir)) Directory.Delete(frameworkDir, recursive: true);
 
+            // 展開先に別の所有者の CLAUDE.md (ホストソリューションのルート等) があるか。あるなら保持し、
+            // ワークスペース規約は ClaudeCodeForDesigner/WorkspaceRules.md に出す (その CLAUDE.md から参照してもらう)
+            var rootClaudeMd = Path.Combine(workspaceDir, "CLAUDE.md");
+            var keepForeignClaudeMd = File.Exists(rootClaudeMd) && !IsWorkspaceClaudeMd(rootClaudeMd);
+
             // フレームワーク所有分 (zip の中身) を展開
             using (var stream = typeof(ClaudeWorkspaceDeploy).Assembly.GetManifestResourceStream(ZipResourceName)
                        ?? throw new InvalidOperationException($"embedded resource not found: {ZipResourceName}"))
@@ -132,6 +140,20 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
                     {
                         result.Preserved.Add(entry.FullName);
                         continue;
+                    }
+
+                    if (entry.FullName == "CLAUDE.md")
+                    {
+                        // 規約本文は常に ClaudeCodeForDesigner/WorkspaceRules.md にも出す (ルートの CLAUDE.md が別所有のときの参照先)
+                        var rules = Path.Combine(frameworkDir, WorkspaceRulesFileName);
+                        Directory.CreateDirectory(frameworkDir);
+                        entry.ExtractToFile(rules, overwrite: true);
+                        result.Deployed.Add(FrameworkDirName + "/" + WorkspaceRulesFileName);
+                        if (keepForeignClaudeMd)
+                        {
+                            result.Preserved.Add(entry.FullName);
+                            continue;
+                        }
                     }
 
                     Directory.CreateDirectory(Path.GetDirectoryName(target)!);
@@ -193,19 +215,40 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
             return result;
         }
 
+        // ルートの CLAUDE.md がこのワークスペースの規約 (zip 由来) か。1 行目のマーカーで判定する
+        static bool IsWorkspaceClaudeMd(string path)
+        {
+            try
+            {
+                using var reader = new StreamReader(path, Encoding.UTF8);
+                var first = reader.ReadLine();
+                return first != null && first.TrimStart('﻿').Trim() == WorkspaceClaudeMdMarker;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         // 旧レイアウト (LocalEnvironment.md が ClaudeCodeForDesigner/ 内・生成物が temporary/ 内・
         // Project.md.sample 配布) からの移行。一度移行したら以後は何もしない
         static void MigrateOldLayout(string workspaceDir)
         {
             var oldLocalEnv = Path.Combine(workspaceDir, FrameworkDirName, "LocalEnvironment.md");
             var newLocalEnv = Path.Combine(workspaceDir, "LocalEnvironment.md");
+            var isOldLayout = File.Exists(oldLocalEnv) || File.Exists(Path.Combine(workspaceDir, "Project.md.sample"));
             if (File.Exists(oldLocalEnv) && !File.Exists(newLocalEnv))
                 File.Move(oldLocalEnv, newLocalEnv);
 
-            foreach (var name in new[] { "Project.md.sample", "README.md" })
+            // 旧 deploy が配布していた README.md / Project.md.sample を片付ける。旧レイアウトの痕跡があるときだけ
+            // (ホストソリューションのルート等、別所有の README.md を消さないため)
+            if (isOldLayout)
             {
-                var path = Path.Combine(workspaceDir, name);
-                if (File.Exists(path)) File.Delete(path);
+                foreach (var name in new[] { "Project.md.sample", "README.md" })
+                {
+                    var path = Path.Combine(workspaceDir, name);
+                    if (File.Exists(path)) File.Delete(path);
+                }
             }
 
             var temporary = Path.Combine(workspaceDir, "temporary");
