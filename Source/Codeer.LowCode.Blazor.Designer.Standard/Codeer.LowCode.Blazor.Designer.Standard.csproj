@@ -11,11 +11,9 @@
 
         <!-- OSS / NuGet パッケージ (MIT)。 -->
         <PackageId>Codeer.LowCode.Blazor.Designer.Standard</PackageId>
-        <Version>0.8.2</Version>
+        <Version>0.8.3</Version>
         <PackageReleaseNotes>
-- New headless verb `developer-workspace "&lt;host root&gt;"`: writes the host-development specs (HostCustomization.md, _FieldCommon.md, ScriptExtensions.md) to `&lt;host root&gt;/ClaudeCodeForDeveloper/_specs/` for Claude Code sessions that edit the C# host solution. Works without a design project and only owns the `_`-prefixed entries of that folder (static documents shipped by the host, e.g. Codeer.LowCode.Blazor.Starter's setup procedure, live next to them).
-- Claude Code workspace: the default design project folder name is now `design` (was `Design`); the workspace is one design project's working folder (Project.md / ddl / docs / design), which also creates `docs/`. Rules updated: confirm the base before building a business app on a sample/showcase/business-template project (propose a new Empty / EmptyAuth project instead), confirm core business requirements (approval route, roles, tax/rounding, numbering) before defaulting them, lead completion reports with what the user receives, and describe the `DesignProjects/&lt;name&gt;/` layout used when living next to a host solution.
-- Reference updated to Codeer.LowCode.Blazor.Designer 1.3.25.
+- Headless `developer-workspace`: besides `ClaudeCodeForDeveloper/_specs/`, it now writes `ClaudeCodeForDeveloper/_hooks/refresh-design-workspaces.ps1` and, if absent, the host root's `.claude/settings.local.json` (designer exe path baked in: permissions for the headless verbs and `dotnet build` / `dotnet test`, plus SessionStart / UserPromptSubmit hooks that run the `refresh-ai-workspace.ps1` of every `DesignProjects/*/` Claude Code workspace). A Claude Code session started at the host root can therefore edit the design projects with the same permissions and automatic reference updates as one started inside a design workspace. Existing `settings.local.json` files are never overwritten.
         </PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -59,6 +57,13 @@
         </EmbeddedResource>
         <EmbeddedResource Include="Icons\bootstrap_icons.txt">
             <LogicalName>Codeer.LowCode.Blazor.Designer.Standard.Icons.bootstrap_icons.txt</LogicalName>
+        </EmbeddedResource>
+        <!-- ホストのルート向け (developer-workspace verb): ルート用フックと settings.local.json の雛形 -->
+        <EmbeddedResource Include="DeveloperWorkspace\refresh-design-workspaces.ps1">
+            <LogicalName>Codeer.LowCode.Blazor.Designer.Standard.DeveloperWorkspace.refresh-design-workspaces.ps1</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="DeveloperWorkspace\settings.local.json.sample">
+            <LogicalName>Codeer.LowCode.Blazor.Designer.Standard.DeveloperWorkspace.settings.local.json.sample</LogicalName>
         </EmbeddedResource>
     </ItemGroup>
 
