@@ -20,7 +20,7 @@
 
 param(
     [Parameter(Mandatory = $true)][string]$Exe,
-    [string]$Project = 'Design'
+    [string]$Project = 'design'
 )
 
 $ErrorActionPreference = 'SilentlyContinue'

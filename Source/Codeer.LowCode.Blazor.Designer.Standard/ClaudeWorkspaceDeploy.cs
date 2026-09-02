@@ -20,7 +20,7 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
     ///     ビルド時に zip 化したもの) + この exe の ai-refresh 生成物で、展開した瞬間の内容は
     ///     常にこの exe と同一バージョンになる。
     ///   - ユーザー所有 = Project.md / LocalEnvironment.md / .gitignore / .claude/settings.local.json /
-    ///     ddl/ / tools/。上書きしない。無ければ生成する (Project.md は zip 内の雛形から、
+    ///     ddl/ / docs/ / tools/。上書きしない。無ければ生成する (Project.md は zip 内の雛形から、
     ///     exe パスは LocalEnvironment.md / settings.local.json に焼き込む)。
     ///
     /// 展開の流れ: ClaudeCodeForDesigner/ 削除 → zip 展開 → ユーザー所有ファイル生成 (無い場合のみ)
@@ -38,6 +38,9 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
     public static class ClaudeWorkspaceDeploy
     {
         public const string Verb = "claude-workspace";
+        /// <summary>ワークスペースから見たデザインプロジェクトのフォルダ名の既定 (--project 省略時 / プロジェクト未オープン時)。
+        /// ワークスペース = デザインプロジェクト 1 つ分のフォルダ (Project.md / ddl / docs / design) という配置に合わせている。</summary>
+        public const string DefaultProjectFolderName = "design";
         const string ZipResourceName = "Codeer.LowCode.Blazor.Designer.Standard.ClaudeWorkspace.zip";
         const string ExePlaceholder = "<デザイナexeのパス>";
         const string ProjectPlaceholder = "<デザインプロジェクトのフォルダ>";
@@ -66,7 +69,7 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
         {
             var workspaceDir = args.Length > 1 ? args[1] : string.Empty;
             string? outPath = null;
-            var project = "Design";
+            var project = DefaultProjectFolderName;
             for (var i = 2; i < args.Length; i++)
             {
                 switch (args[i])
@@ -103,7 +106,7 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
         /// ワークスペースを workspaceDir に展開・更新する。
         /// projectFolderName はワークスペースから見たデザインプロジェクトのフォルダ名 (フックが designcheck 等を叩く対象)。
         /// </summary>
-        public static DeployResult Deploy(string workspaceDir, string projectFolderName = "Design")
+        public static DeployResult Deploy(string workspaceDir, string projectFolderName = DefaultProjectFolderName)
         {
             var result = new DeployResult();
             var exePath = Environment.ProcessPath
@@ -163,8 +166,9 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
                 }
             }
 
-            // ユーザー所有のフォルダ (無ければ作る)
+            // ユーザー所有のフォルダ (無ければ作る)。ddl = テーブル定義、docs = このデザイン固有の文書 (仕様メモ等)
             Directory.CreateDirectory(Path.Combine(workspaceDir, "ddl"));
+            Directory.CreateDirectory(Path.Combine(workspaceDir, "docs"));
 
             // LocalEnvironment.md: マシン固有情報。DesignerExePath 行だけはこの exe のパスに保つ
             UpdateLocalEnvironment(Path.Combine(workspaceDir, "LocalEnvironment.md"), exePath, result);

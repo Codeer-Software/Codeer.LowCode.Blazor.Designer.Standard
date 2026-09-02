@@ -27,7 +27,7 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
     public static class DesignerStandard
     {
         /// <summary>
-        /// headless CLI から参照されるもの (プロジェクトテンプレート / claude-workspace verb) を登録する。
+        /// headless CLI から参照されるもの (プロジェクトテンプレート / claude-workspace・developer-workspace・selenium 系 verb) を登録する。
         /// アプリの OnStartup で base.OnStartup(e) より前に呼ぶこと (headless 分岐がその中で走るため)。
         /// Setup と併用しても二重登録にはならない (冪等)。
         /// </summary>
@@ -35,6 +35,7 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
         {
             StandardTemplates.AddAll();
             ClaudeWorkspaceDeploy.RegisterCli();
+            DeveloperWorkspaceDeploy.RegisterCli();
             SeleniumTestCli.RegisterCli();
         }
 

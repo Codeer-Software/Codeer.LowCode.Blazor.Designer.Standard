@@ -86,7 +86,7 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
 
         //Claude Code ワークスペースの展開・更新。展開先には空のフォルダを指定させる
         //(デザインプロジェクトの親フォルダに展開すると Documents 等を汚すため)。
-        //プロジェクト未オープンでも実行できる (この場合はデザインプロジェクトのフォルダ名を既定の "Design" とし、
+        //プロジェクト未オープンでも実行できる (この場合はデザインプロジェクトのフォルダ名を既定の "design" とし、
         //ユーザーは展開後にこのフォルダへデザインプロジェクトを置く。生成リファレンスはフックが後追いで出す)。
         //フレームワーク所有 (ClaudeCodeForDesigner/ = Docs + 生成リファレンス一式、ルートの CLAUDE.md 等) は
         //丸ごと作り直し、ユーザー所有 (Project.md / LocalEnvironment.md / .gitignore / settings.local.json /
@@ -106,9 +106,9 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
             {
                 var workspace = dialog.FolderName;
                 //フック (ai-refresh 等) がワークスペースから見にいくデザインプロジェクトの相対パス。
-                //プロジェクト未オープン時は既定の "Design" (ユーザーが後でこのフォルダに置く)。
+                //プロジェクト未オープン時は既定の "design" (ユーザーが後でこのフォルダに置く)。
                 var relProject = projectDir == null
-                    ? "Design" : Path.GetRelativePath(workspace, projectDir);
+                    ? ClaudeWorkspaceDeploy.DefaultProjectFolderName : Path.GetRelativePath(workspace, projectDir);
                 var result = ClaudeWorkspaceDeploy.Deploy(workspace, relProject);
 
                 var lines = new List<string>

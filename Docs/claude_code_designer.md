@@ -20,11 +20,11 @@ Claude Code 用の **ワークスペース**（作業ルール `CLAUDE.md`・CLB
 
 ### 2. メニューからワークスペースを展開する
 
-メニュー **Tools > Claude Code Workspace** を実行し、展開先フォルダを選びます。ワークスペース専用の**空のフォルダ**（例: `C:\work\Test`）を選んでください。ドキュメントフォルダのように既存ファイルのある場所に展開すると、その場所がワークスペースのファイルと混ざってしまいます。展開したフォルダの中に、デザインプロジェクト（`Design`）を置きます。
+メニュー **Tools > Claude Code Workspace** を実行し、展開先フォルダを選びます。ワークスペース専用の**空のフォルダ**（例: `C:\work\Test`）を選んでください。ドキュメントフォルダのように既存ファイルのある場所に展開すると、その場所がワークスペースのファイルと混ざってしまいます。展開したフォルダの中に、デザインプロジェクト（既定のフォルダ名 `design`。プロジェクトを開いた状態で実行すれば、そのフォルダとの相対位置が自動で記録されます）を置きます。ワークスペース 1 つ＝デザインプロジェクト 1 つ分の作業場（`Project.md` / `ddl` / `docs` / `design`）です。
 
 この操作は**デザインプロジェクトを開いていなくても実行できます**。先にワークスペースだけ展開しておき、あとからプロジェクトを作成しても構いません。
 
-> **ホストソリューションのフォルダに展開する場合**（[Codeer.LowCode.Blazor.Starter](https://github.com/Codeer-Software/Codeer.LowCode.Blazor.Starter) やテンプレートから作った `LowCodeApp.sln` のあるフォルダ）: そのフォルダに既に `CLAUDE.md` があればそれは上書きせず、ワークスペースの作業ルールは `ClaudeCodeForDesigner/WorkspaceRules.md` に置かれます（Designer.Standard 0.8.1 以降）。デザイン作業と C# ソースの編集を同じフォルダの Claude Code から行えます。Starter の場合は `docs/claude-code-setup.md` の手順（Claude Code が実行）で、この展開まで自動で行われます。
+> **ホストソリューションのフォルダに展開する場合**（[Codeer.LowCode.Blazor.Starter](https://github.com/Codeer-Software/Codeer.LowCode.Blazor.Starter) やテンプレートから作った `LowCodeApp.sln` のあるフォルダ）: Starter の推奨配置は、ホストのルート直下ではなく **`DesignProjects\<デザイン名>\`** をワークスペースにし、その中の `design\` にデザインプロジェクトを置く形です（デザインが複数あっても、デザインだけを別リポジトリに切り出しても同じ形で動きます）。ホストを触る人はルートで、デザインを作る人は `DesignProjects\<デザイン名>\` で Claude Code を起動します。ホスト側（C#）向けのリファレンスはルートの `ClaudeCodeForDeveloper\` にデザイナの `developer-workspace` コマンドが生成します。Starter の場合は `ClaudeCodeForDeveloper/claude-code-setup.md` の手順（Claude Code が実行）で、この展開まで自動で行われます。ホストのルートそのものに展開した場合は、既にある `CLAUDE.md` は上書きせず、ワークスペースの作業ルールは `ClaudeCodeForDesigner/WorkspaceRules.md` に置かれます（Designer.Standard 0.8.1 以降）。
 
 展開後のフォルダ構成:
 
@@ -41,7 +41,8 @@ C:\work\Test\                      ← ワークスペース（この中で Clau
 ├── .claude\                       ← Claude Code 用の許可設定・フック（exe パス設定済み）
 ├── .gitignore                     ← 再生成物・マシン固有ファイルの除外（無ければ自動生成）
 ├── ddl\                           ← テーブル作成用 SQL（DDL）を置く場所
-└── Design\                        ← 1. で作ったデザインプロジェクト
+├── docs\                          ← このデザイン固有の文書（仕様メモ等）を置く場所
+└── design\                        ← 1. で作ったデザインプロジェクト
     ├── app.clprj
     ├── Modules\
     ├── PageFrames\
@@ -80,7 +81,7 @@ cd C:\work\Test
 claude
 ```
 
-`CLAUDE.md` がワークスペース直下にあるので、Claude Code は起動時に自動で読み込み、リファレンスや `Project.md` を参照できる状態になります。あとは自然言語で指示を出せば、`Design/` 配下のデザインファイルを作成・編集してくれます。
+`CLAUDE.md` がワークスペース直下にあるので、Claude Code は起動時に自動で読み込み、リファレンスや `Project.md` を参照できる状態になります。あとは自然言語で指示を出せば、`design/` 配下のデザインファイルを作成・編集してくれます。
 
 > ワークスペースの `CLAUDE.md` には、作成・編集したデザイン定義を検証する「デザインチェック」や、DB の中身確認・テストデータ投入を Claude Code から行うための手順も含まれています。
 
@@ -129,7 +130,7 @@ claude
 - **デザイナと並行して使う**: ビジュアルで配置を細かく調整するのはデザイナ、フィールド・スクリプトの一括追加や繰り返し作業は Claude Code、と使い分けると効率的です。
 - **指示は具体的に**: 「いい感じに」より「Title フィールドを追加し、ListLayout にも表示」など、対象モジュール・フィールド名・配置先を明示するほうが意図通りに動きます。
 - **生成結果は必ず確認**: スクリプトや SQL は実行前にデザイナでプレビューする / バージョン管理にコミットして差分を確認する運用を推奨します。
-- **リファレンスは自動で最新に保たれる**: デザイナや拡張ライブラリを更新すると、次の Claude Code セッションでフックが検知し、リファレンス一式（`ClaudeCodeForDesigner/`）をデザイナと同じバージョンに自動更新します。メニュー **Tools > Claude Code Workspace** の再実行でも同じことができます（自分で書いた `Project.md` や `Design/` のデザインプロジェクトは上書きされません）。
+- **リファレンスは自動で最新に保たれる**: デザイナや拡張ライブラリを更新すると、次の Claude Code セッションでフックが検知し、リファレンス一式（`ClaudeCodeForDesigner/`）をデザイナと同じバージョンに自動更新します。メニュー **Tools > Claude Code Workspace** の再実行でも同じことができます（自分で書いた `Project.md` や `design/` のデザインプロジェクトは上書きされません）。
 
 ## 注意事項
 

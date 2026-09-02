@@ -11,12 +11,11 @@
 
         <!-- OSS / NuGet パッケージ (MIT)。 -->
         <PackageId>Codeer.LowCode.Blazor.Designer.Standard</PackageId>
-        <Version>0.8.1</Version>
+        <Version>0.8.2</Version>
         <PackageReleaseNotes>
-- Project templates: ExtractSampleData is implemented for every standard template, so the headless `template-create --data-dir` command (Designer 1.3.24) places the sample SQLite database without the GUI.
-- Selenium tests: headless `selenium-test-init` (extract a ready-to-run NUnit + Selenium test project: shared WebDriverManager with login, DataManager on Codeer.LowCode.Blazor.DbAccess for test data, LoginForm, smoke test; copies the design project's data sources and connection strings into testsettings(.local).json) and `pageobject` (generate the Selenium PageObjects of a design project; same generator as Tools > Export PageObject). The Claude Code workspace gets Docs/SeleniumTestGuide.md.
-- Claude Code workspace: can now be deployed into a folder that already has its own CLAUDE.md (e.g. the root of a host solution from Codeer.LowCode.Blazor.Starter). That CLAUDE.md is preserved and the workspace rules are written to ClaudeCodeForDesigner/WorkspaceRules.md instead. Rules updated: design settings first, scripts second, C# last; headless `deploy` for FileSystem targets; host customization reference (_specs/HostCustomization.md).
-- Export PageObject: generated page objects now add the using directives for the Selenium driver namespaces of every field library in use (Codeer.LowCode.Blazor.Extras.SeleniumDrivers, Codeer.LowCode.Bindings.Blazor-ApexCharts.SeleniumDrivers; other bindings via SeleniumPageObjectBuilder.AddDriverNamespace or the ".SeleniumDrivers" naming convention), and no longer emit search drivers for fields that have no search control.
+- New headless verb `developer-workspace "&lt;host root&gt;"`: writes the host-development specs (HostCustomization.md, _FieldCommon.md, ScriptExtensions.md) to `&lt;host root&gt;/ClaudeCodeForDeveloper/_specs/` for Claude Code sessions that edit the C# host solution. Works without a design project and only owns the `_`-prefixed entries of that folder (static documents shipped by the host, e.g. Codeer.LowCode.Blazor.Starter's setup procedure, live next to them).
+- Claude Code workspace: the default design project folder name is now `design` (was `Design`); the workspace is one design project's working folder (Project.md / ddl / docs / design), which also creates `docs/`. Rules updated: confirm the base before building a business app on a sample/showcase/business-template project (propose a new Empty / EmptyAuth project instead), confirm core business requirements (approval route, roles, tax/rounding, numbering) before defaulting them, lead completion reports with what the user receives, and describe the `DesignProjects/&lt;name&gt;/` layout used when living next to a host solution.
+- Reference updated to Codeer.LowCode.Blazor.Designer 1.3.25.
         </PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -46,7 +45,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Codeer.LowCode.Blazor.Designer" Version="1.3.24" />
+        <PackageReference Include="Codeer.LowCode.Blazor.Designer" Version="1.3.25" />
         <PackageReference Include="Microsoft.Extensions.AI" Version="10.7.0" />
         <!-- ExcelCheatSheet 用 -->
         <PackageReference Include="ClosedXML" Version="0.105.0" />
