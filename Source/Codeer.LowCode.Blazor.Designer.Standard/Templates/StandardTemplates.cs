@@ -35,7 +35,7 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
             "Codeer.LowCode.Blazor を初めて触る方向けの入門用サンプル。著者管理・書籍登録などの最小限の業務画面を一通り含み、デザイナの基本操作を覚えるのに使えます。初期ユーザーは admin/admin。");
 
         public static ProjectCatalogEntry PatternShowcase() => Make(
-            "PatternShowcase", "PatternShowcaseTemplate.bin", "sqlite_patterns_v5.db",
+            "PatternShowcase", "PatternShowcaseTemplate.bin", "sqlite_patterns_v6.db",
             "標準パターン集",
             "Codeer.LowCode.Blazor で実現できる標準パターンを集めたサンプル集 (データ操作 / 検索 / リスト / 一覧 / ダイアログ / レイアウト / 入力UX / 出力 / 別フレーム / 認証・権限 / 承認フロー など 60 種以上)。各機能の実装例として参考にしてください。初期ユーザー: admin/admin、alice/test、bob/test、carol/test、dave/test。");
 

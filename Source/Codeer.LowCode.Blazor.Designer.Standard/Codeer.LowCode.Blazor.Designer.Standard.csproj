@@ -11,11 +11,9 @@
 
         <!-- OSS / NuGet パッケージ (MIT)。 -->
         <PackageId>Codeer.LowCode.Blazor.Designer.Standard</PackageId>
-        <Version>0.8.4</Version>
+        <Version>0.8.5</Version>
         <PackageReleaseNotes>
-- Project templates consolidated for the Cookie-authentication host (the only public host from Codeer.LowCode.Blazor.Starter / the "Codeer.LowCode.Blazor" Visual Studio template): every template now includes the AppUser module and an `app_users` table with the initial user admin/admin. "Empty (with authentication)" replaces "Empty"; "Pattern Showcase (with authentication)" is merged into "Pattern Showcase" (data source PatternsSQLite, sqlite_patterns_v5.db); GettingStarted / InventoryManagement / SFA / ProjectManagement gained AppUser (sqlite_sample_v2.db / inventory_v2.db / sfa_v2.db / project_management_v2.db). Template folder names EmptyAuth and PatternShowcaseAuth no longer exist.
-- Pattern Showcase approval samples (expense / leave requests) rebuilt on Codeer.LowCode.Blazor.Extras ApprovalFlowField: approval modules, the "my approvals" / "approval status" lists and the route master are what the designer's approval setup (Tools &gt; approval flow setup / `approval-setup`) generates; the hand-written template-driven approval modules are gone. Claude Code workspace docs (auth_patterns / auth_workflow / rules) updated accordingly.
-- Sample databases: new files only (existing local files are never overwritten); the previous database files were removed from the package.
+- Pattern Showcase: the sidebar now shows user management (AppUser) and the approval route master to everyone (they were only in the admin frame); the sample data of the approval flow was rebuilt to be self-explanatory (an expense request waiting for bob's approval, approved expense and leave requests, unsubmitted ones, and routes "経費ルート" / "高額経費ルート" / "休暇ルート"; the expense request script picks the high-amount route for 100,000 yen or more). Sample database sqlite_patterns_v6.db (v5 removed from the package; existing local files are never overwritten).
         </PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>

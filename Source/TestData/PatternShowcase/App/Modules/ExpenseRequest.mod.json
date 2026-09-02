@@ -302,7 +302,7 @@
       "TypeFullName": "Codeer.LowCode.Blazor.Repository.Design.LabelFieldDesign"
     },
     {
-      "Text": "経路: 承認経路マスタの「経費ルート」(上長承認 → 経理確認)。申請後は却下・差し戻し・取り下げのときだけ編集できます (DataWriteCondition)。",
+      "Text": "経路: 承認経路マスタの「経費ルート」(上長承認 → 経理確認)。10 万円以上は「高額経費ルート」(上長承認 → 部長承認 → 経理確認) をスクリプト (OnBuildRoute) が選びます。申請後は却下・差し戻し・取り下げのときだけ編集できます (DataWriteCondition)。",
       "Icon": "",
       "Style": "Default",
       "RelativeField": "",
