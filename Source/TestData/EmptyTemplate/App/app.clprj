@@ -1,5 +1,5 @@
 {
-  "CurrentUserModuleDesignName": "",
+  "CurrentUserModuleDesignName": "AppUser",
   "AppAccessConditions": {
     "ModuleName": ""
   },
@@ -9,7 +9,11 @@
   "Versions": [
     {
       "AssemblyName": "Codeer.LowCode.Blazor",
-      "Version": "1.2.30.0"
+      "Version": "1.2.51.0"
+    },
+    {
+      "AssemblyName": "WebApp.Client.Shared",
+      "Version": "1.0.0.0"
     }
   ],
   "LocalizeResourcePath": ""

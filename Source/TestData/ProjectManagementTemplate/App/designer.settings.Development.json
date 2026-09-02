@@ -1,6 +1,6 @@
 {
   "ConnectionStrings": {
-    "ProjectManagement": "Data Source=C:\\Codeer.LowCode.Blazor.Local\\Data\\project_management_v1.db;"
+    "ProjectManagement": "Data Source=C:\\Codeer.LowCode.Blazor.Local\\Data\\project_management_v2.db;"
   },
   "CurrentDeployInfoName": "local",
   "DeployInfo": {

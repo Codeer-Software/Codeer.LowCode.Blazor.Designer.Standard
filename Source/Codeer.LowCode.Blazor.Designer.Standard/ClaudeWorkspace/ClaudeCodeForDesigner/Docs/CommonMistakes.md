@@ -1857,7 +1857,7 @@ Value が変わると CLB が連動先の候補をリアルタイムに取り直
 
 - **空テンプレートから複製するときが特に危険。** 単一フレームのプロジェクトでも、その 1 枚を `true` にしておかないとフォールバックを踏む (種テンプレが `false` で出荷されていた不具合あり・修正済)。
 - 複数の着地フレームを作るのは **PC/スマホで出し分けたいときだけ**。その場合は複数を `true` にして `TargetDevice` / `WidthFrom` / `Priority` で振り分ける ([ClaudeCodeForDesigner/_specs/PageFrame.md](ClaudeCodeForDesigner/_specs/PageFrame.md) の「画面幅・デバイスでアプリケーションルートを切り替える」)。
-- 正典: `ClaudeCodeForDesigner/_samples/PatternShowcaseAuth/PageFrames/Main.frm.json` (`true`) + `AdminFrame.frm.json` (`false`)。
+- 正典: `ClaudeCodeForDesigner/_samples/PatternShowcase/PageFrames/Main.frm.json` (`true`) + `AdminFrame.frm.json` (`false`)。
 - 詳細は [ClaudeCodeForDesigner/_specs/PageFrame.md](ClaudeCodeForDesigner/_specs/PageFrame.md) の冒頭ルールを参照。
 
 ---

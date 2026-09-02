@@ -80,13 +80,13 @@
 
 `PageFrame` 単位のサンプル (4 パターン): ヘッダー型ナビ / 自動ズーム / 色テーマ変更 / 画面幅で切替
 
-### K. [認証パターン集](auth_patterns.md) (別テンプレート)
+### K. [認証・権限・承認のパターン](auth_patterns.md)
 
-「**認証パターン集**」テンプレート (内部名 `PatternShowcaseAuth`) の各パターン (4 個別ファイル):
+標準パターン集 (`PatternShowcase`) は Cookie 認証付きで、認証があって初めて成り立つパターンも同じテンプレートに収録している (4 個別ファイル):
 
 - [ユーザーモジュールと認証連動](auth_user_module.md) ─ `AppUser` / `CurrentUser` / パスワード変更
 - [個人データのフィルタと権限](auth_personal_data.md) ─ `DataReadCondition` で本人のみ閲覧、検索初期値で「自分のデータ」絞り込み
-- [承認フローのワークフロー](auth_workflow.md) ─ 申請 → 承認フロー → 履歴のテンプレート駆動ワークフロー
+- [承認フローのワークフロー](auth_workflow.md) ─ ApprovalFlowField による申請 → 承認 → 履歴のワークフロー
 - [一般画面と管理画面の分離 (複数 PageFrame)](auth_admin_frame.md) ─ `Main` フレーム / `AdminFrame` の使い分け
 
 ---

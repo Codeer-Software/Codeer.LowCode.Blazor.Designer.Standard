@@ -41,7 +41,7 @@ app_users  (プレーンなユーザーテーブル。ASP.NET Identity ではな
 - **MyProfile** は表示専用モジュール (`DbTable: ""`)。`CurrentUser.表示名.Value` 等を Label/Text に流し込んで表示
 - **パスワード変更**は ChangePasswordDialog (同じ `app_users` テーブルを参照する別モジュール) を `ShowDialog` で開く
 
-## 認証パターン集の対応
+## 標準パターン集の対応 (認証・権限)
 
 - サイドバー **`マイプロフィール`** → `MyProfile`
 - サイドバー **`管理画面へ` → `ユーザー管理`** → `AppUser` (管理者のみアクセス)
@@ -53,5 +53,5 @@ app_users  (プレーンなユーザーテーブル。ASP.NET Identity ではな
 
 ## 関連ドキュメント
 
-- [認証パターン集 一覧](auth_patterns.md)
+- [認証・権限・承認パターン 一覧](auth_patterns.md)
 - [認証 / 認可の概要](https://github.com/Codeer-Software/Codeer.LowCode.Blazor.Manual/blob/main/JP/authorization/authorization.md)

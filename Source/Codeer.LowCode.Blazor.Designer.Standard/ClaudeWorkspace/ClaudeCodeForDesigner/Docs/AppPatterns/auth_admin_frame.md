@@ -39,7 +39,7 @@ PageFrame の分割で実現するため、モジュール側というよりは 
 
 サイドバーリンクの出し分けは Link の `UserReadCondition` でも制御可能。
 
-## 認証パターン集の対応
+## 標準パターン集の対応 (認証・権限)
 
 - サイドバー **`管理画面へ`** → `Main` → `AdminFrame` への切替リンク
 - 管理画面サイドバー **`ユーザー管理`** / **`承認フローテンプレート`** → `AdminFrame` 配下のリンク
@@ -52,6 +52,6 @@ PageFrame の分割で実現するため、モジュール側というよりは 
 
 ## 関連ドキュメント
 
-- [認証パターン集 一覧](auth_patterns.md)
+- [認証・権限・承認パターン 一覧](auth_patterns.md)
 - [PageFrame の設定](ClaudeCodeForDesigner/_specs/PageFrame.md)
 - [認証 / 認可の概要](https://github.com/Codeer-Software/Codeer.LowCode.Blazor.Manual/blob/main/JP/authorization/authorization.md)

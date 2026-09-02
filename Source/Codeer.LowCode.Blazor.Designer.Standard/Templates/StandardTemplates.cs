@@ -21,53 +21,44 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
         const string ResourcePrefix = "Codeer.LowCode.Blazor.Designer.Standard.Templates.";
         const string LocalDataDir = @"C:\Codeer.LowCode.Blazor.Local\Data";
 
-        public static ProjectCatalogEntry Empty() => Make(
-            "Empty", "EmptyTemplate.bin", "sqlite_sample.db",
-            "空のプロジェクト",
-            "最小構成の空プロジェクト。モジュール / ページフレームを 1 から作りたいときに。");
+        // すべてのテンプレートは Cookie 認証ホスト (Codeer.LowCode.Blazor.Starter / VS テンプレート "Codeer.LowCode.Blazor") で動く前提:
+        // AppUser モジュール + app_users テーブル (初期ユーザー admin/admin) を含む。認証なしのテンプレートは提供しない。
 
-        public static ProjectCatalogEntry EmptyAuth() => Make(
-            "EmptyAuth", "EmptyAuthTemplate.bin", "sqlite_sample_auth.db",
-            "空のプロジェクト（認証付き）",
-            "Cookie 認証付きの空プロジェクト。AppUser モジュールとログインまわりの最小構成が組み込み済。初期ユーザーは admin/admin。\n※Visual Studio で新規ソリューションを作成するときは「Codeer.LowCode.Blazor.Cookie」で作成してください。その他のものとは整合しません。");
+        public static ProjectCatalogEntry Empty() => Make(
+            "Empty", "EmptyTemplate.bin", "sqlite_sample_v2.db",
+            "空のプロジェクト",
+            "最小構成の空プロジェクト。AppUser モジュールとログインまわりだけを含み、モジュール / ページフレームを 1 から作りたいときに。初期ユーザーは admin/admin。");
 
         public static ProjectCatalogEntry GettingStarted() => Make(
-            "GettingStarted", "GettingStartedTemplate.bin", "sqlite_sample.db",
+            "GettingStarted", "GettingStartedTemplate.bin", "sqlite_sample_v2.db",
             "入門サンプル",
-            "Codeer.LowCode.Blazor を初めて触る方向けの入門用サンプル。著者管理・書籍登録などの最小限の業務画面を一通り含み、デザイナの基本操作を覚えるのに使えます。");
+            "Codeer.LowCode.Blazor を初めて触る方向けの入門用サンプル。著者管理・書籍登録などの最小限の業務画面を一通り含み、デザイナの基本操作を覚えるのに使えます。初期ユーザーは admin/admin。");
 
         public static ProjectCatalogEntry PatternShowcase() => Make(
-            "PatternShowcase", "PatternShowcaseTemplate.bin", "sqlite_patterns_v4.db",
+            "PatternShowcase", "PatternShowcaseTemplate.bin", "sqlite_patterns_v5.db",
             "標準パターン集",
-            "Codeer.LowCode.Blazor で実現できる標準パターンを集めたサンプル集 (データ操作 / 検索 / リスト / 一覧 / ダイアログ / レイアウト / 入力UX / 出力 / 別フレーム など 50 種以上)。各機能の実装例として参考にしてください。");
-
-        public static ProjectCatalogEntry PatternShowcaseAuth() => Make(
-            "PatternShowcaseAuth", "PatternShowcaseAuthTemplate.bin", "sqlite_patterns_auth_v3.db",
-            "認証パターン集",
-            "Cookie 認証を組み込んだ認証・権限パターンのサンプル集 (ユーザー管理 / マイプロフィール / アプリ権限 / PageFrame 権限 / 作成者更新者の自動記録 / 行レベルセキュリティ / 自分宛タスク など)。初期ユーザー: admin/admin、alice/test、bob/test、carol/test、dave/test。\n※Visual Studio で新規ソリューションを作成するときは「Codeer.LowCode.Blazor.Cookie」で作成してください。その他のものとは整合しません。");
+            "Codeer.LowCode.Blazor で実現できる標準パターンを集めたサンプル集 (データ操作 / 検索 / リスト / 一覧 / ダイアログ / レイアウト / 入力UX / 出力 / 別フレーム / 認証・権限 / 承認フロー など 60 種以上)。各機能の実装例として参考にしてください。初期ユーザー: admin/admin、alice/test、bob/test、carol/test、dave/test。");
 
         public static ProjectCatalogEntry InventoryManagement() => Make(
-            "InventoryManagement", "InventoryManagementTemplate.bin", "inventory_v1.db",
+            "InventoryManagement", "InventoryManagementTemplate.bin", "inventory_v2.db",
             "在庫管理テンプレート",
-            "倉庫の入庫・出庫・棚卸し・発注など、在庫管理業務を一通り含む業務テンプレート。複数倉庫や商品マスタの扱いの参考に。");
+            "倉庫の入庫・出庫・棚卸し・発注など、在庫管理業務を一通り含む業務テンプレート。複数倉庫や商品マスタの扱いの参考に。初期ユーザーは admin/admin。");
 
         public static ProjectCatalogEntry Sfa() => Make(
-            "SFA", "SFATemplate.bin", "sfa_v1.db",
+            "SFA", "SFATemplate.bin", "sfa_v2.db",
             "営業支援 (SFA) テンプレート",
-            "顧客 / 商談 / 活動履歴 / 案件パイプラインなど、営業支援 (SFA) 業務を一通り含む業務テンプレート。営業案件の進捗管理の参考に。");
+            "顧客 / 商談 / 活動履歴 / 案件パイプラインなど、営業支援 (SFA) 業務を一通り含む業務テンプレート。営業案件の進捗管理の参考に。初期ユーザーは admin/admin。");
 
         public static ProjectCatalogEntry ProjectManagement() => Make(
-            "ProjectManagement", "ProjectManagementTemplate.bin", "project_management_v1.db",
+            "ProjectManagement", "ProjectManagementTemplate.bin", "project_management_v2.db",
             "プロジェクト管理テンプレート",
-            "プロジェクト / タスク / 工数 / 進捗管理など、プロジェクト管理業務を一通り含む業務テンプレート。タスク階層やガントチャート的な可視化の参考に。");
+            "プロジェクト / タスク / 工数 / 進捗管理など、プロジェクト管理業務を一通り含む業務テンプレート。タスク階層やガントチャート的な可視化の参考に。初期ユーザーは admin/admin。");
 
         public static List<ProjectCatalogEntry> All() =>
         [
             Empty(),
-            EmptyAuth(),
             GettingStarted(),
             PatternShowcase(),
-            PatternShowcaseAuth(),
             InventoryManagement(),
             Sfa(),
             ProjectManagement(),

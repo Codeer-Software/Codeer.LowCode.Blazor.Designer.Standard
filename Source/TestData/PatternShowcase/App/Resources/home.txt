@@ -2,16 +2,29 @@
     body { font-family: Arial, sans-serif; }
     h2 { color: #2a5078; }
     h3 { color: #4a6fa5; margin-top: 0.6em; margin-bottom: 0.2em; }
-    p { color: #333; }
+    p, li { color: #333; }
     ul { margin-top: 0.2em; }
     .section { margin-bottom: 20px; }
+    .note { color: #666; font-size: 0.9em; }
 </style>
 
 <div class="section">
     <h2>Pattern Showcase</h2>
     <p>Codeer.LowCode.Blazor で実現できる、一般的な業務アプリのパターンを集めたサンプル集です。
-    サイドバーから各パターンを開いて、デザインと動作を確認できます。</p>
-    <p>※ 認証・拡張ライブラリ (ApexCharts/Extras)・メール送信・業務固有 (予約/在庫等) は対象外です。</p>
+    サイドバーから各パターンを開いて、デザインと動作を確認できます。Cookie 認証 (ログイン) を組み込んであり、
+    認証・権限・承認のパターンも同じアプリの中で確認できます。</p>
+    <p>※ 拡張ライブラリの描画系 (ApexCharts 等)・メール送信・業務固有 (予約/在庫等) は対象外です。</p>
+</div>
+
+<div class="section">
+    <h3>登録済ユーザー</h3>
+    <ul>
+        <li><b>admin / admin</b> (管理者) &mdash; role=admin / 管理画面アクセス可</li>
+        <li><b>alice / test</b> (アリス) &mdash; role=user (承認サンプルの申請者役)</li>
+        <li><b>bob / test</b> (ボブ) &mdash; role=user (承認サンプルの上長役)</li>
+        <li><b>carol / test</b> (キャロル) &mdash; role=user (承認サンプルの経理役)</li>
+        <li><b>dave / test</b> (デイブ) &mdash; role=user</li>
+    </ul>
 </div>
 
 <div class="section">
@@ -69,4 +82,40 @@
     <ul>
         <li>ヘッダー型ナビ、自動ズーム (FitToWidth)、色テーマ変更、画面幅で切替</li>
     </ul>
+</div>
+
+<div class="section">
+    <h3>認証・権限</h3>
+    <ul>
+        <li><b>ユーザー管理 / パスワード変更</b> &mdash; AppUser CRUD (管理画面) / マイプロフィール (CurrentUser バインド + パスワード変更ダイアログ)</li>
+        <li><b>アプリ権限</b> &mdash; app.clprj.AppAccessConditions = IsActive==true → admin が他ユーザーを無効化するとログイン遮断</li>
+        <li><b>PageFrame 権限</b> &mdash; 管理画面 (AdminFrame) は UserReadCondition で admin 限定。サイドバーから管理画面に入れるのは admin だけ</li>
+        <li><b>行レベルセキュリティ</b> &mdash; 個人メモは DataReadCondition で自分のレコードに絞り込み</li>
+        <li><b>作成者・更新者の自動記録</b> &mdash; Creator / Updater / CreatedAt / UpdatedAt 予約名フィールドで Submit 時に自動セット</li>
+        <li><b>削除者・削除時刻の記録</b> &mdash; 論理削除 + DeletedAt / Deleter 予約名 (削除監査)</li>
+        <li><b>サイドバーにログインユーザー名表示</b> &mdash; SideBarDesign.UserName プロパティ</li>
+        <li><b>自分宛タスク</b> &mdash; OnSearchInitialization で担当者の初期値を CurrentUser に → 自分のタスクだけ表示</li>
+    </ul>
+    <p class="note">※ admin で他ユーザーの IsActive をオフにすると、そのユーザーは再ログイン時にアプリにアクセスできなくなります。</p>
+</div>
+
+<div class="section">
+    <h3>承認 (ApprovalFlowField)</h3>
+    <ul>
+        <li><b>経費精算 / 休暇申請</b> &mdash; 申請書モジュールに ApprovalFlowField を 1 つ置くだけで、申請・承認・却下・差し戻し・取り下げ・再申請と進捗・履歴の表示が付く。経路は申請時にスクリプト (OnBuildRoute) が承認経路マスタから組み立てる</li>
+        <li><b>承認待ち</b> &mdash; 自分が今承認すべき申請の一覧 (全申請種別を横断)。「開く」で申請書へ</li>
+        <li><b>承認状況</b> &mdash; 申請全体の状況 (状態 / 申請者 / 現在の担当者)</li>
+        <li><b>承認経路マスタ</b> (管理画面) &mdash; 経路 → ステップ → ステップ承認者の 3 段。承認モジュール群と経路マスタは Tools > 承認フローのセットアップ (CLI: approval-setup) が生成したもの</li>
+        <li><b>編集ロック</b> &mdash; 申請書の DataWriteCondition で「未申請 / 差し戻し / 取り下げ / 却下のときだけ書ける」を宣言 (サーバー強制)</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h3>承認シナリオ例</h3>
+    <ol>
+        <li>alice でログイン → 経費精算を新規作成して保存 → 「申請」(経路: 上長承認 = bob → 経理確認 = carol)</li>
+        <li>bob でログイン → 「承認待ち」から開いて承認 → carol でログインして承認 → 状態が完了になる</li>
+        <li>却下・差し戻しされたら alice が内容を直して「再申請」(履歴は積算される)</li>
+        <li>休暇申請は上長承認 (bob) だけの 1 段経路</li>
+    </ol>
 </div>

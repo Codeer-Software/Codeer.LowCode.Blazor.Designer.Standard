@@ -1,0 +1,16 @@
+{
+  "Name": "ApprovalTargetModule",
+  "ValueType": "String",
+  "Members": [
+    {
+      "Name": "ExpenseRequest",
+      "Value": "",
+      "DisplayText": "経費精算"
+    },
+    {
+      "Name": "LeaveRequest",
+      "Value": "",
+      "DisplayText": "休暇申請"
+    }
+  ]
+}

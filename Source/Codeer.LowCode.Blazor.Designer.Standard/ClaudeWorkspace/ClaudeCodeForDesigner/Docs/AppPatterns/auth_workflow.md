@@ -1,97 +1,84 @@
 # 承認フローのワークフロー
 
-「**申請を書く → 上長や経理が承認する → 申請者に結果が返る**」という、業務アプリで非常によく登場するワークフロー。`PatternShowcaseAuth` では**承認フローテンプレートを管理者が定義 → 申請時にテンプレに沿って承認者が割り当てられる**という構成で実装しています。
+「**申請を書く → 上長や経理が承認する → 申請者に結果が返る**」という、業務アプリで非常によく登場するワークフロー。
+CLB では Extras の **`ApprovalFlowField`** で作る。申請書モジュールにフィールドを 1 つ置くと、申請・承認・却下・差し戻し・取り下げ・
+再申請・回覧確認と、ステッパー形式の進捗表示・コメント・履歴表示が付く。状態遷移はすべてサーバー (`/api/approval`) が検証する。
+自前で承認テーブルや状態遷移スクリプトを書かない (旧「承認フローテンプレート」方式のサンプルは廃止した)。
 
-## アプリの作り
+## アプリの作り (標準パターン集の「承認」グループ)
 
-<!-- 画像参照: Manual の Image/web/patterns/auth_leave_request.png (ここではコメントアウト) -->
+- 一般ユーザー (alice) が「経費精算」または「休暇申請」を作成して保存し、「申請」を押す
+- 経路は申請時にスクリプト (`OnBuildRoute`) が返す。サンプルは承認経路マスタの「経費ルート」(上長承認 = bob → 経理確認 = carol) /「休暇ルート」(上長承認 = bob) を読む
+- 承認者 (bob) のサイドバー「承認待ち」に該当申請が並ぶ (`MyApprovalList`。全申請種別を横断)。「開く」で申請書へ遷移し、標準 UI の「承認」「却下」「差し戻し」を押す
+- 全ステップ承認で状態 Completed。却下 → Rejected、差し戻し → Returned。申請者は内容を直して「再申請」できる (履歴は積算・試行番号で世代管理)
+- 「承認状況」(`ApprovalStatusList`) で申請全体の状態 / 申請者 / 現在の担当者を一覧できる
+- 承認経路マスタ (経路 → ステップ → ステップ承認者) は管理画面 (AdminFrame) から編集する
 
-- 一般ユーザー (alice) が「休暇申請」または「経費精算」で申請を作成して保存
-- 申請モジュールの中に承認フロー (`ApprovalFlow`) が内包され、テンプレートに沿った承認順序・承認者リストが自動生成される
-- 承認者 (bob 等) のサイドバー「承認待ち」に該当申請が表示される
-- 承認者は申請を開いて「承認」「却下」を押す。Order 単位で承認/却下が進む
-- 全 Order 承認完了 → 申請ステータス Approved。途中で却下 → Rejected
-- 申請者は却下 / キャンセル後に「再申請」で再開可能
+## 支えるモジュール
 
-<!-- 画像参照: Manual の Image/web/patterns/auth_approval_flow.png (ここではコメントアウト) -->
-
-## 支えるデータ構造
-
-承認フローのデータ構造はやや複雑で、**多段ネスト** + **双方向 ID 持ち合い** の組み合わせで実現されている:
-
-```
-leave_request / expense_request           approval_flow
-├── id                                    ├── id  PK ←──────────┐
-├── ...申請内容                    ┌────→  ├── status            │
-└── approval_flow_id  FK ─────────┘       ├── current_approver  │
-                                          ├── parent_module_name │
-                                          └── parent_id          FK → 申請モジュール (双方向)
-
-approval_flow_order            approval_flow_member
-├── id          PK ←─────────┐ ├── id                  PK
-├── approval_flow_id  FK     │ ├── approval_flow_order_id FK
-├── order_no                 ├─├── approval_flow_id    FK
-└── status                   ├ ├── approver_user       FK → AppUser
-                             ├ ├── is_required
-                             └ ├── status (Waiting/Approved/Rejected/Skipped)
-                               └── ...
-
-approval_flow_template / template_order / template_member  (管理者が事前定義)
-```
-
-## モジュールとテーブルの対応
+承認データは通常のモジュール 3 つ (フロー / メンバー / 履歴) に保存され、各モジュールの**契約フィールド**が「役割 → フィールド名」を宣言する。
+申請書は FK 列 1 本 (`approval_id`) でフロー行を指し、状態や申請者は**リンク越し参照** (`Approval.Status.Value` 等) で読む。
 
 | モジュール | テーブル | 役割 |
 |---|---|---|
-| `LeaveRequest` / `ExpenseRequest` | `leave_request` / `expense_request` | 申請本体。`ApprovalFlow` を `ModuleField` で内包 |
-| `ApprovalFlow` | `approval_flow` | 申請に紐づく承認フロー本体。状態 + 現在の承認者 + 親モジュール名/ID (双方向) |
-| `ApprovalFlowOrder` | `approval_flow_order` | 承認順序の1段 (例: 1段目=直属上司、2段目=部長) |
-| `ApprovalFlowMember` | `approval_flow_member` | 各 Order の承認者リスト (並列承認・必須/任意のフラグ) |
-| `ApprovalHistory` | `approval_history` | 操作ログ (申請/承認/却下/キャンセル/再申請) |
-| `ApprovalFlowTemplate` | `approval_flow_template` | 管理者が定義する承認フローテンプレート |
-| `ApprovalFlowTemplateOrder` / `ApprovalFlowTemplateMember` | (同じく Template 用) | テンプレートの順序・メンバー定義 |
+| `ExpenseRequest` / `LeaveRequest` | `expense_request` / `leave_request` | 申請書。`ApprovalFlowFieldDesign` (`Approval`, DbColumn `approval_id`) を 1 つ持つ |
+| `ApprovalFlow` | `approval_flows` | フロー本体 (状態 / 対象モジュール名・Id / 申請者 / 試行番号 / 現在ステップ / Members・Histories 一覧 / 楽観ロック)。UI なし |
+| `ApprovalFlowMember` | `approval_flow_members` | ステップごとの承認者 (必須/任意・完了条件・状態)。UI なし |
+| `ApprovalHistory` | `approval_histories` | 操作履歴。UI なし |
+| `MyApprovalList` / `ApprovalStatusList` | (QueryField) | 承認待ち / 承認状況の一覧。予約パラメータ `current_user_id` で自分の Waiting 行に絞る |
+| `ApprovalRoute` / `ApprovalRouteStep` / `ApprovalRouteStepMember` | `approval_routes` / `approval_route_steps` / `approval_route_step_members` | 経路マスタ (契約なしのただのモジュール。`ApprovalRoute.mod.cs` の `Load(routeName)` が経路を組み立てる) |
+| enum `ApprovalTargetModule` | ─ | 一覧の「申請種別」列でモジュール名を表示名に読み替える (メンバー名 = 申請書モジュール名) |
 
 ## CLB ではこう作る
 
-### 1. 管理者がテンプレートを定義
+### 1. 承認モジュール群を生成する (手で作らない)
 
-`ApprovalFlowTemplate` に「FullLeave (休暇詳細: 上司 → 部長)」「FullExpense (経費詳細: 上司2名並列必須 → 経理 or 部長並列任意)」のようなテンプレを作る。各 Order に承認者と「必須/任意」フラグを設定。
+デザイナ Tools > 承認フローのセットアップ、または headless CLI:
 
-### 2. 申請時の自動展開
-
-`LeaveRequest.mod.cs` の `OnAfterInitialization` で:
-```csharp
-if (IsNewData)
-{
-    ApprovalFlow.ChildModule.Initialize("LeaveRequest", this.Id.Value, SelectTemplateName());
-}
 ```
-を呼ぶと、申請の Submit 時にテンプレに沿った Order / Member が一括生成される。
+<designer.exe> approval-setup "<デザインプロジェクト>" --data-source <データソース名> --user-module AppUser --user-name-field 表示名 --no-mail --ddl-out ddl.sql
+```
 
-### 3. 申請 ↔ 承認フローの双方向 ID
+フロー / メンバー / 履歴 + 承認待ち・承認状況 + 経路マスタ 3 つ + enum + PageFrame リンク + テーブル作成 DDL ができる。DDL は `sql` CLI で流す。
+冪等なので申請書が増えても再実行しない (承認モジュール群は 1 セットを全申請書で共有する)。
 
-申請モジュールには `ApprovalFlow` への FK 列 (`approval_flow_id`)、承認フローには申請への参照 (`parent_module_name` + `parent_id`) があり、**両側から相手を参照できる**。新規 Submit 時は CLB の `TemporaryIdResolver` が双方向サイクルを自動解決 ([双方向 ID 持ち合いパターン](bidirectional.md) と同じ仕組み)。
+### 2. 申請書側 (4 手順)
 
-### 4. 承認待ち一覧
+1. 申請書モジュールに `ApprovalFlowFieldDesign` を置く (`FlowModuleName: "ApprovalFlow"`、`DbColumn: "approval_id"` を DB に追加、`OnBuildRoute: "OnBuildRoute"`)
+2. スクリプトに経路組み立てを書く:
+   ```csharp
+   ApprovalRouteData OnBuildRoute()
+   {
+       return new ApprovalRoute().Load("経費ルート");   // null を返すと申請中止。金額で経路名を選ぶ等はここで
+   }
+   ```
+3. 編集ロック: 申請書の `DataWriteCondition` に「`Approval.Status.Value` が null (未申請) / Returned / Withdrawn / Rejected」の Or 条件 (条件エディタの行モデル: 値ありは `FieldValueMatchConditionNonNull`、null だけ `FieldValueMatchCondition` + `NullValue`)。詳細レイアウトの `DataOnlyFields` に `Approval.Status` / `Approval.Applicant` / `Approval.Members` を登録
+4. enum `ApprovalTargetModule` にメンバーを追加 (名前 = 申請書モジュール名 / 表示 = 申請書の名前)
 
-サイドバー「承認待ち」は `ApprovalFlow` モジュール自体の一覧 + `CurrentApprover` (`LinkField` → AppUser) で「現在の承認者 = 自分」を初期検索値にする ([検索初期値パターン](search_patterns.md#検索条件の初期化))。「開く」ボタンで申請モジュール (LeaveRequest / ExpenseRequest) に遷移。
+一覧に状態列を出すなら `ListLayouts` の要素に `Approval.Status` と書く (フロー側 Select の enum 表示がそのまま出る)。
 
-## 認証パターン集の対応
+### 3. 権限
 
-- サイドバー **`休暇申請`** → `LeaveRequest`
-- サイドバー **`経費精算`** → `ExpenseRequest`
-- サイドバー **`承認待ち`** → `ApprovalFlow`
-- サイドバー **`管理画面へ` → `承認フローテンプレート`** → `ApprovalFlowTemplate`
+- 承認モジュール 3 つの `UserWriteCondition` は誰も満たさない条件 (セットアップが設定する)。承認データはサーバーの内部経路だけが書く
+- アプリの Current User Module (`app.clprj` の `CurrentUserModuleDesignName`) が必須
+- 承認者だけが書けるフィールド (査定額など) は `PermissionField` に「現在の承認待ち」(`Approval.Status == InProgress` かつ `Approval.Members.Status == Waiting` かつ `Approval.Members.ApproverUser == CurrentUser.Id.Value`) を書く
+
+## 標準パターン集の対応
+
+- サイドバー **`承認/経費精算`** → `ExpenseRequest` (経路: 経費ルート)
+- サイドバー **`承認/休暇申請`** → `LeaveRequest` (経路: 休暇ルート)
+- サイドバー **`承認/承認待ち`** → `MyApprovalList`、**`承認/承認状況`** → `ApprovalStatusList`
+- 管理画面 (`AdminFrame`) **`承認経路マスタ`** → `ApprovalRoute`
 
 ## 落とし穴
 
-- 申請モジュール内の `ApprovalFlow.ChildModule.Members[*].Status.Value` などの子孫モジュール参照は遅延ロードで空のことがある。`ModuleSearcher` で DB から再取得する → [スクリプトガイドライン](../ScriptGuidelines.md) の「ChildModule の LinkField/SelectField」セクション
-- テンプレ駆動なので Order の並び順は `UseIndexSort` で自動採番。スクリプト側で `OrderNo` を直接代入しない
-- 承認フローの初期化は親モジュール側 (`LeaveRequest.OnAfterInitialization`) で呼ぶ。子モジュール (`ApprovalFlow`) の初期化スクリプトに書いてはいけない (タイミングがズレる)
+- フィールドの正確なプロパティ・契約・条件の書き方は `_field_catalog.md` の ApprovalFlowField と `_specs/` を正とする (本書は入口)
+- 経路の承認者に申請者自身が含まれると申請できない (サンプルの `ApprovalRoute.Load` がエラーにする)。デモでは alice で申請し、bob / carol で承認する
+- 組み込みボタンのアクション後は承認フィールドだけ再読込される。編集ロックのクライアント表示は開き直しで反映 (サーバー強制は即時)
+- `ApprovalFlow` 等はエンジン用モジュールで UI を持たない。一覧を作りたいときは QueryField の検索用モジュール (`MyApprovalList` の形) を足す
 
 ## 関連ドキュメント
 
-- [認証パターン集 一覧](auth_patterns.md)
-- [双方向 ID 持ち合い (1:1)](bidirectional.md) ─ 申請 ↔ 承認フローの基盤パターン
-- [多段ネスト](multi_nested.md) ─ Flow → Order → Member の 3 段構造
+- [認証・権限・承認パターン 一覧](auth_patterns.md)
+- [ユーザーモジュールと認証連動](auth_user_module.md) ─ 承認者・申請者の判定に使う CurrentUser
 - [検索条件の初期化](search_patterns.md#検索条件の初期化)

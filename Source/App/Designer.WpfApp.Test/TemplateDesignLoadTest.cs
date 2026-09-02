@@ -19,11 +19,9 @@ namespace Designer.WpfApp.Test
         static readonly string[] TargetProjects =
         [
             "EmptyTemplate",
-            "EmptyAuthTemplate",
             "GettingStartedTemplate",
             "InventoryManagementTemplate",
             "PatternShowcase",
-            "PatternShowcaseAuth",
             "ProjectManagementTemplate",
             "SFATemplate",
         ];

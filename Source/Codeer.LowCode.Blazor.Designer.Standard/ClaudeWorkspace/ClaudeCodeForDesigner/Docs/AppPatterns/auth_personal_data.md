@@ -73,7 +73,7 @@ personal_memos
   置くと権限エラーになる (管理者側のフレームに置く)
 - 判定はサーバーでも強制されるので、スクリプトから `Module.Submit()` を呼んでも既存行の更新は通らない
 
-## 認証パターン集の対応
+## 標準パターン集の対応 (認証・権限)
 
 - サイドバー **`個人メモ`** → `PersonalMemo` (`DataReadCondition` で本人のみ閲覧可)
 - サイドバー **`タスク`** → `MyTask` (`OnSearchInitialization` で自分のタスクをデフォルト表示)
@@ -85,7 +85,7 @@ personal_memos
 
 ## 関連ドキュメント
 
-- [認証パターン集 一覧](auth_patterns.md)
+- [認証・権限・承認パターン 一覧](auth_patterns.md)
 - [認証 / 認可の概要](https://github.com/Codeer-Software/Codeer.LowCode.Blazor.Manual/blob/main/JP/authorization/authorization.md)
 - [検索条件の初期化](search_patterns.md#検索条件の初期化)
 - [作成日時・更新日時 (システムフィールド)](system_fields.md)

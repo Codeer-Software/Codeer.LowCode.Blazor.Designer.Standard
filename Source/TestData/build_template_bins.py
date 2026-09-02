@@ -15,11 +15,9 @@ RES = os.path.join(HERE, '..', 'Codeer.LowCode.Blazor.Designer.Standard', 'Templ
 # マスタフォルダ名 → 配布 bin 名
 PAIRS = [
     ('EmptyTemplate', 'EmptyTemplate.bin'),
-    ('EmptyAuthTemplate', 'EmptyAuthTemplate.bin'),
     ('GettingStartedTemplate', 'GettingStartedTemplate.bin'),
     ('InventoryManagementTemplate', 'InventoryManagementTemplate.bin'),
     ('PatternShowcase', 'PatternShowcaseTemplate.bin'),
-    ('PatternShowcaseAuth', 'PatternShowcaseAuthTemplate.bin'),
     ('ProjectManagementTemplate', 'ProjectManagementTemplate.bin'),
     ('SFATemplate', 'SFATemplate.bin'),
 ]

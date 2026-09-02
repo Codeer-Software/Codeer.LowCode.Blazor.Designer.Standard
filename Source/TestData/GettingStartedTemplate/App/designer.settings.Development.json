@@ -1,6 +1,6 @@
 {
   "ConnectionStrings": {
-    "SampleSQLite": "Data Source=C:\\Codeer.LowCode.Blazor.Local\\Data\\sqlite_sample.db;"
+    "SampleSQLite": "Data Source=C:\\Codeer.LowCode.Blazor.Local\\Data\\sqlite_sample_v2.db;"
   },
   "CurrentDeployInfoName": "local",
   "DeployInfo": {

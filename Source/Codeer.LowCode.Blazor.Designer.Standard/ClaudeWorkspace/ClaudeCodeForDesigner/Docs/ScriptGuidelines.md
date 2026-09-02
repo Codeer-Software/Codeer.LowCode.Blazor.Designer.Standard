@@ -546,11 +546,11 @@ void OnAfterInitialization()
 {
     foreach (var o in Orders.Rows)  // Rows と Id.Value は取れる
     {
-        var s = new ModuleSearcher<ApprovalFlowMember>();
-        s.AddEquals(m => m.ApprovalFlowOrderId.Value, o.Id.Value);
-        s.AddEquals(m => m.ApproverUser.Value, CurrentUser.Id.Value);
+        var s = new ModuleSearcher<OrderAssignee>();
+        s.AddEquals(m => m.OrderId.Value, o.Id.Value);
+        s.AddEquals(m => m.User.Value, CurrentUser.Id.Value);
         s.AddEquals(m => m.Status.Value, "Waiting");
-        if (s.Execute().Count > 0) { /* 自分宛の Waiting Member あり */ }
+        if (s.Execute().Count > 0) { /* 自分宛の Waiting 行あり */ }
     }
 }
 ```
@@ -565,19 +565,19 @@ void OnAfterInitialization()
 
 ```csharp
 // NG: 新規時は this.Id.Value が @temporary:guid で数値列検索が失敗する
-void UpdateFlowSummary()
+void UpdateSummary()
 {
-    var hs = new ModuleSearcher<ApprovalHistory>();
-    hs.AddEquals(h => h.ApprovalFlowId.Value, this.Id.Value);  // ← エラー
+    var hs = new ModuleSearcher<OrderHistory>();
+    hs.AddEquals(h => h.OrderId.Value, this.Id.Value);  // ← エラー
     ...
 }
 
 // OK: IsNewData ガードで早期 return
-void UpdateFlowSummary()
+void UpdateSummary()
 {
-    if (GetParentModule().IsNewData) { FlowSummary.Value = ""; return; }
-    var hs = new ModuleSearcher<ApprovalHistory>();
-    hs.AddEquals(h => h.ApprovalFlowId.Value, this.Id.Value);  // 既存なら実 Id
+    if (GetParentModule().IsNewData) { Summary.Value = ""; return; }
+    var hs = new ModuleSearcher<OrderHistory>();
+    hs.AddEquals(h => h.OrderId.Value, this.Id.Value);  // 既存なら実 Id
     ...
 }
 ```

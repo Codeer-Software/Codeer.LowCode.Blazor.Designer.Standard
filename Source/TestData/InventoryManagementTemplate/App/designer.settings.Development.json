@@ -1,6 +1,6 @@
 {
   "ConnectionStrings": {
-    "Inventory": "Data Source=C:\\Codeer.LowCode.Blazor.Local\\Data\\inventory_v1.db;"
+    "Inventory": "Data Source=C:\\Codeer.LowCode.Blazor.Local\\Data\\inventory_v2.db;"
   },
   "CurrentDeployInfoName": "local",
   "DeployInfo": {

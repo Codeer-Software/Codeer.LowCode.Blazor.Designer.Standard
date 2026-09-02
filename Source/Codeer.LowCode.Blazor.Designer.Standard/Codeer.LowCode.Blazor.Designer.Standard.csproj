@@ -11,9 +11,11 @@
 
         <!-- OSS / NuGet パッケージ (MIT)。 -->
         <PackageId>Codeer.LowCode.Blazor.Designer.Standard</PackageId>
-        <Version>0.8.3</Version>
+        <Version>0.8.4</Version>
         <PackageReleaseNotes>
-- Headless `developer-workspace`: besides `ClaudeCodeForDeveloper/_specs/`, it now writes `ClaudeCodeForDeveloper/_hooks/refresh-design-workspaces.ps1` and, if absent, the host root's `.claude/settings.local.json` (designer exe path baked in: permissions for the headless verbs and `dotnet build` / `dotnet test`, plus SessionStart / UserPromptSubmit hooks that run the `refresh-ai-workspace.ps1` of every `DesignProjects/*/` Claude Code workspace). A Claude Code session started at the host root can therefore edit the design projects with the same permissions and automatic reference updates as one started inside a design workspace. Existing `settings.local.json` files are never overwritten.
+- Project templates consolidated for the Cookie-authentication host (the only public host from Codeer.LowCode.Blazor.Starter / the "Codeer.LowCode.Blazor" Visual Studio template): every template now includes the AppUser module and an `app_users` table with the initial user admin/admin. "Empty (with authentication)" replaces "Empty"; "Pattern Showcase (with authentication)" is merged into "Pattern Showcase" (data source PatternsSQLite, sqlite_patterns_v5.db); GettingStarted / InventoryManagement / SFA / ProjectManagement gained AppUser (sqlite_sample_v2.db / inventory_v2.db / sfa_v2.db / project_management_v2.db). Template folder names EmptyAuth and PatternShowcaseAuth no longer exist.
+- Pattern Showcase approval samples (expense / leave requests) rebuilt on Codeer.LowCode.Blazor.Extras ApprovalFlowField: approval modules, the "my approvals" / "approval status" lists and the route master are what the designer's approval setup (Tools &gt; approval flow setup / `approval-setup`) generates; the hand-written template-driven approval modules are gone. Claude Code workspace docs (auth_patterns / auth_workflow / rules) updated accordingly.
+- Sample databases: new files only (existing local files are never overwritten); the previous database files were removed from the package.
         </PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
