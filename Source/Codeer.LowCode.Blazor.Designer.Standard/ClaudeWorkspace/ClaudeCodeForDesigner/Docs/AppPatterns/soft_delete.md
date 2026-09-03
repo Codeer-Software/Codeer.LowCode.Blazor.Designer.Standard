@@ -56,7 +56,7 @@ soft_delete_items
 
 ## 標準パターン集の対応 (認証・権限)
 
-- サイドバー **`削除監査`** → `AuditDeleteItem` (一般画面、`Deleter` + `DeletedAt` で削除者・時刻を自動記録)
+- サイドバー **`認証・権限/削除監査 (削除者記録)`** → `AuditDeleteItem` (一般画面、`Deleter` + `DeletedAt` で削除者・時刻を自動記録)
 - 管理画面 (`AdminFrame`) サイドバー **`削除監査 (管理)`** → `AuditDeleteItemAdmin` (削除済の「いつ・誰が」を表示)
 
 ## 別方式: 退避テーブルへ移してから物理削除する (DeleteArchive)

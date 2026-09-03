@@ -75,8 +75,8 @@ personal_memos
 
 ## 標準パターン集の対応 (認証・権限)
 
-- サイドバー **`個人メモ`** → `PersonalMemo` (`DataReadCondition` で本人のみ閲覧可)
-- サイドバー **`タスク`** → `MyTask` (`OnSearchInitialization` で自分のタスクをデフォルト表示)
+- サイドバー **`認証・権限/個人メモ (行レベルセキュリティ)`** → `PersonalMemo` (`DataReadCondition` で本人のみ閲覧可)
+- サイドバー **`認証・権限/自分宛タスク`** → `MyTask` (`OnSearchInitialization` で自分のタスクをデフォルト表示)
 
 ## 落とし穴
 

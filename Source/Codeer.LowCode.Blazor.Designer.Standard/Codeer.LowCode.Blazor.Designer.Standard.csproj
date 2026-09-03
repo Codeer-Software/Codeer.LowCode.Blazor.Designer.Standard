@@ -11,9 +11,10 @@
 
         <!-- OSS / NuGet パッケージ (MIT)。 -->
         <PackageId>Codeer.LowCode.Blazor.Designer.Standard</PackageId>
-        <Version>0.8.5</Version>
+        <Version>0.8.6</Version>
         <PackageReleaseNotes>
-- Pattern Showcase: the sidebar now shows user management (AppUser) and the approval route master to everyone (they were only in the admin frame); the sample data of the approval flow was rebuilt to be self-explanatory (an expense request waiting for bob's approval, approved expense and leave requests, unsubmitted ones, and routes "経費ルート" / "高額経費ルート" / "休暇ルート"; the expense request script picks the high-amount route for 100,000 yen or more). Sample database sqlite_patterns_v6.db (v5 removed from the package; existing local files are never overwritten).
+- Claude Code workspace documents (Docs/AppPatterns, CLAUDE.md) and the README follow the template line-up of 0.8.4 (six templates, all for the Cookie authentication host; the former "EmptyAuth" / "PatternShowcaseAuth" names and the advice to create the Visual Studio solution from a "Codeer.LowCode.Blazor.Cookie" template are gone). The authentication / approval pattern documents refer to the actual sidebar titles of the Pattern Showcase ("認証・権限/...", "承認/...") and to the approval route master instead of the retired approval flow templates.
+- Requires Codeer.LowCode.Blazor.Designer 1.3.26.
         </PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -43,7 +44,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Codeer.LowCode.Blazor.Designer" Version="1.3.25" />
+        <PackageReference Include="Codeer.LowCode.Blazor.Designer" Version="1.3.26" />
         <PackageReference Include="Microsoft.Extensions.AI" Version="10.7.0" />
         <!-- ExcelCheatSheet 用 -->
         <PackageReference Include="ClosedXML" Version="0.105.0" />

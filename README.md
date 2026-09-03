@@ -6,7 +6,7 @@
 
 ## 機能
 
-- **プロジェクトテンプレート**（`StandardTemplates`）— 空 / 認証付きの空 / 入門 / パターンショーケース / 認証パターン / 在庫管理 / SFA / プロジェクト管理。サンプル SQLite データベースを同梱。
+- **プロジェクトテンプレート**（`StandardTemplates`）— 空のプロジェクト / 入門サンプル / 標準パターン集 / 在庫管理 / SFA / プロジェクト管理。すべて Cookie 認証ホスト向け（AppUser + 初期ユーザー admin/admin）で、サンプル SQLite データベースを同梱。
 - **ツールメニュー**（`StandardMenus`）— Import Modules from Database、Create DDL、Create Field Class、Create FieldData Class、Create C# Enum、Export Excel Print CheatSheet、Export PageObject（Selenium）、および標準の DB 列変換（PostgreSQL の `xmin` → 楽観的ロック）。
 - **アイコン候補**（`StandardIcons`）— アイコンピッカー用の Bootstrap Icons 一覧。
 - **Claude Code ワークスペース**（`ClaudeWorkspaceDeploy` / Tools > Claude Code Workspace）— Claude Code ワークスペース（`CLAUDE.md`・ドキュメント・フック・デザイナ exe パスを焼き込んだ許可設定）を展開・更新します。ドキュメントはこのパッケージ内（`ClaudeWorkspace/`）の同梱分に加えて、ai-refresh による自動生成リファレンス（フィールドカタログ・仕様・デフォルト JSON・サンプル）を `ClaudeCodeForDesigner/` に丸ごと出力し、デザイナ更新時はフックが検知して丸ごと入れ替えるため、常に実行中のデザイナと同一バージョンになります。headless CLI の `claude-workspace` verb からも利用できます。使い方は [Claude Code でデザインプロジェクトを編集する](Docs/claude_code_designer.md) を参照してください。
