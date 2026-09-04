@@ -77,12 +77,23 @@ Blazor向け動的ローコードフレームワーク。テキストベース�
   "project": "...",
   "findingCount": 2,
   "findings": [
-    { "type": "PageFrame", "position": "Main", "message": "モジュール 'Foo' のURLセグメント'Foo'は他と重複しています。" }
-  ]
+    { "type": "PageFrame", "position": "Main", "code": "DesignCheckContext:37", "message": "モジュール 'Foo' のURLセグメント'Foo'は他と重複しています。" }
+  ],
+  "suppressedCount": 0,
+  "suppressed": []
 }
 ```
 
 `--out` のパスを読んで `findings` を直し、`findingCount` が 0 (終了コード 0) になるまで繰り返す。
+
+### 指摘の抑止 (code / SuppressedDesignChecks / suppress マーカー)
+
+各指摘の `code` は指摘の種類 (「発行クラス名:番号」。例 `TextFieldDesign:1`、`DesignCheckContext:13`、スクリプトの構文エラーは `ScriptAnalyzer:CS1002`)。**承知の上で残す設定** (設計時にはまだ無い DB 列、意図した警告など) だけは、指摘が指す定義に `code` を書いて抑止できる。抑止した指摘は `findings` から除かれて `suppressed` に出る (終了コードにも数えない)。`code` が空の指摘 (ファイルの読み込み失敗) は抑止できない。
+
+- フィールド / モジュール / レイアウト (詳細・一覧・検索) / ページフレーム / 全体設定 / enum への指摘: その定義に `"SuppressedDesignChecks": ["<code>", ...]` を書く。ページフレームへの指摘はモジュール別に出るものがあるので `"DesignCheckContext:37@Order"` のようにモジュール名で限定できる
+- スクリプト (`.mod.cs`) への指摘: 行単位なので、指摘の行の末尾か直前のコメント行に `// suppress: <code>[, <code>]` を書く (同じコードの指摘が別の行にあってもそこは抑止されない)
+
+**抑止は例外的な手段**。エラーは直すのが原則で、「指摘が消えないから抑止する」はしない。抑止するときは理由が分かるように、その定義の近く (スクリプトならマーカーの行) に一言コメントを残す。詳細は [_specs/ModuleDesign.md](ClaudeCodeForDesigner/_specs/ModuleDesign.md)「デザインチェック指摘の抑止」と [_specs/Scripts.md](ClaudeCodeForDesigner/_specs/Scripts.md)「designcheck の指摘の抑止」。
 
 ### このチェックが見るもの
 

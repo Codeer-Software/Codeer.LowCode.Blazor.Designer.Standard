@@ -11,10 +11,10 @@
 
         <!-- OSS / NuGet パッケージ (MIT)。 -->
         <PackageId>Codeer.LowCode.Blazor.Designer.Standard</PackageId>
-        <Version>0.8.6</Version>
+        <Version>0.8.7</Version>
         <PackageReleaseNotes>
-- Claude Code workspace documents (Docs/AppPatterns, CLAUDE.md) and the README follow the template line-up of 0.8.4 (six templates, all for the Cookie authentication host; the former "EmptyAuth" / "PatternShowcaseAuth" names and the advice to create the Visual Studio solution from a "Codeer.LowCode.Blazor.Cookie" template are gone). The authentication / approval pattern documents refer to the actual sidebar titles of the Pattern Showcase ("認証・権限/...", "承認/...") and to the approval route master instead of the retired approval flow templates.
-- Requires Codeer.LowCode.Blazor.Designer 1.3.26.
+- Claude Code workspace (ClaudeCodeForDesigner/CLAUDE.md): the designcheck section describes the "code" of each finding and the "suppressedCount" / "suppressed" output, and how to suppress a finding that is kept on purpose (SuppressedDesignChecks of the definition, or the "// suppress:" marker line for script findings) - as an exception, not a way to silence errors.
+- Requires Codeer.LowCode.Blazor.Designer 1.3.27.
         </PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -44,7 +44,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Codeer.LowCode.Blazor.Designer" Version="1.3.26" />
+        <PackageReference Include="Codeer.LowCode.Blazor.Designer" Version="1.3.27" />
         <PackageReference Include="Microsoft.Extensions.AI" Version="10.7.0" />
         <!-- ExcelCheatSheet 用 -->
         <PackageReference Include="ClosedXML" Version="0.105.0" />
