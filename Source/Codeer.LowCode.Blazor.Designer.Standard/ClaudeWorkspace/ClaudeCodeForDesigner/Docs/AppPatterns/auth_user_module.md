@@ -22,9 +22,10 @@ app_users  (プレーンなユーザーテーブル。ASP.NET Identity ではな
 ├── salt        TEXT (同上)
 ├── role        TEXT
 └── is_active   BOOLEAN
+    (任意) totp_secret TEXT / totp_confirmed INTEGER / totp_last_timestep INTEGER … 認証アプリ (TOTP) の二要素認証を使うときだけ
 ```
 
-`AppUser` は既定の Cookie 認証が使う**プレーンな `app_users` テーブル**に紐づく (ASP.NET Identity / `AspNetUsers` ではなく、独自ハッシュで照合する素朴な実装)。CLB の `app.clprj` の `CurrentUserModuleDesignName: "AppUser"` で「現在のログインユーザー = AppUser のレコード」と紐づけ、スクリプトから `CurrentUser.表示名.Value` のようにアクセスできるようになる。**認証の仕組み・テーブルの契約・必須フィールドの詳細は [認証の仕組み (Cookie 認証)](ClaudeCodeForDesigner/_specs/Authentication.md) を参照。**
+`AppUser` は既定の Cookie 認証が使う**プレーンな `app_users` テーブル**に紐づく (ASP.NET Identity / `AspNetUsers` ではなく、独自ハッシュで照合する素朴な実装)。CLB の `app.clprj` の `CurrentUserModuleDesignName: "AppUser"` で「現在のログインユーザー = AppUser のレコード」と紐づけ、スクリプトから `CurrentUser.表示名.Value` のようにアクセスできるようになる。認証そのものはライブラリではなくホスト (Server プロジェクトの `CookieAuthentication.cs` / `Controllers/AccountController.cs`) の担当で、デザイン側が満たすのは下の「CLB ではこう作る」の契約だけ。ログイン後の `CurrentUser` と権限条件 (認可) はライブラリの担当 → [認可](ClaudeCodeForDesigner/_specs/Authorization.md)。
 
 ## モジュールとテーブルの対応
 
@@ -37,6 +38,11 @@ app_users  (プレーンなユーザーテーブル。ASP.NET Identity ではな
 ## CLB ではこう作る
 
 - **AppUser モジュール**: 通常の CRUD モジュールとして `app_users` テーブルに紐づける。`Codeer.LowCode.Blazor.Extras` の `PasswordHashField` でハッシュ管理
+- **ログインアカウント契約 (`LoginAccountContractField`、Extras)** を AppUser の Fields に 1 つ置く。サーバのログイン処理はこの契約だけを見る:
+  `LoginName` (ログイン ID を持つフィールド。必須) / `DisplayName` (表示名) / `IsActive` (偽なら拒否) / `ExternalLoginName` (Entra 等の外部ログインで突き合わせる列。空なら LoginName) と、
+  パスワード照合用の `DbColumnPasswordHash` / `DbColumnPasswordSalt` (PasswordHashField と同じ hash / salt 列)。UI もデータも持たない宣言だけのフィールドで、レイアウトには出さない
+- 認証アプリ (TOTP) の二要素認証を使うなら、契約の `DbColumnTotpSecret` / `DbColumnTotpConfirmed` / `DbColumnTotpLastTimestep` に上の 3 列を指定する (3 つ揃えて有効化)。
+  解除ボタンは `TotpResetButtonField` (AppUser の詳細画面。表示中のユーザーを解除。通常の保存と同じ権限) と `MyTotpResetButtonField` (本人用。どこにでも置ける)
 - **app.clprj** の `CurrentUserModuleDesignName: "AppUser"` を指定 → スクリプトの `CurrentUser` から AppUser インスタンスにアクセスできるようになる
 - **MyProfile** は表示専用モジュール (`DbTable: ""`)。`CurrentUser.表示名.Value` 等を Label/Text に流し込んで表示
 - **パスワード変更**は ChangePasswordDialog (同じ `app_users` テーブルを参照する別モジュール) を `ShowDialog` で開く
@@ -50,6 +56,7 @@ app_users  (プレーンなユーザーテーブル。ASP.NET Identity ではな
 
 - `AppUser` に `UserReadCondition` / `UserWriteCondition` を**つけてはいけない** (CurrentUser のソースになるため、制限すると マイプロフィール / パスワード変更 / LinkField 表示が全部壊れる)。管理者だけアクセスさせたい場合は PageFrame レベル (`AdminHome.UserReadCondition`) で絞る → [管理画面の分離パターン](auth_admin_frame.md)
 - パスワードは平文保存しない。`PasswordHashField` (Extras パッケージ) を使う
+- `LoginAccountContractField` が無い、または `LoginName` が空だとログインできない (デザインチェックがエラーにする)。契約の hash / salt 列は PasswordHashField の列と同じにする
 
 ## 関連ドキュメント
 

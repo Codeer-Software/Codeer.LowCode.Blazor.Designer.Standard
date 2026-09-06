@@ -8,7 +8,7 @@
 
 <!-- 画像参照: Manual の Image/web/patterns/create_new.png (ここではコメントアウト) -->
 
-- Cookie 認証 (プレーンな `app_users` テーブル + 独自ハッシュ。詳細は [認証の仕組み](ClaudeCodeForDesigner/_specs/Authentication.md)) で alice / bob / carol / dave / admin の 5 ユーザーが seed されている (パスワード: `test`、admin は `admin`)
+- Cookie 認証 (プレーンな `app_users` テーブル + 独自ハッシュ。詳細は [ユーザーモジュールと認証連動](auth_user_module.md)) で alice / bob / carol / dave / admin の 5 ユーザーが seed されている (パスワード: `test`、admin は `admin`)
 - 一般ユーザー画面 (`Main` フレーム) と管理者画面 (`AdminFrame`) の 2 つの PageFrame で構成
 
 > 認証・権限・承認は、認証なしのアプリでは成り立たない (承認者・申請者・所有者を区別できない) ため、デザイナのテンプレートはすべて Cookie 認証付き (AppUser + admin/admin) で提供している。ホストは Visual Studio テンプレート `Codeer.LowCode.Blazor` (= Starter の Cookie ホスト) が前提で、認証なしのホストは提供していない。**業務アプリらしい認証/権限/ワークフローを総合的に見たいときはこのページから入る。**

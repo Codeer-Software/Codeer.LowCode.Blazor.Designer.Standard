@@ -76,6 +76,25 @@
       "TypeFullName": "Codeer.LowCode.Blazor.Extras.Designs.PasswordHashFieldDesign"
     },
     {
+      "LoginName": "ユーザー識別名",
+      "ExternalLoginName": "",
+      "IsActive": "",
+      "DisplayName": "表示名",
+      "TwoFactorEmail": "",
+      "DbColumnPasswordHash": "hash",
+      "DbColumnPasswordSalt": "salt",
+      "DbColumnTotpSecret": "",
+      "DbColumnTotpConfirmed": "",
+      "DbColumnTotpLastTimestep": "",
+      "Name": "LoginAccount",
+      "IgnoreModification": false,
+      "OnValidateInput": "",
+      "IsFocusSkip": false,
+      "NextFocusField": "",
+      "OnFocusMoving": "",
+      "TypeFullName": "Codeer.LowCode.Blazor.Extras.Designs.LoginAccountContractFieldDesign"
+    },
+    {
       "Text": "ユーザー",
       "Icon": "",
       "Style": "H2",

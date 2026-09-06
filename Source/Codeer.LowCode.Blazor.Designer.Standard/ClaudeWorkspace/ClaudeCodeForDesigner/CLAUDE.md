@@ -350,8 +350,8 @@ field-catalog と同じ扱い: **出力先は `ClaudeCodeForDesigner/_script_cat
 | [ClaudeCodeForDesigner/_specs/Scripts.md](ClaudeCodeForDesigner/_specs/Scripts.md) | C#スクリプト (*.mod.cs) 文法リファレンス、組み込みサービス、Module/Field API |
 | [ClaudeCodeForDesigner/_specs/ScriptExtensions.md](ClaudeCodeForDesigner/_specs/ScriptExtensions.md) | スクリプト拡張の仕組みと独自拡張の追加方法 (登録済みサービスの一覧・使い方は `ClaudeCodeForDesigner/_script_catalog.md`) |
 | [ClaudeCodeForDesigner/_specs/ProjectSettings.md](ClaudeCodeForDesigner/_specs/ProjectSettings.md) | プロジェクト設定 (app.clprj, designer.settings.json) |
+| [ClaudeCodeForDesigner/_specs/Authorization.md](ClaudeCodeForDesigner/_specs/Authorization.md) | **認可** (ライブラリの担当): ホストとの境界 (ホストが渡すユーザー id → `CurrentUserModuleDesignName` のモジュールの行 = `CurrentUser`)・モジュール/行/PageFrame の権限条件の階層とサーバーでの強制・画面の出し分け・`AppUser` に UserRead/Write 条件を付けない理由。認証 (ログインの仕組み) はホスト側 → [ユーザーモジュールと認証連動](Docs/AppPatterns/auth_user_module.md) |
 | [ClaudeCodeForDesigner/_specs/HostCustomization.md](ClaudeCodeForDesigner/_specs/HostCustomization.md) | **ホスト (C#) 側のカスタマイズ** (最後の手段): 独自フィールド型 / ProCode / スクリプトサービス追加 / サーバーフック (ModuleDataIO・IFileStorage・IMailSender) / デザイナ拡張点 / `api` CLI |
-| [ClaudeCodeForDesigner/_specs/Authentication.md](ClaudeCodeForDesigner/_specs/Authentication.md) | 認証の仕組み (既定の Cookie 認証)。ログインの流れ・ユーザーテーブルの契約 (`PasswordCheckUserTableInfo`)・`AppUser` モジュールの必須構成・パスワードハッシュ・`CurrentUser`・権限の出し分け |
 | [ClaudeCodeForDesigner/_specs/Enums.md](ClaudeCodeForDesigner/_specs/Enums.md) | 全列挙型リファレンス (デザイン JSON のプロパティに書く C# enum 値の一覧) |
 | [ClaudeCodeForDesigner/_specs/DesignEnums.md](ClaudeCodeForDesigner/_specs/DesignEnums.md) | **デザイン enum (`Enums/{名前}.enum.json`)**: SelectField の固定候補をプロジェクト単位で共有する列挙型定義。ファイル形式・省略ルール・`SelectField.EnumName`・スクリプトからの参照 (`OrderStatus.Received`)・リネーム |
 | [ClaudeCodeForDesigner/_specs/AppCss.md](ClaudeCodeForDesigner/_specs/AppCss.md) | カスタムCSS (app.css) DOM構造・セレクタパターン |

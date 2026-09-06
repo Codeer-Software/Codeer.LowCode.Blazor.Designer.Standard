@@ -121,6 +121,25 @@
       "TypeFullName": "Codeer.LowCode.Blazor.Extras.Designs.PasswordHashFieldDesign"
     },
     {
+      "LoginName": "ユーザー識別名",
+      "ExternalLoginName": "",
+      "IsActive": "IsActive",
+      "DisplayName": "表示名",
+      "TwoFactorEmail": "",
+      "DbColumnPasswordHash": "hash",
+      "DbColumnPasswordSalt": "salt",
+      "DbColumnTotpSecret": "",
+      "DbColumnTotpConfirmed": "",
+      "DbColumnTotpLastTimestep": "",
+      "Name": "LoginAccount",
+      "IgnoreModification": false,
+      "OnValidateInput": "",
+      "IsFocusSkip": false,
+      "NextFocusField": "",
+      "OnFocusMoving": "",
+      "TypeFullName": "Codeer.LowCode.Blazor.Extras.Designs.LoginAccountContractFieldDesign"
+    },
+    {
       "Text": "ユーザー",
       "Icon": "",
       "Style": "H2",
@@ -629,6 +648,20 @@
                 "CanResize": false,
                 "Border": "None",
                 "VerticalAlignment": "Middle"
+              }
+            ]
+          },
+                "Padding": {},
+                "BackgroundColor": "",
+                "BorderStyle": {
+                  "LeftColor": "",
+                  "TopColor": "",
+                  "RightColor": "",
+                  "BottomColor": ""
+                },
+                "CanResize": false,
+                "Border": "None",
+                "HorizontalAlignment": "Center"
               }
             ]
           },
