@@ -65,22 +65,12 @@
       "TypeFullName": "Codeer.LowCode.Blazor.Repository.Design.PasswordFieldDesign"
     },
     {
-      "PasswordFieldName": "パスワード",
-      "DbColumnHash": "hash",
-      "DbColumnSalt": "salt",
-      "DisplayName": "",
-      "IsRequired": false,
-      "OnDataChanged": "",
-      "Name": "ハッシュ",
-      "IgnoreModification": false,
-      "TypeFullName": "Codeer.LowCode.Blazor.Extras.Designs.PasswordHashFieldDesign"
-    },
-    {
       "LoginName": "ユーザー識別名",
       "ExternalLoginName": "",
       "IsActive": "",
       "DisplayName": "表示名",
       "TwoFactorEmail": "",
+      "PasswordField": "パスワード",
       "DbColumnPasswordHash": "hash",
       "DbColumnPasswordSalt": "salt",
       "DbColumnTotpSecret": "",

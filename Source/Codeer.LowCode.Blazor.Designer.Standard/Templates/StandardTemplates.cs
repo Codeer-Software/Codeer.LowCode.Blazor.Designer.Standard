@@ -21,13 +21,19 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
         const string ResourcePrefix = "Codeer.LowCode.Blazor.Designer.Standard.Templates.";
         const string LocalDataDir = @"C:\Codeer.LowCode.Blazor.Local\Data";
 
-        // すべてのテンプレートは Cookie 認証ホスト (Codeer.LowCode.Blazor.Starter / VS テンプレート "Codeer.LowCode.Blazor") で動く前提:
-        // AppUser モジュール + app_users テーブル (初期ユーザー admin/admin) を含む。認証なしのテンプレートは提供しない。
+        // EmptyNoAuth 以外のテンプレートは Cookie 認証ホスト (Codeer.LowCode.Blazor.Starter / VS テンプレート "Codeer.LowCode.Blazor") で動く前提:
+        // AppUser モジュール + app_users テーブル (初期ユーザー admin/admin) を含む。
+        // EmptyNoAuth はログインの無いデスクトップホスト (WPF / WinForms) 向けで、AppUser を持たず CurrentUserModuleDesignName も空。
 
         public static ProjectCatalogEntry Empty() => Make(
             "Empty", "EmptyTemplate.bin", "sqlite_sample_v2.db",
             "空のプロジェクト",
             "最小構成の空プロジェクト。AppUser モジュールとログインまわりだけを含み、モジュール / ページフレームを 1 から作りたいときに。初期ユーザーは admin/admin。");
+
+        public static ProjectCatalogEntry EmptyNoAuth() => Make(
+            "EmptyNoAuth", "EmptyNoAuthTemplate.bin", "sqlite_sample_v2.db",
+            "空のプロジェクト（認証なし WPF/WinForms）",
+            "ログインの無いデスクトップアプリ (WPF / WinForms) 向けの空プロジェクト。ホーム画面だけを含み、AppUser モジュールとログインまわりは持たない。Web (Cookie 認証) のホストには「空のプロジェクト」を使う。");
 
         public static ProjectCatalogEntry GettingStarted() => Make(
             "GettingStarted", "GettingStartedTemplate.bin", "sqlite_sample_v2.db",
@@ -57,6 +63,7 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
         public static List<ProjectCatalogEntry> All() =>
         [
             Empty(),
+            EmptyNoAuth(),
             GettingStarted(),
             PatternShowcase(),
             InventoryManagement(),

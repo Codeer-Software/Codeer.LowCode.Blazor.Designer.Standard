@@ -18,7 +18,7 @@ app_users  (プレーンなユーザーテーブル。ASP.NET Identity ではな
 ├── id          PK
 ├── user_name   TEXT (ログイン ID)
 ├── name        TEXT (表示名)
-├── hash        TEXT (Extras の PasswordHashField がサーバ側で書き込む)
+├── hash        TEXT (ログインアカウント契約がサーバ側で書き込む)
 ├── salt        TEXT (同上)
 ├── role        TEXT
 └── is_active   BOOLEAN
@@ -37,10 +37,10 @@ app_users  (プレーンなユーザーテーブル。ASP.NET Identity ではな
 
 ## CLB ではこう作る
 
-- **AppUser モジュール**: 通常の CRUD モジュールとして `app_users` テーブルに紐づける。`Codeer.LowCode.Blazor.Extras` の `PasswordHashField` でハッシュ管理
+- **AppUser モジュール**: 通常の CRUD モジュールとして `app_users` テーブルに紐づける。パスワードは PasswordField (平文入力欄。DB 列なし) に入力し、ログインアカウント契約が保存時にハッシュ / ソルトを書く
 - **ログインアカウント契約 (`LoginAccountContractField`、Extras)** を AppUser の Fields に 1 つ置く。サーバのログイン処理はこの契約だけを見る:
   `LoginName` (ログイン ID を持つフィールド。必須) / `DisplayName` (表示名) / `IsActive` (偽なら拒否) / `ExternalLoginName` (Entra 等の外部ログインで突き合わせる列。空なら LoginName) と、
-  パスワード照合用の `DbColumnPasswordHash` / `DbColumnPasswordSalt` (PasswordHashField と同じ hash / salt 列)。UI もデータも持たない宣言だけのフィールドで、レイアウトには出さない
+  `PasswordField` (平文入力欄の参照。保存時に契約がハッシュ化して書く) と、書き先 / 照合用の `DbColumnPasswordHash` / `DbColumnPasswordSalt`。UI を持たない宣言フィールドで、レイアウトには出さない
 - 認証アプリ (TOTP) の二要素認証を使うなら、契約の `DbColumnTotpSecret` / `DbColumnTotpConfirmed` / `DbColumnTotpLastTimestep` に上の 3 列を指定する (3 つ揃えて有効化)。
   解除ボタンは `TotpResetButtonField` (AppUser の詳細画面。表示中のユーザーを解除。通常の保存と同じ権限) と `MyTotpResetButtonField` (本人用。どこにでも置ける)
 - **app.clprj** の `CurrentUserModuleDesignName: "AppUser"` を指定 → スクリプトの `CurrentUser` から AppUser インスタンスにアクセスできるようになる
@@ -55,8 +55,8 @@ app_users  (プレーンなユーザーテーブル。ASP.NET Identity ではな
 ## 落とし穴
 
 - `AppUser` に `UserReadCondition` / `UserWriteCondition` を**つけてはいけない** (CurrentUser のソースになるため、制限すると マイプロフィール / パスワード変更 / LinkField 表示が全部壊れる)。管理者だけアクセスさせたい場合は PageFrame レベル (`AdminHome.UserReadCondition`) で絞る → [管理画面の分離パターン](auth_admin_frame.md)
-- パスワードは平文保存しない。`PasswordHashField` (Extras パッケージ) を使う
-- `LoginAccountContractField` が無い、または `LoginName` が空だとログインできない (デザインチェックがエラーにする)。契約の hash / salt 列は PasswordHashField の列と同じにする
+- パスワードは平文保存しない。AppUser では契約の `PasswordField` が保存時にハッシュ化する。契約の無い別モジュール (パスワード変更ダイアログ) では `PasswordHashField` (Extras パッケージ) を使う
+- `LoginAccountContractField` が無い、または `LoginName` が空だとログインできない (デザインチェックがエラーにする)。契約の `PasswordField` と `PasswordHashField` を同じモジュールに置かない (同じ列を二重に書くのでエラー)
 
 ## 関連ドキュメント
 
