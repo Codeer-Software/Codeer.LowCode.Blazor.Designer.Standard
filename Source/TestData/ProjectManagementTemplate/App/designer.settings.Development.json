@@ -6,7 +6,8 @@
   "DeployInfo": {
     "local": {
       "DeployMethod": "FileSystem",
-      "Directory": "C:\\Codeer.LowCode.Blazor.Local\\Designs"
+      "Directory": "C:\\Codeer.LowCode.Blazor.Local\\Designs",
+      "AllowCliDeploy": true
     }
   }
 }

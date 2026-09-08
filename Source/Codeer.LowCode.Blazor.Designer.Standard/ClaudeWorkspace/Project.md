@@ -6,6 +6,11 @@
 
 - （データソース名・種別・接続先の概要。本番 DB を指すかどうか。`AllowCliSqlAccess` を付けてよいデータソース）
 
+## デプロイ先 / 動作確認
+
+- （デプロイ先の名前と用途。開発用で `AllowCliDeploy` を付けてよいもの／本番など CLI から送ってはいけないもの）
+- （動作確認サーバーの起動方法。ホスト同居なら `dotnet run` の対象プロジェクト。URL 自体はマシン固有なので `LocalEnvironment.md` の `ServerUrl:` に書く）
+
 ## 命名規約
 
 - （テーブル / 列 / モジュール / フィールドの命名ルール。`ClaudeCodeForDesigner/Docs/DatabaseGuidelines.md` の標準と違う点があれば明記）

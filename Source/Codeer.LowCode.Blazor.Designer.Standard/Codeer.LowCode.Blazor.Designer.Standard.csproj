@@ -11,9 +11,10 @@
 
         <!-- OSS / NuGet パッケージ (MIT)。 -->
         <PackageId>Codeer.LowCode.Blazor.Designer.Standard</PackageId>
-        <Version>0.8.10</Version>
+        <Version>0.8.11</Version>
         <PackageReleaseNotes>
-- Claude Code workspace: claude-workspace (Tools > Claude Code Workspace) now keeps the auto-update hook alive on an existing workspace. The hooks section of .claude/settings.local.json is rewritten to point at the designer exe that ran the deploy (refresh-ai-workspace.ps1), the CLI permissions from the sample are added when missing, everything else the user put in that file is preserved, and the pre-1.3.15 hook script refresh-field-catalog.ps1 is removed. Previously an existing settings.local.json was never touched, so a workspace deployed by an older designer or a moved exe silently stopped refreshing ClaudeCodeForDesigner/.
+- Claude Code workspace: browser verification is now part of the normal workflow. After a change that is visible on screen, Claude Code starts the development server itself when the design workspace lives inside a host solution (dotnet run in the background; the URL is taken from the host's CLAUDE.md / launchSettings.json and remembered in LocalEnvironment.md), deploys its edits with the designer's headless deploy, logs in and checks the page with Playwright, and stops a server it started. The generated .claude/settings.local.json (design workspace and host root) therefore also allows dotnet run, node, npm install and npx playwright. BrowserTestGuide.md was rewritten around this flow (server start, deploy, login, DOM-based checks).
+- The headless deploy is gated by the new DeployInfo.AllowCliDeploy setting of designer 1.3.32 (any deploy method; false is refused by the CLI), and the workspace rules describe it as the safety boundary, like AllowCliSqlAccess for sql. The bundled templates mark their local deploy target as allowed.
         </PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>

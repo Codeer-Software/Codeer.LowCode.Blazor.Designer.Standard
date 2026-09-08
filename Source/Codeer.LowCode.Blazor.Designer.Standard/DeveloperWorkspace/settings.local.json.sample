@@ -1,5 +1,5 @@
 {
-  "_README": "ホストソリューションのルート用・マシン固有の許可とフック。デザイナの developer-workspace (CLI) が settings.local.json として自動生成する (既存なら触らない。exe パスが変わったら消して再実行)。配布・共有しない (Claude Code がローカル上書きとして読む)。許可: デザイナ exe の headless サブコマンド (designcheck / sql / rename-* / field-catalog / script-catalog / defaults / template-* / ai-refresh / claude-workspace / developer-workspace / deploy / api / selenium-test-init / pageobject) と dotnet build / test。sql は DB 側 designer.settings.json で AllowCliSqlAccess:true のデータソースだけが実行対象になる。フック: SessionStart と UserPromptSubmit で ClaudeCodeForDeveloper/_hooks/refresh-design-workspaces.ps1 を呼び、DesignProjects/*/ の各ワークスペースにある .claude/refresh-ai-workspace.ps1 (デザイナ更新の検知と ClaudeCodeForDesigner/ の作り直し) を代わりに実行する。これでルートで起動した Claude Code からデザインを編集しても、デザインプロジェクトのフォルダで起動したときと同じ許可と自動更新が効く。",
+  "_README": "ホストソリューションのルート用・マシン固有の許可とフック。デザイナの developer-workspace (CLI) が settings.local.json として自動生成する (既存なら触らない。exe パスが変わったら消して再実行)。配布・共有しない (Claude Code がローカル上書きとして読む)。許可: デザイナ exe の headless サブコマンド (designcheck / sql / rename-* / field-catalog / script-catalog / defaults / template-* / ai-refresh / claude-workspace / developer-workspace / deploy / api / selenium-test-init / pageobject) と dotnet build / test / run、node / npm install / npx playwright (開発サーバーの起動と Playwright によるブラウザ確認用)。sql は DB 側 designer.settings.json で AllowCliSqlAccess:true のデータソースだけが実行対象になり、deploy は designer.settings.Development.json で AllowCliDeploy:true のデプロイ先だけに送れる。フック: SessionStart と UserPromptSubmit で ClaudeCodeForDeveloper/_hooks/refresh-design-workspaces.ps1 を呼び、DesignProjects/*/ の各ワークスペースにある .claude/refresh-ai-workspace.ps1 (デザイナ更新の検知と ClaudeCodeForDesigner/ の作り直し) を代わりに実行する。これでルートで起動した Claude Code からデザインを編集しても、デザインプロジェクトのフォルダで起動したときと同じ許可と自動更新が効く。",
   "permissions": {
     "allow": [
       "Bash(\"<デザイナexeのパス>\" designcheck:*)",
@@ -25,7 +25,11 @@
       "Bash(\"<デザイナexeのパス>\" selenium-test-init:*)",
       "Bash(\"<デザイナexeのパス>\" pageobject:*)",
       "Bash(dotnet build:*)",
-      "Bash(dotnet test:*)"
+      "Bash(dotnet test:*)",
+      "Bash(dotnet run:*)",
+      "Bash(node:*)",
+      "Bash(npm install:*)",
+      "Bash(npx playwright:*)"
     ]
   },
   "hooks": {

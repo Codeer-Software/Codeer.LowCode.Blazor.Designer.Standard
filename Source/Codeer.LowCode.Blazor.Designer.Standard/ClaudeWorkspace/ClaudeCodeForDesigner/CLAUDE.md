@@ -27,7 +27,7 @@ Claude Code を活用することで、自然言語の指示からアプリケ�
 3. **既存をコピーして改変する（ゼロから JSON を組まない）**。
    - 個別のフィールド／レイアウト／検索条件は [ClaudeCodeForDesigner/_defaults/](ClaudeCodeForDesigner/_defaults/) の `{型名}.json`（例: `ClaudeCodeForDesigner/_defaults/DetailListFieldDesign.json`）をコピーし、必要なプロパティだけ上書きする。これはデザイナが新規追加時に書き出すのと**同一の既定状態**（TypeFullName・プロパティ構造・既定値が保証される）なので、`LimitCount` を `0` と書くような“デフォルトでも妥当でもない値”が混入しない。**プロパティの既定値が不確かなときは記憶で書かず Defaults を見る。**
    - モジュール一式は [ClaudeCodeForDesigner/_samples/PatternShowcase/Modules/](ClaudeCodeForDesigner/_samples/PatternShowcase/Modules/) の近いモジュールを正典として複製し、差分だけ直す。
-4. **designcheck の緑は「読み込める」までの保証**。0 件表示・編集可能なシステム項目・桁区切りが効かない等の挙動バグは別途、画面（ブラウザ）で確認して潰す（[Docs/BrowserTestGuide.md](Docs/BrowserTestGuide.md)）。
+4. **designcheck の緑は「読み込める」までの保証**。0 件表示・編集可能なシステム項目・桁区切りが効かない等の挙動バグは、画面に見える変更の区切りごとに実際のブラウザで確認して潰す（サーバー起動 → `deploy` → Playwright。手順は [Docs/BrowserTestGuide.md](Docs/BrowserTestGuide.md)）。
 5. **DB を触るときは SQL 実行 CLI**（後述）。テーブル作成（DDL）・テストデータ投入・中身の確認（件数 / 列 / 親子の紐付け）は、自前で DB に接続せず `sql` サブコマンドで行う。
 6. **フィールド／モジュール／ページフレーム／レイアウトの名前を変えるときはリネーム CLI**（後述）。手作業のテキスト置換で参照を追うと**必ず漏れる**（スクリプト・リンク越しの参照・他モジュールからの参照など）。`rename-*` サブコマンドはデザイナ GUI と同じリファクタリングで全参照を一括追従させるので、リネームは原則これで行う。
 
@@ -240,9 +240,9 @@ DDL (CREATE / ALTER / DROP) は実行されるが `recordsAffected` は `-1` か
 
 `designcheck` と同じ (上記「デザイナ exe のパス」を参照)。
 
-## デザイナのバージョン前提 (1.3.15 以降 / template-create・deploy・api は 1.3.24 以降)
+## デザイナのバージョン前提 (1.3.15 以降 / template-create・deploy・api は 1.3.24 以降 / deploy の AllowCliDeploy は 1.3.32 以降)
 
-このワークスペースは**それを展開したデザイナと同一バージョンの内容**であり、デザイナ 1.3.15 以降の CLI サブコマンドを前提とする (`template-create` / `deploy` / `api` は 1.3.24 以降)。古い exe に未知のサブコマンドを渡すと、headless として認識されず**GUI ウィンドウが起動してしまう**ことがある (エラーで即終了せず、`--out` の JSON も作られない)。
+このワークスペースは**それを展開したデザイナと同一バージョンの内容**であり、デザイナ 1.3.15 以降の CLI サブコマンドを前提とする (`template-create` / `deploy` / `api` は 1.3.24 以降。`deploy` の許可判定 `AllowCliDeploy` は 1.3.32 以降で、それより前の版は FileSystem 方式なら無条件・FTPS は拒否)。古い exe に未知のサブコマンドを渡すと、headless として認識されず**GUI ウィンドウが起動してしまう**ことがある (エラーで即終了せず、`--out` の JSON も作られない)。
 
 CLI 実行後は必ず次で成否を判定する:
 
@@ -278,7 +278,7 @@ CLI 実行後は必ず次で成否を判定する:
 - 終了コード: `0` = 成功 / `2` = 失敗
 - 個別に取り直したいときは `field-catalog` / `script-catalog` / `defaults "<projectDir>" --out-dir <dir>` / `template-list` / `template-extract --name <FolderName> --out-dir <dir>` の各サブコマンドもある
 - `template-create --name <FolderName> --out-dir <新規プロジェクトフォルダ> [--data-dir <サンプルDB配置先>] [--deploy-dir <サーバーの DesignFileDirectory>]` は**実際に使うプロジェクトをテンプレートから作る** (template-extract は参照用サンプル)。既存プロジェクトがある場所には作らない (空フォルダのみ)
-- `deploy "<プロジェクトのルートフォルダ>" [--out <json>]` は現在のデプロイ先 (designer.settings.Development.json の CurrentDeployInfoName、**FileSystem 方式のみ**) に App.zip を書き出す = デザイナの「送信」と同じ。ローカルの開発サーバーに自分の編集を反映してブラウザで確認したいときに使う。デプロイ先がローカル開発サーバーの `DesignFileDirectory` であることを確認してから実行し、共有フォルダ等を指しているときはユーザーに諮る。リモート (Azure/FTPS) は CLI から実行できない
+- `deploy "<プロジェクトのルートフォルダ>" [--out <json>]` は現在のデプロイ先 (designer.settings.Development.json の CurrentDeployInfoName) に App.zip を送る = デザイナの「送信」と同じ。自分の編集を開発サーバーに反映してブラウザで確認するときに使う。**送れるのは、そのデプロイ先の `AllowCliDeploy` が `true` のものだけ** (既定 false。方式 FileSystem / FTPS は問わない。`sql` の `AllowCliSqlAccess` と同じ、ユーザーが設定する安全境界)。`false` なら CLI が拒否メッセージを返すので、デザイナの「デプロイ先の追加」で「CLIからのデプロイを許可する」を付けるか `AllowCliDeploy: true` の設定をユーザーに依頼する (自分で Development.json を書き換えない)。`template-create --deploy-dir` が作ったデプロイ先は最初から `true`
 - `api --type <TypeFullName>` / `api --assembly <AssemblyName> [--namespace <prefix>]` はライブラリの公開 API (シグネチャ) を Markdown で出す。ホスト (C#) 側を触るときだけ使う
 - `selenium-test-init --out-dir <dir> [--name <App>] [--project <Design>] [--base-url <url>]` / `pageobject "<Design>" --out-dir <dir> --namespace <ns>` は Selenium テスト用 (テストプロジェクト雛形の展開 / PageObject 生成)。使い方は [Docs/SeleniumTestGuide.md](Docs/SeleniumTestGuide.md)
 
@@ -365,7 +365,7 @@ field-catalog と同じ扱い: **出力先は `ClaudeCodeForDesigner/_script_cat
 | [Docs/DatabaseGuidelines.md](Docs/DatabaseGuidelines.md) | テーブル作成時の規約（主キー、命名規則、型対応） |
 | [ClaudeCodeForDesigner/_specs/BorderStyleGuide.md](ClaudeCodeForDesigner/_specs/BorderStyleGuide.md) | カラム枠線（BorderStyle）の設定方法、罫線重複回避ルール、検索グリッドのカード化 |
 | [ClaudeCodeForDesigner/_specs/JsonAbstractTypeFullName.md](ClaudeCodeForDesigner/_specs/JsonAbstractTypeFullName.md) | JsonAbstract 継承クラスの TypeFullName 一覧・チェックリスト（Field型/Layout型/Match条件/値型） |
-| [Docs/BrowserTestGuide.md](Docs/BrowserTestGuide.md) | Playwright によるブラウザ自動スクショで動作確認する手順（settings.local.json への許可追加、WASM 初期化待機、デザイン変更の反映方法） |
+| [Docs/BrowserTestGuide.md](Docs/BrowserTestGuide.md) | 動作確認の手順（開発サーバーの起動、CLI `deploy` での反映、Playwright のセットアップ・ログイン・スクショと DOM 検証、WASM 初期化待機、変更種別ごとの再起動要否） |
 
 ### アプリ作成パターン集 (Docs/AppPatterns/)
 
