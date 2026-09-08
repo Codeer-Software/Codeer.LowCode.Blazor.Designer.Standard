@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Codeer.LowCode.Blazor.Designer.Standard
 {
@@ -22,6 +23,9 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
     ///   - ユーザー所有 = Project.md / LocalEnvironment.md / .gitignore / .claude/settings.local.json /
     ///     ddl/ / docs/ / tools/。上書きしない。無ければ生成する (Project.md は zip 内の雛形から、
     ///     exe パスは LocalEnvironment.md / settings.local.json に焼き込む)。
+    ///     ただし exe パスを持つ行/節 (LocalEnvironment.md の DesignerExePath 行、settings.local.json の hooks 節と
+    ///     サンプル由来の CLI 許可) はこの exe に合わせて毎回更新する (exe を移した・別の exe で展開し直した・
+    ///     旧フックのままだった、のどれでも自動更新が復活するように)。
     ///
     /// 展開の流れ: ClaudeCodeForDesigner/ 削除 → zip 展開 → ユーザー所有ファイル生成 (無い場合のみ)
     ///   → デザインプロジェクトがあれば自 exe を ai-refresh で子プロセス起動し、生成物
@@ -193,24 +197,10 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
             }
 
             // .claude/settings.local.json: マシン固有の許可とフック。無ければサンプルに exe パスを焼き込んで生成。
-            // 既存なら触らない (ユーザーが許可を追加している可能性があるため)。exe パスが変わったときは
-            // ファイルを消して再実行するか手で直す。
-            var settingsLocal = Path.Combine(workspaceDir, ".claude", "settings.local.json");
-            var settingsSample = Path.Combine(workspaceDir, ".claude", "settings.local.json.sample");
-            if (File.Exists(settingsLocal))
-            {
-                result.Preserved.Add(".claude/settings.local.json");
-            }
-            else if (File.Exists(settingsSample))
-            {
-                // JSON 文字列内に入るため \ をエスケープする
-                var escapedExe = exePath.Replace("\\", "\\\\");
-                var json = File.ReadAllText(settingsSample, Encoding.UTF8)
-                    .Replace(ExePlaceholder, escapedExe)
-                    .Replace(ProjectPlaceholder, projectFolderName.Replace("\\", "\\\\"));
-                File.WriteAllText(settingsLocal, json, new UTF8Encoding(false));
-                result.Created.Add(".claude/settings.local.json");
-            }
+            // 既存なら、ユーザーが追加した許可などは保持したまま、フレームワーク所有の部分 (hooks 節 = この exe を
+            // 指す自動更新フック / サンプル由来の CLI 許可) だけをこの exe に合わせて更新する。
+            // 旧フック (refresh-field-catalog.ps1) や別の exe を指したままの hooks を残すと自動更新が黙って止まるため。
+            UpdateSettingsLocal(workspaceDir, exePath, projectFolderName, result);
 
             // 生成リファレンス一式 (ai-refresh) も同じタイミングで出す。
             // デザインプロジェクトがまだ無ければスキップ (フックがプロジェクト設置後に再実行する)
@@ -234,8 +224,98 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
             }
         }
 
+        // .claude/settings.local.json を生成・更新する。
+        //   無ければ: サンプルに exe パス / プロジェクトフォルダを焼き込んで生成。
+        //   あれば:   hooks 節をサンプル (= この exe を指す refresh-ai-workspace.ps1 フック) で置き換え、
+        //             permissions.allow にサンプルの CLI 許可のうち足りないものを追加する。それ以外 (ユーザーが足した
+        //             許可・その他のキー) はそのまま保持する。JSON として読めないファイルは壊さないよう触らない。
+        static void UpdateSettingsLocal(string workspaceDir, string exePath, string projectFolderName, DeployResult result)
+        {
+            const string rel = ".claude/settings.local.json";
+            var settingsLocal = Path.Combine(workspaceDir, ".claude", "settings.local.json");
+            var settingsSample = Path.Combine(workspaceDir, ".claude", "settings.local.json.sample");
+            if (!File.Exists(settingsSample)) return;
+
+            // JSON 文字列内に入るため \ をエスケープする
+            var sampleJson = File.ReadAllText(settingsSample, Encoding.UTF8)
+                .Replace(ExePlaceholder, exePath.Replace("\\", "\\\\"))
+                .Replace(ProjectPlaceholder, projectFolderName.Replace("\\", "\\\\"));
+
+            if (!File.Exists(settingsLocal))
+            {
+                File.WriteAllText(settingsLocal, sampleJson, new UTF8Encoding(false));
+                result.Created.Add(rel);
+                return;
+            }
+
+            JsonObject existing;
+            JsonObject sample;
+            try
+            {
+                existing = JsonNode.Parse(File.ReadAllText(settingsLocal, Encoding.UTF8), documentOptions: new JsonDocumentOptions
+                {
+                    CommentHandling = JsonCommentHandling.Skip,
+                    AllowTrailingCommas = true,
+                }) as JsonObject ?? throw new JsonException("root is not an object");
+                sample = JsonNode.Parse(sampleJson) as JsonObject ?? throw new JsonException("sample root is not an object");
+            }
+            catch (JsonException)
+            {
+                // 読めないものは上書きしない (ユーザーが手で直す)
+                result.Preserved.Add(rel + " (JSON として読めないため未更新)");
+                return;
+            }
+
+            var changed = false;
+
+            // hooks: フレームワーク所有。サンプルのものに置き換える (exe パス・スクリプト名の更新)
+            var sampleHooks = sample["hooks"];
+            if (sampleHooks != null && (existing["hooks"]?.ToJsonString() ?? "") != sampleHooks.ToJsonString())
+            {
+                existing["hooks"] = sampleHooks.DeepClone();
+                changed = true;
+            }
+
+            // permissions.allow: サンプル由来 (この exe の CLI 許可) で足りないものを追加。既存の項目は消さない
+            if (sample["permissions"]?["allow"] is JsonArray sampleAllow)
+            {
+                var permissions = existing["permissions"] as JsonObject;
+                if (permissions == null)
+                {
+                    permissions = new JsonObject();
+                    existing["permissions"] = permissions;
+                }
+                var allow = permissions["allow"] as JsonArray;
+                if (allow == null)
+                {
+                    allow = new JsonArray();
+                    permissions["allow"] = allow;
+                }
+                var present = allow.Select(x => x?.GetValue<string>()).Where(x => x != null).ToHashSet(StringComparer.Ordinal);
+                foreach (var item in sampleAllow)
+                {
+                    var value = item?.GetValue<string>();
+                    if (value == null || !present.Add(value)) continue;
+                    allow.Add(value);
+                    changed = true;
+                }
+            }
+
+            if (!changed)
+            {
+                result.Preserved.Add(rel);
+                return;
+            }
+            File.WriteAllText(settingsLocal, existing.ToJsonString(new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            }), new UTF8Encoding(false));
+            result.Created.Add(rel + " (hooks / CLI 許可を更新)");
+        }
+
         // 旧レイアウト (LocalEnvironment.md が ClaudeCodeForDesigner/ 内・生成物が temporary/ 内・
-        // Project.md.sample 配布) からの移行。一度移行したら以後は何もしない
+        // Project.md.sample 配布・フックが refresh-field-catalog.ps1) からの移行。一度移行したら以後は何もしない
         static void MigrateOldLayout(string workspaceDir)
         {
             var oldLocalEnv = Path.Combine(workspaceDir, FrameworkDirName, "LocalEnvironment.md");
@@ -243,6 +323,11 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
             var isOldLayout = File.Exists(oldLocalEnv) || File.Exists(Path.Combine(workspaceDir, "Project.md.sample"));
             if (File.Exists(oldLocalEnv) && !File.Exists(newLocalEnv))
                 File.Move(oldLocalEnv, newLocalEnv);
+
+            // 旧フックスクリプト (フィールドカタログ 1 本だけを更新していたもの) は refresh-ai-workspace.ps1 に置き換わった。
+            // settings.local.json の hooks 節は UpdateSettingsLocal が新フックへ書き換える
+            var oldHook = Path.Combine(workspaceDir, ".claude", "refresh-field-catalog.ps1");
+            if (File.Exists(oldHook)) File.Delete(oldHook);
 
             // 旧 deploy が配布していた README.md / Project.md.sample を片付ける。旧レイアウトの痕跡があるときだけ
             // (ホストソリューションのルート等、別所有の README.md を消さないため)
@@ -256,7 +341,7 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
             }
 
             var temporary = Path.Combine(workspaceDir, "temporary");
-            foreach (var name in new[] { "_field_catalog.md", "_script_catalog.md", "_ai_refresh.stamp" })
+            foreach (var name in new[] { "_field_catalog.md", "_field_catalog.stamp", "_script_catalog.md", "_ai_refresh.stamp" })
             {
                 var path = Path.Combine(temporary, name);
                 if (File.Exists(path)) File.Delete(path);

@@ -266,7 +266,7 @@ CLI 実行後は必ず次で成否を判定する:
 
 これらは次のタイミングで生成・更新される (どちらも `ClaudeCodeForDesigner/` を**丸ごと作り直す** = 旧版の残骸が残らない。1 回のプロジェクト読込で全部出る):
 
-- **ワークスペースの展開・更新時** — デザイナのメニュー **Tools > Claude Code Workspace** (または `claude-workspace "<workspaceDir>"` サブコマンド) が Docs 一式を展開し、続けて `ai-refresh` で生成リファレンスを出力する。ユーザー所有 (Project.md / LocalEnvironment.md / .gitignore / settings.local.json / ddl / tools) は保持される
+- **ワークスペースの展開・更新時** — デザイナのメニュー **Tools > Claude Code Workspace** (または `claude-workspace "<workspaceDir>"` サブコマンド) が Docs 一式を展開し、続けて `ai-refresh` で生成リファレンスを出力する。ユーザー所有 (Project.md / LocalEnvironment.md / .gitignore / settings.local.json / ddl / docs / tools) は保持される (ただし exe パスを持つ箇所 = LocalEnvironment.md の `DesignerExePath:` 行と settings.local.json の hooks 節・CLI 許可は、展開したデザイナ exe に合わせて更新される)
 - **デザイナ・拡張ライブラリの更新検知時** — `.claude/refresh-ai-workspace.ps1` フック (SessionStart / UserPromptSubmit) がバイナリの変化を検知して `claude-workspace` を叩き直す (詳細は後述「自動再生成」)
 
 ファイルが無い・古い疑いがあるときは手動で実行してよい (許可リスト済み・DB 接続不要):
