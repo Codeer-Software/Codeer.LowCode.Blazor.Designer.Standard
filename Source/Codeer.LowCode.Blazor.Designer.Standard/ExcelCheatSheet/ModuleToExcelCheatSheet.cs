@@ -1,6 +1,8 @@
 ﻿using ClosedXML.Excel;
 using Codeer.LowCode.Blazor.DesignLogic;
 using Codeer.LowCode.Blazor.Repository.Design;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.IO;
 
 namespace Codeer.LowCode.Blazor.Designer.Standard.ExcelCheatSheet
@@ -8,6 +10,8 @@ namespace Codeer.LowCode.Blazor.Designer.Standard.ExcelCheatSheet
     public class ModuleToExcelCheatSheet
     {
         private List<string> scalarFieldNames = new();
+        private List<string> scriptVariableNames = new();
+        private List<string> scriptConstNames = new();
         private List<(string ListFieldName, string RowVar, IReadOnlyList<string> DetailFieldNames)> listFieldInfos = new();
 
         public MemoryStream CreatePrintExcelCheatSheet(DesignData designData, ModuleDesign module)
@@ -37,6 +41,10 @@ namespace Codeer.LowCode.Blazor.Designer.Standard.ExcelCheatSheet
                 cell.SetValue($"${fieldName}.Value");
                 row++;
             }
+
+            //スクリプト変数 / 定数: $Name (フィールドと違い .Value は付けない)
+            row = WriteScriptSymbols(sheet, row, "スクリプト変数", scriptVariableNames);
+            row = WriteScriptSymbols(sheet, row, "スクリプト定数", scriptConstNames);
 
             //List
             foreach (var info in listFieldInfos)
@@ -156,6 +164,55 @@ namespace Codeer.LowCode.Blazor.Designer.Standard.ExcelCheatSheet
             scalarFieldNames.Sort(StringComparer.Ordinal);
             listFieldInfos.Sort((a, b) =>
                 string.CompareOrdinal(a.ListFieldName, b.ListFieldName));
+
+            GetScriptSymbols(designData, module);
+        }
+
+        /// <summary>
+        /// モジュールスクリプトのトップレベル宣言から、シンボルとして使える変数名 / 定数名を集める。
+        /// スクリプト変数はフィールドと同じ経路 (ModuleMemberAccessor) で解決されるため、テンプレートに
+        /// $変数名 と書けば差し込める (フィールドのような .Value は付かない)。
+        /// </summary>
+        private void GetScriptSymbols(DesignData designData, ModuleDesign module)
+        {
+            scriptVariableNames.Clear();
+            scriptConstNames.Clear();
+
+            if (!designData.Scripts.TryGetValue(module.Name, out var script) || string.IsNullOrEmpty(script)) return;
+
+            try
+            {
+                foreach (var syntax in CSharpSyntaxTree.ParseText(script).GetRoot()
+                    .DescendantNodes().OfType<GlobalStatementSyntax>())
+                {
+                    if (syntax.Statement is not LocalDeclarationStatementSyntax declaration) continue;
+
+                    var names = declaration.IsConst ? scriptConstNames : scriptVariableNames;
+                    foreach (var variable in declaration.Declaration.Variables) names.Add(variable.Identifier.Text);
+                }
+            }
+            catch { }
+
+            //見やすさのためソート
+            scriptVariableNames.Sort(StringComparer.Ordinal);
+            scriptConstNames.Sort(StringComparer.Ordinal);
+        }
+
+        /// <summary>見出し + $シンボル を1列に書き出す。対象が無ければ何も書かない。</summary>
+        private static int WriteScriptSymbols(IXLWorksheet sheet, int row, string title, IReadOnlyList<string> names)
+        {
+            if (names.Count == 0) return row;
+
+            row++;
+            sheet.Cell(row, 1).SetValue(title);
+            row++;
+
+            foreach (var name in names)
+            {
+                sheet.Cell(row, 1).SetValue($"${name}");
+                row++;
+            }
+            return row;
         }
     }
 }
