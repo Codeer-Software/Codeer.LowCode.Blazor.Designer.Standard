@@ -11,9 +11,9 @@
 
         <!-- OSS / NuGet パッケージ (MIT)。 -->
         <PackageId>Codeer.LowCode.Blazor.Designer.Standard</PackageId>
-        <Version>0.8.13</Version>
+        <Version>0.8.14</Version>
         <PackageReleaseNotes>
-- Excel cheat sheet: the generated sheet now also lists the top-level variables and constants declared in the module script, as $Name placeholders (fields keep the $Name.Value form). Each heading is omitted when the module script declares none.
+- Claude Code workspace instructions: layouts are created by copying the wrapper defaults (DetailLayoutDesign / ListLayoutDesign / SearchLayoutDesign, rows from GridRow), which carry the initial empty row and cell; an empty Rows / Elements list must not be written. Pairs with Codeer.LowCode.Blazor.Designer 1.3.36, whose _defaults snapshots include these files.
         </PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
