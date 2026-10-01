@@ -26,6 +26,7 @@
       "Bash(\"<デザイナexeのパス>\" approval-setup:*)",
       "Bash(\"<デザイナexeのパス>\" mail-setup:*)",
       "Bash(\"<デザイナexeのパス>\" edit-history-setup:*)",
+      "Bash(\"<デザイナexeのパス>\" audit-log-setup:*)",
       "Bash(dotnet test:*)",
       "Bash(dotnet build:*)",
       "Bash(dotnet run:*)",

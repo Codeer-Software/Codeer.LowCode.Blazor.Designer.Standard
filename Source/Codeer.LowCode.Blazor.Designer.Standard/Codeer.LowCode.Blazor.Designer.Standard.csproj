@@ -11,9 +11,9 @@
 
         <!-- OSS / NuGet パッケージ (MIT)。 -->
         <PackageId>Codeer.LowCode.Blazor.Designer.Standard</PackageId>
-        <Version>0.8.15</Version>
+        <Version>0.8.16</Version>
         <PackageReleaseNotes>
-- Claude Code workspace: support for the setup commands of extension fields (approval-setup / mail-setup / edit-history-setup).
+- Claude Code workspace: allow the audit-log-setup command.
         </PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
