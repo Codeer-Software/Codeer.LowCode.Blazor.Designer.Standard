@@ -241,14 +241,16 @@ DDL (CREATE / ALTER / DROP) は実行されるが `recordsAffected` は `-1` か
 
 `designcheck` と同じ (上記「デザイナ exe のパス」を参照)。
 
-## セットアップ CLI (拡張フィールドが必要とする関係モジュール群の生成)
+## セットアップ CLI (拡張機能が必要とする関係モジュール群の生成)
 
 拡張ライブラリのフィールドには、動かすのに専用の関係モジュール群 (データ・履歴・一覧・マスタ等) が必要なものがある。
+フィールドを持たないサーバー機能 (監査ログなど。記録はサーバーが行い、デザイン側には閲覧モジュールとテーブルだけが要る) にも同じ形のセットアップがある。
 それらは**手で JSON を組まず、デザイナのセットアップで生成する**。デザイナ GUI の Tools メニューにある「〇〇のセットアップ」と同じ生成を、
 headless の `*-setup` サブコマンドで呼べる。
 
-- **どのセットアップがあるか・引数・生成物・その後の手順は、`ClaudeCodeForDesigner/_field_catalog.md` の各フィールドの「セットアップ」節が唯一の情報源**。
-  カタログにそのフィールド (とセットアップ節) が無い = このプロジェクトのデザイナにその拡張が入っていないので、サブコマンドを呼ばない (未知のサブコマンドは GUI が起動してしまう)
+- **どのセットアップがあるか・引数・生成物・その後の手順は、`ClaudeCodeForDesigner/_field_catalog.md` の各フィールドの「セットアップ」節と、
+  フィールドを持たない機能は `ClaudeCodeForDesigner/_specs/` にあるその機能の文書 (例: 監査ログ = `_specs/AuditLog.md`) が唯一の情報源**。
+  カタログにそのフィールド (とセットアップ節) が無い・`_specs/` にその機能の文書が無い = このプロジェクトのデザイナにその拡張が入っていないので、サブコマンドを呼ばない (未知のサブコマンドは GUI が起動してしまう)
 - 実行方法: `"<デザイナexeのパス>" <verb>-setup "<プロジェクトのルートフォルダ>" [オプション] [--ddl-out "<path.sql>"]`。
   終了コード `0` = 成功 / `2` = 失敗。標準出力に `created:` (生成したモジュール) / `skipped (existing):` (既存のため生成しなかったもの) / `note:` (以降の手順) / DDL
 - **冪等**: 既存のモジュール・enum は上書きしない。共有される関係モジュール群はプロジェクトに 1 セットなので、2 つ目以降の利用先では再実行せず、フィールドを置く側の手順だけ行う。
@@ -256,7 +258,7 @@ headless の `*-setup` サブコマンドで呼べる。
 - **DDL は自動実行されない**。`--ddl-out` に書き出し、`sql` CLI (上記「SQL 実行 CLI」) で流してテーブルを作る。流したら `designcheck` で確認する
 - `note:` に出る手順 (フィールドを置く・enum にメンバーを足す・サーバー側の登録確認など) は、依頼の範囲内なら続けて行い、ホスト (C#) 側の作業はユーザーに伝える
 - 生成後は通常のモジュールとして扱ってよい (フィールド追加・レイアウト調整・リネーム可)。ただしカタログの契約フィールドの説明にある構成 (保護条件・契約の役割) は崩さない
-- **機能を勝手に足さない**: セットアップを呼ぶのは、ユーザーがその機能 (承認・編集履歴・メール送信履歴など) を求めたときだけ
+- **機能を勝手に足さない**: セットアップを呼ぶのは、ユーザーがその機能 (承認・編集履歴・メール送信履歴・監査ログなど) を求めたときだけ。逆に求められた機能がセットアップにあるなら、同等のものを手で作らない (監査ログを自作のログモジュール + スクリプトで作る等)
 
 ### デザイナ exe のパス
 
@@ -281,7 +283,7 @@ CLI 実行後は必ず次で成否を判定する:
 |---|---|
 | [ClaudeCodeForDesigner/_field_catalog.md](ClaudeCodeForDesigner/_field_catalog.md) | 全フィールド型カタログ (次節) |
 | [ClaudeCodeForDesigner/_script_catalog.md](ClaudeCodeForDesigner/_script_catalog.md) | スクリプトオブジェクトカタログ (後述) |
-| `ClaudeCodeForDesigner/_specs/*.md` | **フレームワーク仕様リファレンス**: ModuleDesign / Layouts / PageFrame / SearchConditions / Scripts / ScriptExtensions / QueryAndSql / AppCss / Authentication / ProjectSettings / BorderStyleGuide / DesignEnums / HostCustomization (ホスト C# 側の拡張点。最後の手段) / _FieldCommon / _ScriptApi と、リフレクション生成の Enums (全列挙型・使用箇所付き) / JsonAbstractTypeFullName (全 TypeFullName 一覧) |
+| `ClaudeCodeForDesigner/_specs/*.md` | **フレームワーク仕様リファレンス**: ModuleDesign / Layouts / PageFrame / SearchConditions / Scripts / ScriptExtensions / QueryAndSql / AppCss / Authorization / ProjectSettings / BorderStyleGuide / DesignEnums / HostCustomization (ホスト C# 側の拡張点。最後の手段) / _FieldCommon / _ScriptApi、拡張ライブラリが登録した機能別の仕様 (入っている場合のみ。例: 監査ログ `AuditLog`) と、リフレクション生成の Enums (全列挙型・使用箇所付き) / JsonAbstractTypeFullName (全 TypeFullName 一覧) |
 | `ClaudeCodeForDesigner/_app/*.md` | **アプリ固有ドキュメント** (存在する場合のみ): このデザイナが業務アプリ (生産管理パッケージ等) の一部として配布されているとき、そのアプリのドメイン用語・データモデルの考え方・設計原則・推奨/禁止パターン。**存在するときは最初に `_app/README.md` を読み、書かれている前提・原則をフレームワークの一般論より優先して設計する**。素の Codeer.LowCode.Blazor ではこのフォルダは存在しない |
 | `ClaudeCodeForDesigner/_defaults/{型名}.json` | 全デザイン型の**デフォルト状態 JSON** (デザイナが新規追加時に書き出すものと一致。独自フィールドも含む)。ファイルのルート文書型 (`ModuleDesign` = *.mod.json / `PageFrameDesign` = *.frm.json / `EnumDesign` = *.enum.json / `AppSettingsDesign` = app.clprj) と、レイアウト定義の単位 (`DetailLayoutDesign` / `ListLayoutDesign` / `SearchLayoutDesign` / `GridRow`。空行・空セル入り) も含む。新しい定義はゼロから書かず、これをコピーして必要なプロパティだけ上書きする |
 | `ClaudeCodeForDesigner/_samples/{FolderName}/` | 参照用サンプルプロジェクト (新規作成テンプレートと同一物): `PatternShowcase` (標準パターン集。認証・権限・承認を含む) / `GettingStarted` / `InventoryManagement` / `SFA` / `ProjectManagement` / `Empty`。いずれも Cookie 認証ホスト向け (AppUser + admin/admin)。各フォルダ直下の `_template.md` が説明 |

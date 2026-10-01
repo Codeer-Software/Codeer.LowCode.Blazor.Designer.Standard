@@ -13,7 +13,7 @@
         <PackageId>Codeer.LowCode.Blazor.Designer.Standard</PackageId>
         <Version>0.8.16</Version>
         <PackageReleaseNotes>
-- Claude Code workspace: allow the audit-log-setup command.
+- Claude Code workspace: allow the audit-log-setup command and point to feature docs in _specs (audit log).
         </PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>

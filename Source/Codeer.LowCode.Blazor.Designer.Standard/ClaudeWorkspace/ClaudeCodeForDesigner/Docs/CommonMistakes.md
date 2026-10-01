@@ -991,7 +991,7 @@ public bool CanDelete { get; set; } = true;   // デフォルト true
 → Module を新規生成するときは **基本 `true` 3つ揃え**で書く。`DbTable` が空の表示専用モジュールであっても、入力フィールドが画面にあるなら `CanUpdate: true` にしないとフィールドが ViewOnly になる ([#27 参照](#27-表示専用モジュールでも入力があるなら-canupdate-true))。
 
 「確たる理由」の例 (= ここだけ `false` にしてもいい):
-- 監査ログ・履歴の閲覧専用画面 → `CanCreate/Update/Delete: false`
+- 監査ログ・履歴の閲覧専用画面 → `CanCreate/Update/Delete: false` (監査ログの閲覧モジュールは手で作らずセットアップで生成する。`_specs/AuditLog.md` がこの環境にあればそれに従う)
 - 一覧してデータを表示するだけのレポート画面
 - システム管理者しか作らないマスタを一般ユーザーから隠したい
 
