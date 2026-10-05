@@ -4,6 +4,6 @@ SELECT
 FROM project p
 LEFT JOIN task t ON p.id = t.project_id
   AND t.status != '完了'
-  AND t.end_date < strftime('%Y/%m/%d', 'now', 'localtime')
+  AND date(t.end_date) < date('now', 'localtime')
 GROUP BY p.id, p.name
 ORDER BY p.id

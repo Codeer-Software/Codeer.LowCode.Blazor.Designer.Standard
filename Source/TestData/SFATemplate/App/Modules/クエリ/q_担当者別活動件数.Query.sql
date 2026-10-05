@@ -8,7 +8,7 @@ SELECT
 FROM salesperson s
 LEFT JOIN activity a
   ON a.salesperson_id = s.id
-  AND substr(a.activity_date_time, 1, 7) = @target_month
+  AND strftime('%Y/%m', a.activity_date_time) = @target_month
 GROUP BY s.id, s.name
 ORDER BY (SUM(CASE WHEN a.type = '訪問' THEN 1 ELSE 0 END)
         + SUM(CASE WHEN a.type = '電話' THEN 1 ELSE 0 END)

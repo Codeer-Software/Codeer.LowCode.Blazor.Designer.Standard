@@ -210,7 +210,7 @@
             "DbParameterDirection": "Input"
           }
         ],
-        "SqlText": "INSERT INTO inventory(product_id, warehouse_id, current_stock, version, created_at, updated_at)\nSELECT\n  @product_id,\n  r.warehouse_id,\n  @quantity,\n  0,\n  strftime('%Y/%m/%d %H:%M:%S', 'now', '+9 hours'),\n  strftime('%Y/%m/%d %H:%M:%S', 'now', '+9 hours')\nFROM receiving r\nJOIN receiving_detail rd ON rd.receiving_id = r.id\nWHERE rd.id = last_insert_rowid()\nON CONFLICT(product_id, warehouse_id)\nDO UPDATE SET\n  current_stock = current_stock + excluded.current_stock,\n  version = version + 1,\n  updated_at = excluded.updated_at;\n"
+        "SqlText": "INSERT INTO inventory(product_id, warehouse_id, current_stock, version, created_at, updated_at)\nSELECT\n  @product_id,\n  r.warehouse_id,\n  @quantity,\n  0,\n  strftime('%Y-%m-%d %H:%M:%S', 'now', '+9 hours'),\n  strftime('%Y-%m-%d %H:%M:%S', 'now', '+9 hours')\nFROM receiving r\nJOIN receiving_detail rd ON rd.receiving_id = r.id\nWHERE rd.id = last_insert_rowid()\nON CONFLICT(product_id, warehouse_id)\nDO UPDATE SET\n  current_stock = current_stock + excluded.current_stock,\n  version = version + 1,\n  updated_at = excluded.updated_at;\n"
       },
       "Name": "在庫加算",
       "IgnoreModification": false,

@@ -7,10 +7,10 @@
 -- amount_progress: 金額達成率 (0-100)
 WITH base AS (
   SELECT
-    SUM(CASE WHEN status NOT IN ('受注', '失注') AND substr(expected_close_date, 1, 7) = @target_month THEN 1 ELSE 0 END) AS active_count,
-    SUM(CASE WHEN status = '受注' AND substr(expected_close_date, 1, 7) = @target_month THEN 1 ELSE 0 END) AS won_count,
-    SUM(CASE WHEN status NOT IN ('受注', '失注') AND substr(expected_close_date, 1, 7) = @target_month THEN expected_amount ELSE 0 END) AS expected_total,
-    SUM(CASE WHEN status = '受注' AND substr(expected_close_date, 1, 7) = @target_month THEN expected_amount ELSE 0 END) AS won_amount
+    SUM(CASE WHEN status NOT IN ('受注', '失注') AND strftime('%Y/%m', expected_close_date) = @target_month THEN 1 ELSE 0 END) AS active_count,
+    SUM(CASE WHEN status = '受注' AND strftime('%Y/%m', expected_close_date) = @target_month THEN 1 ELSE 0 END) AS won_count,
+    SUM(CASE WHEN status NOT IN ('受注', '失注') AND strftime('%Y/%m', expected_close_date) = @target_month THEN expected_amount ELSE 0 END) AS expected_total,
+    SUM(CASE WHEN status = '受注' AND strftime('%Y/%m', expected_close_date) = @target_month THEN expected_amount ELSE 0 END) AS won_amount
   FROM deal
 )
 SELECT

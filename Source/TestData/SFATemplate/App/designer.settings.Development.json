@@ -1,6 +1,6 @@
 {
   "ConnectionStrings": {
-    "Sfa": "Data Source=C:\\Codeer.LowCode.Blazor.Local\\Data\\sfa_v2.db;"
+    "Sfa": "Data Source=C:\\Codeer.LowCode.Blazor.Local\\Data\\sfa_v3.db;"
   },
   "CurrentDeployInfoName": "local",
   "DeployInfo": {

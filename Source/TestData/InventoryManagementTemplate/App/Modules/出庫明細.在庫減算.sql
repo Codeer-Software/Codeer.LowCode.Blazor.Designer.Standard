@@ -4,8 +4,8 @@ SELECT
   s.warehouse_id,
   -@quantity,
   0,
-  strftime('%Y/%m/%d %H:%M:%S', 'now', '+9 hours'),
-  strftime('%Y/%m/%d %H:%M:%S', 'now', '+9 hours')
+  strftime('%Y-%m-%d %H:%M:%S', 'now', '+9 hours'),
+  strftime('%Y-%m-%d %H:%M:%S', 'now', '+9 hours')
 FROM shipping s
 JOIN shipping_detail sd ON sd.shipping_id = s.id
 WHERE sd.id = last_insert_rowid()

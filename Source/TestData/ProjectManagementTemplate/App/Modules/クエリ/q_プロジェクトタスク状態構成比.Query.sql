@@ -1,7 +1,7 @@
 SELECT
   CASE
     WHEN t.status = '完了' THEN '完了'
-    WHEN t.end_date < strftime('%Y/%m/%d', 'now', 'localtime') THEN '遅延'
+    WHEN date(t.end_date) < date('now', 'localtime') THEN '遅延'
     ELSE t.status
   END AS category_name,
   COUNT(*) AS task_count

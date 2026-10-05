@@ -5,6 +5,6 @@ SELECT
 FROM salesperson s
 LEFT JOIN deal d ON d.owner_salesperson_id = s.id
   AND d.status = '受注'
-  AND substr(d.expected_close_date, 1, 7) = @target_month
+  AND strftime('%Y/%m', d.expected_close_date) = @target_month
 GROUP BY s.id, s.name
 ORDER BY total_amount DESC, s.id ASC

@@ -4,8 +4,8 @@ SELECT
   r.warehouse_id,
   @quantity,
   0,
-  strftime('%Y/%m/%d %H:%M:%S', 'now', '+9 hours'),
-  strftime('%Y/%m/%d %H:%M:%S', 'now', '+9 hours')
+  strftime('%Y-%m-%d %H:%M:%S', 'now', '+9 hours'),
+  strftime('%Y-%m-%d %H:%M:%S', 'now', '+9 hours')
 FROM receiving r
 JOIN receiving_detail rd ON rd.receiving_id = r.id
 WHERE rd.id = last_insert_rowid()

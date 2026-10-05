@@ -41,22 +41,22 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
             "Codeer.LowCode.Blazor を初めて触る方向けの入門用サンプル。著者管理・書籍登録などの最小限の業務画面を一通り含み、デザイナの基本操作を覚えるのに使えます。初期ユーザーは admin/admin。");
 
         public static ProjectCatalogEntry PatternShowcase() => Make(
-            "PatternShowcase", "PatternShowcaseTemplate.bin", "sqlite_patterns_v6.db",
+            "PatternShowcase", "PatternShowcaseTemplate.bin", "sqlite_patterns_v7.db",
             "標準パターン集",
             "Codeer.LowCode.Blazor で実現できる標準パターンを集めたサンプル集 (データ操作 / 検索 / リスト / 一覧 / ダイアログ / レイアウト / 入力UX / 出力 / 別フレーム / 認証・権限 / 承認フロー など 60 種以上)。各機能の実装例として参考にしてください。初期ユーザー: admin/admin、alice/test、bob/test、carol/test、dave/test。");
 
         public static ProjectCatalogEntry InventoryManagement() => Make(
-            "InventoryManagement", "InventoryManagementTemplate.bin", "inventory_v2.db",
+            "InventoryManagement", "InventoryManagementTemplate.bin", "inventory_v3.db",
             "在庫管理テンプレート",
             "倉庫の入庫・出庫・棚卸し・発注など、在庫管理業務を一通り含む業務テンプレート。複数倉庫や商品マスタの扱いの参考に。初期ユーザーは admin/admin。");
 
         public static ProjectCatalogEntry Sfa() => Make(
-            "SFA", "SFATemplate.bin", "sfa_v2.db",
+            "SFA", "SFATemplate.bin", "sfa_v3.db",
             "営業支援 (SFA) テンプレート",
             "顧客 / 商談 / 活動履歴 / 案件パイプラインなど、営業支援 (SFA) 業務を一通り含む業務テンプレート。営業案件の進捗管理の参考に。初期ユーザーは admin/admin。");
 
         public static ProjectCatalogEntry ProjectManagement() => Make(
-            "ProjectManagement", "ProjectManagementTemplate.bin", "project_management_v2.db",
+            "ProjectManagement", "ProjectManagementTemplate.bin", "project_management_v3.db",
             "プロジェクト管理テンプレート",
             "プロジェクト / タスク / 工数 / 進捗管理など、プロジェクト管理業務を一通り含む業務テンプレート。タスク階層やガントチャート的な可視化の参考に。初期ユーザーは admin/admin。");
 

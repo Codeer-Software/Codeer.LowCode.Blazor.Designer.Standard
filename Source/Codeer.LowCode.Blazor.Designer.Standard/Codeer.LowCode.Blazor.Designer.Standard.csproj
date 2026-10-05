@@ -11,9 +11,9 @@
 
         <!-- OSS / NuGet パッケージ (MIT)。 -->
         <PackageId>Codeer.LowCode.Blazor.Designer.Standard</PackageId>
-        <Version>0.8.16</Version>
+        <Version>0.8.17</Version>
         <PackageReleaseNotes>
-- Claude Code workspace: allow the audit-log-setup command and point to feature docs in _specs (audit log).
+- Sample databases: date columns are declared as DATE / DATETIME.
         </PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>

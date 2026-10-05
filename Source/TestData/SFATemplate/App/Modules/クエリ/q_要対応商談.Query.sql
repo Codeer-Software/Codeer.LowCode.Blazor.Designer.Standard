@@ -3,8 +3,8 @@
 -- 停滞: 30日以上活動なし かつ 未受注未失注
 WITH params AS (
   SELECT
-    replace(@today_date, '-', '/') AS today_slash,
-    replace(date(replace(@today_date, '/', '-'), '-30 days'), '-', '/') AS stale_slash
+    date(@today_date) AS base_date,
+    date(@today_date, '-30 days') AS stale_date
 ),
 latest_activity AS (
   SELECT deal_id, MAX(activity_date_time) AS last_activity_at
@@ -19,10 +19,10 @@ warned AS (
     s.name AS owner_name,
     d.status,
     d.expected_close_date,
-    substr(la.last_activity_at, 1, 10) AS last_activity_date,
-    CASE WHEN d.expected_close_date < (SELECT today_slash FROM params) THEN 1 ELSE 0 END AS is_overdue,
+    date(la.last_activity_at) AS last_activity_date,
+    CASE WHEN date(d.expected_close_date) < (SELECT base_date FROM params) THEN 1 ELSE 0 END AS is_overdue,
     CASE WHEN la.last_activity_at IS NULL
-              OR substr(la.last_activity_at, 1, 10) < (SELECT stale_slash FROM params)
+              OR date(la.last_activity_at) < (SELECT stale_date FROM params)
          THEN 1 ELSE 0 END AS is_stale
   FROM deal d
   LEFT JOIN customer c ON d.customer_id = c.id

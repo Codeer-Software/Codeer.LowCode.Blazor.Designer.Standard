@@ -12,6 +12,6 @@ SELECT
   COALESCE(COUNT(d.id), 0) AS deal_count
 FROM phases p
 LEFT JOIN deal d ON d.status = p.phase
-  AND substr(d.expected_close_date, 1, 7) = @target_month
+  AND strftime('%Y/%m', d.expected_close_date) = @target_month
 GROUP BY p.phase, p.sort_order
 ORDER BY p.sort_order

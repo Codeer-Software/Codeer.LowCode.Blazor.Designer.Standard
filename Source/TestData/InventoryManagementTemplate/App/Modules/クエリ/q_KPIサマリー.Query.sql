@@ -19,8 +19,8 @@ SELECT
      JOIN product p ON p.id = inv.product_id
      WHERE p.reorder_point IS NOT NULL
        AND inv.current_stock < p.reorder_point) AS reorder_count,
-    (SELECT COUNT(*) FROM receiving WHERE substr(receiving_date, 1, 7) = (strftime('%Y', 'now') || '/' || strftime('%m', 'now'))) AS month_receiving_count,
-    (SELECT COUNT(*) FROM shipping WHERE substr(shipping_date, 1, 7) = (strftime('%Y', 'now') || '/' || strftime('%m', 'now'))) AS month_shipping_count,
+    (SELECT COUNT(*) FROM receiving WHERE strftime('%Y-%m', receiving_date) = strftime('%Y-%m', 'now')) AS month_receiving_count,
+    (SELECT COUNT(*) FROM shipping WHERE strftime('%Y-%m', shipping_date) = strftime('%Y-%m', 'now')) AS month_shipping_count,
     (SELECT COUNT(*) FROM purchase_order
      WHERE status IN ('発注中', '一部入庫')) AS pending_order_count,
     (SELECT COALESCE(SUM((COALESCE(pod.quantity, 0) - COALESCE(pod.received_quantity, 0)) * COALESCE(pod.unit_price, 0)), 0)
@@ -30,4 +30,4 @@ SELECT
     (SELECT COUNT(*) FROM purchase_order
      WHERE status IN ('発注中', '一部入庫')
        AND desired_delivery_date IS NOT NULL
-       AND desired_delivery_date < strftime('%Y/%m/%d', 'now', '+9 hours')) AS delayed_order_count
+       AND date(desired_delivery_date) < date('now', '+9 hours')) AS delayed_order_count
