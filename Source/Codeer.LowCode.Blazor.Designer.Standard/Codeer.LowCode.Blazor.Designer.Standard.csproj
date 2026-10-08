@@ -11,9 +11,9 @@
 
         <!-- OSS / NuGet パッケージ (MIT)。 -->
         <PackageId>Codeer.LowCode.Blazor.Designer.Standard</PackageId>
-        <Version>0.8.17</Version>
+        <Version>0.8.18</Version>
         <PackageReleaseNotes>
-- Sample databases: date columns are declared as DATE / DATETIME.
+- Claude Code workspace: allow the tag-setup CLI (TagField).
         </PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
