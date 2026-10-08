@@ -11,9 +11,9 @@
 
         <!-- OSS / NuGet パッケージ (MIT)。 -->
         <PackageId>Codeer.LowCode.Blazor.Designer.Standard</PackageId>
-        <Version>0.8.18</Version>
+        <Version>0.8.19</Version>
         <PackageReleaseNotes>
-- Claude Code workspace: allow the tag-setup CLI (TagField).
+- PatternShowcase template: search label row without bottom margin.
         </PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
