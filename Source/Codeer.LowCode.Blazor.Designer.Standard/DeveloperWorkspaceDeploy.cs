@@ -35,6 +35,7 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
         const string SpecsDirName = "_specs";
         const string HooksDirName = "_hooks";
         const string HookScriptName = "refresh-design-workspaces.ps1";
+        const string LicenseGuardScriptName = "license-guard-root.ps1";
         const string ResourcePrefix = "Codeer.LowCode.Blazor.Designer.Standard.DeveloperWorkspace.";
         const string ExePlaceholder = "<デザイナexeのパス>";
 
@@ -122,6 +123,9 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
             Directory.CreateDirectory(hooks);
             File.WriteAllText(Path.Combine(hooks, HookScriptName), LoadResource(HookScriptName), new UTF8Encoding(true));
             result.Written.Add($"{FolderName}/{HooksDirName}/{HookScriptName}");
+            // ライセンスで編集を止める PreToolUse フック (DesignProjects/*/ の各ワークスペースの license-guard.ps1 に委ねる)
+            File.WriteAllText(Path.Combine(hooks, LicenseGuardScriptName), LoadResource(LicenseGuardScriptName), new UTF8Encoding(true));
+            result.Written.Add($"{FolderName}/{HooksDirName}/{LicenseGuardScriptName}");
 
             // .claude/settings.local.json: マシン固有 (exe パス焼き込み)。無いときだけ生成、既存は触らない
             var settingsLocal = Path.Combine(rootDir, ".claude", "settings.local.json");

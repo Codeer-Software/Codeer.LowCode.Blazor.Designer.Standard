@@ -264,9 +264,11 @@ headless の `*-setup` サブコマンドで呼べる。
 
 `designcheck` と同じ (上記「デザイナ exe のパス」を参照)。
 
-## デザイナのバージョン前提 (1.3.15 以降 / template-create・deploy・api は 1.3.24 以降 / deploy の AllowCliDeploy は 1.3.32 以降)
+## デザイナのバージョン前提 (1.3.15 以降 / template-create・deploy・api は 1.3.24 以降 / deploy の AllowCliDeploy は 1.3.32 以降 / license-status とライセンスによる CLI の拒否は 1.3.43 以降)
 
 このワークスペースは**それを展開したデザイナと同一バージョンの内容**であり、デザイナ 1.3.15 以降の CLI サブコマンドを前提とする (`template-create` / `deploy` / `api` は 1.3.24 以降。`deploy` の許可判定 `AllowCliDeploy` は 1.3.32 以降で、それより前の版は FileSystem 方式なら無条件・FTPS は拒否)。古い exe に未知のサブコマンドを渡すと、headless として認識されず**GUI ウィンドウが起動してしまう**ことがある (エラーで即終了せず、`--out` の JSON も作られない)。
+
+デザイナ 1.3.43 以降では、headless の全サブコマンドが**デザインを編集できるライセンス (開発・メンテナンス・組込み、またはトライアル中) のときだけ**動く。それ以外 (サーバー / クライアントのライセンス、ライセンス無しでトライアルも無効) は `{ "error": "...", "license": true }` を `--out` (無ければ標準出力) に書いて終了コード 2 で終わる。`license-status [--out <json>]` だけはライセンスが無くても動き、`{ canEdit, licenseType, trial, message }` を返す (終了コード 0 = 編集できる / 1 = できない)。ワークスペースのフックがこれを使って編集の可否を Claude に伝える (ルートの CLAUDE.md「9. ライセンス」)。
 
 CLI 実行後は必ず次で成否を判定する:
 

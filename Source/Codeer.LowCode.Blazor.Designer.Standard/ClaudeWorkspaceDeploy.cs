@@ -191,7 +191,8 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
                     "ClaudeCodeForDesigner/\n" +
                     "tools/\n" +
                     "LocalEnvironment.md\n" +
-                    ".claude/settings.local.json\n",
+                    ".claude/settings.local.json\n" +
+                    ".claude/license_status.json\n",
                     new UTF8Encoding(false));
                 result.Created.Add(".gitignore");
             }

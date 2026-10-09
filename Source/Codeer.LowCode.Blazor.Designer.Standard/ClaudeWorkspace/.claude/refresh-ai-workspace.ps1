@@ -11,6 +11,12 @@
 #   ddl/ / tools/ は不可侵)。スタンプは deploy 側が ai-refresh 成功時にだけ書く
 #   (失敗時に古い exe を「最新」と誤記録しないため)。
 #
+# ライセンス:
+#   先に .claude/license-status.ps1 でこのマシンのライセンスを見る。デザインを編集できないライセンス
+#   (サーバー / クライアント、ライセンス無しでトライアルも無効) なら、ClaudeCodeForDesigner/ (知識ベース) を消して
+#   作り直さず、その旨を標準出力に出す (SessionStart / UserPromptSubmit の標準出力は Claude の文脈に入る)。
+#   ライセンスが戻れば次のプロンプトで作り直される。
+#
 # このワークスペースはデザイナ 1.3.15 以降が前提。古い exe に未知の verb を渡すと GUI が起動してしまうため、
 # exe と同フォルダの Codeer.LowCode.Blazor.Designer.dll のバージョンで対応可否を判定し、未満なら何もしない
 # (古い場合はデザイナを更新して Tools > Claude Code Workspace を再実行する)。
@@ -41,6 +47,16 @@ try {
     $v = [version](Get-Item -LiteralPath $designerDll).VersionInfo.FileVersion
     if ($v -lt [version]'1.3.15.0') { exit 0 }
 } catch { exit 0 }
+
+# ライセンス: 編集できないなら知識ベースを置かず、状態を Claude に伝えて終わる
+$license = & powershell -NoProfile -ExecutionPolicy Bypass -File '.claude/license-status.ps1' $Exe
+$license = [string]$license
+if ($license.StartsWith('blocked|')) {
+    if (Test-Path -LiteralPath 'ClaudeCodeForDesigner') { Remove-Item -LiteralPath 'ClaudeCodeForDesigner' -Recurse -Force }
+    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+    Write-Output ('[ライセンス] このマシンではデザインを編集できません: ' + $license.Substring(8) + ' デザインファイル (' + $Project + '/) を編集せず、CLAUDE.md の「ライセンス」の手順でライセンス登録を案内すること。ClaudeCodeForDesigner/ (仕様・カタログ) はライセンスが無いため置いていない。')
+    exit 0
+}
 
 # バイナリ署名: exe と同フォルダの *.dll の LastWriteTimeUtc の最大値 (deploy 側と同一定義)。
 # 注: Split-Path は -LiteralPath と -Parent が別パラメータセットで両立しない (AmbiguousParameterSet) ため使わない。
