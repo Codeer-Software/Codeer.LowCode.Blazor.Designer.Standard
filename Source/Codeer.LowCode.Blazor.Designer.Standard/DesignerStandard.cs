@@ -1,5 +1,6 @@
 using Codeer.LowCode.Blazor.Designer.Extensibility;
 using Codeer.LowCode.Blazor.Designer.Standard.AIChat;
+using Codeer.LowCode.Blazor.Designer.Standard.ModuleToClass;
 using Microsoft.Extensions.AI;
 
 namespace Codeer.LowCode.Blazor.Designer.Standard
@@ -27,7 +28,7 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
     public static class DesignerStandard
     {
         /// <summary>
-        /// headless CLI から参照されるもの (プロジェクトテンプレート / claude-workspace・developer-workspace・selenium 系 verb) を登録する。
+        /// headless CLI から参照されるもの (プロジェクトテンプレート / claude-workspace・developer-workspace・selenium 系・poco verb) を登録する。
         /// アプリの OnStartup で base.OnStartup(e) より前に呼ぶこと (headless 分岐がその中で走るため)。
         /// Setup と併用しても二重登録にはならない (冪等)。
         /// </summary>
@@ -37,6 +38,7 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
             ClaudeWorkspaceDeploy.RegisterCli();
             DeveloperWorkspaceDeploy.RegisterCli();
             SeleniumTestCli.RegisterCli();
+            PocoCli.RegisterCli();
         }
 
         public static void Setup(DesignerEnvironment env, DesignerStandardOptions? options = null)

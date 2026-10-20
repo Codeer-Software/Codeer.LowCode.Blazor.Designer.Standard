@@ -21,7 +21,7 @@ Claude Code を活用することで、自然言語の指示からアプリケ�
 
 デザインファイルは「JSON 構文として妥当」でも「業務的に間違い」になりうる。`LimitCount: 0` で明細が 0 件になる、システム項目を編集欄に出す、といった**意味的バグは designcheck では検出できない**（JSON として妥当なため素通りする）。これを着手段階で防ぐためのルール:
 
-0. **まず設定、次にスクリプト、C# は最後の手段**。フィールド／レイアウト／検索条件／権限条件などの**デザイン設定で表現できることはスクリプトを書かない**（`IsEnabled` 条件・`VisibleCondition`・リンク・集計フィールド等で足りることが多い）。スクリプトは設定で表せない挙動だけに最小限で書き、書く前に「既存フィールド／プロパティで代替できないか」を必ず問う。ホスト (C#) を触るのは、フィールド型そのものが無い・性能をコードで改善したい・独自 API が要るなど、ローコードの範囲で不可能と確定したときだけ（[ClaudeCodeForDesigner/_specs/HostCustomization.md](ClaudeCodeForDesigner/_specs/HostCustomization.md)）。
+0. **まず設定、次にスクリプト、C# は最後の手段**。フィールド／レイアウト／検索条件／権限条件などの**デザイン設定で表現できることはスクリプトを書かない**（`IsEnabled` 条件・`VisibleCondition`・リンク・集計フィールド等で足りることが多い）。スクリプトは設定で表せない挙動だけに最小限で書き、書く前に「既存フィールド／プロパティで代替できないか」を必ず問う。ホスト (C#) を触るのは、フィールド型そのものが無い・性能をコードで改善したい・独自 API が要るなど、ローコードの範囲で不可能と確定したときだけ（[ClaudeCodeForDesigner/_specs/HostCustomization.md](ClaudeCodeForDesigner/_specs/HostCustomization.md)）。例外として、定期処理・一括取込（バッチ）は今はホストの C# ジョブ（ホストの Server プロジェクトの `Jobs/`（`LowCodeApp.Server/Jobs/`）に `IJob`。モジュールを扱う C# クラスは `poco` CLI で生成。手順は [ClaudeCodeForDesigner/_specs/HostCustomization.md](ClaudeCodeForDesigner/_specs/HostCustomization.md) の「C# からデータを読み書きする」とホストの `Server/Jobs/README.md`）。ローコードでのフロー定義は今後。
 1. **規約（Guidelines）が正、JSON 例は参考**。両者が食い違う場合は必ず Guidelines に従う。各 Fields ドキュメントの JSON 例は最小サンプルであり、値が常に最適とは限らない。
 2. **着手前に最低限これを読む**: [Docs/CommonMistakes.md](Docs/CommonMistakes.md) / [Docs/LayoutGuidelines.md](Docs/LayoutGuidelines.md) / [Docs/SearchConditionGuidelines.md](Docs/SearchConditionGuidelines.md) / [Docs/ScriptGuidelines.md](Docs/ScriptGuidelines.md) ＋ 作るものに該当する [Docs/AppPatterns/](Docs/AppPatterns/) のパターン。必要箇所だけ grep で拾うのではなく、関連 Guidelines を通読してから書く。
 3. **既存をコピーして改変する（ゼロから JSON を組まない）**。
