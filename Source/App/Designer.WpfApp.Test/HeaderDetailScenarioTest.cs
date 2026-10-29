@@ -78,7 +78,7 @@ namespace Designer.WpfApp.Test
 
             // 簡単な round-trip: ヘッダ1件 + 明細1件(FK紐付け) を入れて読めるか(NOT NULL 列はダミーで埋める)
             db.InsertRow("orders", new() { ["id"] = 1 });
-            db.InsertRow("order_details", new() { ["id"] = 1, [fk.DbColumn] = 1 });
+            db.InsertRow("order_details", new() { ["id"] = 1, [fk!.DbColumn] = 1 });
             var cnt = db.ExecuteScalarLong($"SELECT COUNT(*) FROM order_details WHERE {fk.DbColumn} = 1;");
             Assert.That(cnt, Is.EqualTo(1), "FK でヘッダに紐づく明細が取得できない");
         }

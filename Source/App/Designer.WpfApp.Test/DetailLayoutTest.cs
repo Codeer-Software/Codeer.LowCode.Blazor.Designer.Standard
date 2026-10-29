@@ -1033,7 +1033,7 @@ namespace Designer.WpfApp.Test
             // 先頭行にタイトルと戻る、末尾行にサブミット。
             var firstRow = NamesUnderRow(root.Rows.First());
             var lastRow = NamesUnderRow(root.Rows.Last());
-            Assert.That(firstRow, Does.Contain(back!.Name).And.Contain(title.Name), "先頭行にタイトル/戻るが無い");
+            Assert.That(firstRow, Does.Contain(back!.Name).And.Contain(title!.Name), "先頭行にタイトル/戻るが無い");
             Assert.That(lastRow, Does.Contain(submit!.Name), "末尾行にサブミットが無い");
             // 本体(CustomerCode)も残っている。
             Assert.That(CollectFieldNames(root), Does.Contain("CustomerCode"));
