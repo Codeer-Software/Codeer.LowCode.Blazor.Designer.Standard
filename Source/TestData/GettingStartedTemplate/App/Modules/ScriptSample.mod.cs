@@ -42,21 +42,6 @@ void ButtonViewOnly_OnClick()
     TargetText.IsViewOnly = !TargetText.IsViewOnly;
 }
 
-void GetWeatherForecast_OnClick()
-{
-    var data = WebApiService.Get("/testapi").JsonObject;
-    WeatherForecastList.DeleteAllRows();
-    foreach(var e in data)
-    {
-        var row = new WeatherForecast();
-        row.Date.Value = e.Date;
-        row.TemperatureC.Value = e.TemperatureC;
-        row.TemperatureF.Value = e.TemperatureF;
-        row.Summary.Value = e.Summary;
-        WeatherForecastList.AddRow(row);
-    }    
-}
-
 void QuotaionSample_OnClick()
 {
     QuotationTitle.Value = "Party ingredients";

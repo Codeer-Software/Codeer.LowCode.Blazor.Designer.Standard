@@ -11,10 +11,9 @@
 
         <!-- OSS / NuGet パッケージ (MIT)。 -->
         <PackageId>Codeer.LowCode.Blazor.Designer.Standard</PackageId>
-        <Version>0.8.21</Version>
+        <Version>0.8.22</Version>
         <PackageReleaseNotes>
-- Headless poco command: generates C# classes (POCOs) for the modules of a design project.
-- Claude Code Workspace: the poco command is allowed; docs on batch jobs.
+- GettingStarted template: removed the WebAPI sample (the host template no longer ships TestAPIController).
         </PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
