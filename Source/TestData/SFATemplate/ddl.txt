@@ -76,7 +76,8 @@ CREATE TABLE app_users (
     user_name TEXT NOT NULL UNIQUE,
     name TEXT,
     hash TEXT NOT NULL,
-    salt TEXT NOT NULL
+    salt TEXT NOT NULL,
+    session_stamp TEXT
 );
 ----data--------
 INSERT INTO salesperson (id, name, department, email, created_at, updated_at) VALUES

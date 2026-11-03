@@ -1,6 +1,6 @@
 {
   "ConnectionStrings": {
-    "PatternsSQLite": "Data Source=C:\\Codeer.LowCode.Blazor.Local\\Data\\sqlite_patterns_v7.db;"
+    "PatternsSQLite": "Data Source=C:\\Codeer.LowCode.Blazor.Local\\Data\\sqlite_patterns_v8.db;"
   },
   "CurrentDeployInfoName": "local",
   "DeployInfo": {

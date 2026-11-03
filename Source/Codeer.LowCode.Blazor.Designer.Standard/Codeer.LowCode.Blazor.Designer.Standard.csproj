@@ -11,9 +11,11 @@
 
         <!-- OSS / NuGet パッケージ (MIT)。 -->
         <PackageId>Codeer.LowCode.Blazor.Designer.Standard</PackageId>
-        <Version>0.8.22</Version>
+        <Version>0.8.23</Version>
         <PackageReleaseNotes>
-- GettingStarted template: removed the WebAPI sample (the host template no longer ships TestAPIController).
+- Templates: design files rewritten in the omit-default-values form with current assembly versions (no migration prompt right after creating a project).
+- Templates: AppUser login account contract now has DbColumnSessionStamp (session_stamp column in the bundled SQLite databases).
+- Templates: AppUser detail page has a SessionRevokeButtonField (log the user out from all devices).
         </PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>

@@ -23,6 +23,7 @@ app_users  (プレーンなユーザーテーブル。ASP.NET Identity ではな
 ├── role        TEXT
 └── is_active   BOOLEAN
     (任意) totp_secret TEXT / totp_confirmed INTEGER / totp_last_timestep INTEGER … 認証アプリ (TOTP) の二要素認証を使うときだけ
+    session_stamp TEXT … セッションの印。発行済みの Cookie をサーバーで失効させる (サーバーが値を書く。テンプレートの AppUser は設定済み)
 ```
 
 `AppUser` は既定の Cookie 認証が使う**プレーンな `app_users` テーブル**に紐づく (ASP.NET Identity / `AspNetUsers` ではなく、独自ハッシュで照合する素朴な実装)。CLB の `app.clprj` の `CurrentUserModuleDesignName: "AppUser"` で「現在のログインユーザー = AppUser のレコード」と紐づけ、スクリプトから `CurrentUser.表示名.Value` のようにアクセスできるようになる。認証そのものはライブラリではなくホスト (Server プロジェクトの `CookieAuthentication.cs` / `Controllers/AccountController.cs`) の担当で、デザイン側が満たすのは下の「CLB ではこう作る」の契約だけ。ログイン後の `CurrentUser` と権限条件 (認可) はライブラリの担当 → [認可](ClaudeCodeForDesigner/_specs/Authorization.md)。
@@ -43,6 +44,9 @@ app_users  (プレーンなユーザーテーブル。ASP.NET Identity ではな
   `PasswordField` (平文入力欄の参照。保存時に契約がハッシュ化して書く) と、書き先 / 照合用の `DbColumnPasswordHash` / `DbColumnPasswordSalt`。UI を持たない宣言フィールドで、レイアウトには出さない
 - 認証アプリ (TOTP) の二要素認証を使うなら、契約の `DbColumnTotpSecret` / `DbColumnTotpConfirmed` / `DbColumnTotpLastTimestep` に上の 3 列を指定する (3 つ揃えて有効化)。
   解除ボタンは `TotpResetButtonField` (AppUser の詳細画面。表示中のユーザーを解除。通常の保存と同じ権限) と `MyTotpResetButtonField` (本人用。どこにでも置ける)
+- 契約の `DbColumnSessionStamp` に `session_stamp` 列を指定すると、発行済みの Cookie をサーバーで失効できる (テンプレートの AppUser は設定済み): パスワード変更・`IsActive` を偽にする保存・全端末ログアウトで、それまでのログインが全部その場で無効になる。
+  書き込み専用列で値はサーバーだけが作るので、フィールドもレイアウトも要らない。後から足すと、その時点でログイン中の全員が再ログインになる。
+  管理者が特定のユーザーを全端末からログアウトさせるボタンは `SessionRevokeButtonField` (AppUser の詳細画面。テンプレートに設置済み。列は契約と同じ session_stamp)
 - **app.clprj** の `CurrentUserModuleDesignName: "AppUser"` を指定 → スクリプトの `CurrentUser` から AppUser インスタンスにアクセスできるようになる
 - **MyProfile** は表示専用モジュール (`DbTable: ""`)。`CurrentUser.表示名.Value` 等を Label/Text に流し込んで表示
 - **パスワード変更**は ChangePasswordDialog (同じ `app_users` テーブルを参照する別モジュール) を `ShowDialog` で開く

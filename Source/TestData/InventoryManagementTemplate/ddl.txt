@@ -168,7 +168,8 @@ CREATE TABLE app_users (
     user_name TEXT NOT NULL UNIQUE,
     name TEXT,
     hash TEXT NOT NULL,
-    salt TEXT NOT NULL
+    salt TEXT NOT NULL,
+    session_stamp TEXT
 );
 ----data--------
 INSERT INTO supplier (id, name, contact_name, phone, email, address, created_at, updated_at) VALUES
