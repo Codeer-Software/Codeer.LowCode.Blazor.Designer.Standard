@@ -67,7 +67,7 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
             if (exeVerbs.Count == 0 && commands.Count == 0) return null;
 
             var sb = new StringBuilder();
-            sb.Append("# デザイナ (claude-workspace / developer-workspace) が .claude/settings.local.json と同じ許可で生成する。手で編集しない。\n");
+            sb.Append("# デザイナ (ai-workspace / developer-workspace) が .claude/settings.local.json と同じ許可で生成する。手で編集しない。\n");
             sb.Append("# Codex はこのプロジェクトを信頼済みにしたときだけ読む。\n");
             foreach (var (exe, verbs) in exeVerbs)
                 AppendRule(sb, "[" + Quote(exe) + ", [" + string.Join(", ", verbs.Select(Quote)) + "]]");

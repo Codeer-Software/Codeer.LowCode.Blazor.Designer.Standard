@@ -1,0 +1,68 @@
+# ユーザーモジュールと認証連動
+
+業務アプリ全体の前提となる「ログインユーザーをアプリ内のレコードとして持つ」「現在のログインユーザーを画面・スクリプトから参照する」「パスワードを変更する」といった基本パターン。
+
+## アプリの作り
+
+<!-- 画像参照: Manual の Image/web/patterns/auth_my_profile.png (ここではコメントアウト) -->
+
+- ユーザーがログインすると、サイドバーに「マイプロフィール」リンクが表示される
+- マイプロフィールを開くとログイン中ユーザーの情報 (表示名・メール等) が読み取り専用で表示される
+- 「パスワード変更」ボタンでダイアログが開き、その場でパスワードを変更できる
+- 管理画面の「ユーザー管理」ではすべてのユーザーを CRUD できる (管理者のみ)
+
+## 支えるデータ構造
+
+```
+app_users  (プレーンなユーザーテーブル。ASP.NET Identity ではない)
+├── id          PK
+├── user_name   TEXT (ログイン ID)
+├── name        TEXT (表示名)
+├── hash        TEXT (ログインアカウント契約がサーバ側で書き込む)
+├── salt        TEXT (同上)
+├── role        TEXT
+└── is_active   BOOLEAN
+    (任意) totp_secret TEXT / totp_confirmed INTEGER / totp_last_timestep INTEGER … 認証アプリ (TOTP) の二要素認証を使うときだけ
+    session_stamp TEXT … セッションの印。発行済みの Cookie をサーバーで失効させる (サーバーが値を書く。テンプレートの AppUser は設定済み)
+```
+
+`AppUser` は既定の Cookie 認証が使う**プレーンな `app_users` テーブル**に紐づく (ASP.NET Identity / `AspNetUsers` ではなく、独自ハッシュで照合する素朴な実装)。CLB の `app.clprj` の `CurrentUserModuleDesignName: "AppUser"` で「現在のログインユーザー = AppUser のレコード」と紐づけ、スクリプトから `CurrentUser.表示名.Value` のようにアクセスできるようになる。認証そのものはライブラリではなくホスト (Server プロジェクトの `CookieAuthentication.cs` / `Controllers/AccountController.cs`) の担当で、デザイン側が満たすのは下の「CLB ではこう作る」の契約だけ。ログイン後の `CurrentUser` と権限条件 (認可) はライブラリの担当 → [認可](AIForDesigner/_specs/Authorization.md)。
+
+## モジュールとテーブルの対応
+
+| モジュール | テーブル | 主な役割 |
+|---|---|---|
+| `AppUser` | `app_users` | ユーザーマスタ。管理画面で CRUD |
+| `MyProfile` | (なし、表示専用) | ログイン中ユーザーの自分用情報表示 + パスワード変更ボタン |
+| `ChangePasswordDialog` | `app_users` (同じテーブル) | 自分のパスワードだけ更新できるダイアログ用モジュール |
+
+## CLB ではこう作る
+
+- **AppUser モジュール**: 通常の CRUD モジュールとして `app_users` テーブルに紐づける。パスワードは PasswordField (平文入力欄。DB 列なし) に入力し、ログインアカウント契約が保存時にハッシュ / ソルトを書く
+- **ログインアカウント契約 (`LoginAccountContractField`、Extras)** を AppUser の Fields に 1 つ置く。サーバのログイン処理はこの契約だけを見る:
+  `LoginName` (ログイン ID を持つフィールド。必須) / `DisplayName` (表示名) / `IsActive` (偽なら拒否) / `ExternalLoginName` (Entra 等の外部ログインで突き合わせる列。空なら LoginName) と、
+  `PasswordField` (平文入力欄の参照。保存時に契約がハッシュ化して書く) と、書き先 / 照合用の `DbColumnPasswordHash` / `DbColumnPasswordSalt`。UI を持たない宣言フィールドで、レイアウトには出さない
+- 認証アプリ (TOTP) の二要素認証を使うなら、契約の `DbColumnTotpSecret` / `DbColumnTotpConfirmed` / `DbColumnTotpLastTimestep` に上の 3 列を指定する (3 つ揃えて有効化)。
+  解除ボタンは `TotpResetButtonField` (AppUser の詳細画面。表示中のユーザーを解除。通常の保存と同じ権限) と `MyTotpResetButtonField` (本人用。どこにでも置ける)
+- 契約の `DbColumnSessionStamp` に `session_stamp` 列を指定すると、発行済みの Cookie をサーバーで失効できる (テンプレートの AppUser は設定済み): パスワード変更・`IsActive` を偽にする保存・全端末ログアウトで、それまでのログインが全部その場で無効になる。
+  書き込み専用列で値はサーバーだけが作るので、フィールドもレイアウトも要らない。後から足すと、その時点でログイン中の全員が再ログインになる。
+  管理者が特定のユーザーを全端末からログアウトさせるボタンは `SessionRevokeButtonField` (AppUser の詳細画面。テンプレートに設置済み。列は契約と同じ session_stamp)
+- **app.clprj** の `CurrentUserModuleDesignName: "AppUser"` を指定 → スクリプトの `CurrentUser` から AppUser インスタンスにアクセスできるようになる
+- **MyProfile** は表示専用モジュール (`DbTable: ""`)。`CurrentUser.表示名.Value` 等を Label/Text に流し込んで表示
+- **パスワード変更**は ChangePasswordDialog (同じ `app_users` テーブルを参照する別モジュール) を `ShowDialog` で開く
+
+## 標準パターン集の対応 (認証・権限)
+
+- サイドバー **`認証・権限/マイプロフィール`** → `MyProfile`
+- サイドバー **`認証・権限/ユーザー管理`**、および **`管理画面へ` → `ユーザー管理`** → `AppUser` (管理画面側は管理者のみアクセス)
+
+## 落とし穴
+
+- `AppUser` に `UserReadCondition` / `UserWriteCondition` を**つけてはいけない** (CurrentUser のソースになるため、制限すると マイプロフィール / パスワード変更 / LinkField 表示が全部壊れる)。管理者だけアクセスさせたい場合は PageFrame レベル (`AdminHome.UserReadCondition`) で絞る → [管理画面の分離パターン](auth_admin_frame.md)
+- パスワードは平文保存しない。AppUser では契約の `PasswordField` が保存時にハッシュ化する。契約の無い別モジュール (パスワード変更ダイアログ) では `PasswordHashField` (Extras パッケージ) を使う
+- `LoginAccountContractField` が無い、または `LoginName` が空だとログインできない (デザインチェックがエラーにする)。契約の `PasswordField` と `PasswordHashField` を同じモジュールに置かない (同じ列を二重に書くのでエラー)
+
+## 関連ドキュメント
+
+- [認証・権限・承認パターン 一覧](auth_patterns.md)
+- [認証 / 認可の概要](https://github.com/Codeer-Software/Codeer.LowCode.Blazor.Manual/blob/main/JP/authorization/authorization.md)

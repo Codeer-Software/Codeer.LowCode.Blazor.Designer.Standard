@@ -9,7 +9,7 @@
 - **プロジェクトテンプレート**（`StandardTemplates`）— 空のプロジェクト / 入門サンプル / 標準パターン集 / 在庫管理 / SFA / プロジェクト管理。すべて Cookie 認証ホスト向け（AppUser + 初期ユーザー admin/admin）で、サンプル SQLite データベースを同梱。
 - **ツールメニュー**（`StandardMenus`）— Import Modules from Database、Create DDL、Create Field Class、Create FieldData Class、Create C# Enum、Export Excel Print CheatSheet、Export PageObject（Selenium）、および標準の DB 列変換（PostgreSQL の `xmin` → 楽観的ロック）。
 - **アイコン候補**（`StandardIcons`）— アイコンピッカー用の Bootstrap Icons 一覧。
-- **Claude Code ワークスペース**（`ClaudeWorkspaceDeploy` / Tools > Claude Code Workspace）— Claude Code ワークスペース（`CLAUDE.md`・ドキュメント・フック・デザイナ exe パスを焼き込んだ許可設定）を展開・更新します。ドキュメントはこのパッケージ内（`ClaudeWorkspace/`）の同梱分に加えて、ai-refresh による自動生成リファレンス（フィールドカタログ・仕様・デフォルト JSON・サンプル）を `ClaudeCodeForDesigner/` に丸ごと出力し、デザイナ更新時はフックが検知して丸ごと入れ替えるため、常に実行中のデザイナと同一バージョンになります。headless CLI の `claude-workspace` verb からも利用できます。使い方は [Claude Code でデザインプロジェクトを編集する](Docs/claude_code_designer.md) を参照してください。
+- **Claude Code ワークスペース**（`AIWorkspaceDeploy` / Tools > AI Workspace）— Claude Code ワークスペース（`CLAUDE.md`・ドキュメント・フック・デザイナ exe パスを焼き込んだ許可設定）を展開・更新します。ドキュメントはこのパッケージ内（`AIWorkspace/`）の同梱分に加えて、ai-refresh による自動生成リファレンス（フィールドカタログ・仕様・デフォルト JSON・サンプル）を `AIForDesigner/` に丸ごと出力し、デザイナ更新時はフックが検知して丸ごと入れ替えるため、常に実行中のデザイナと同一バージョンになります。headless CLI の `ai-workspace` verb からも利用できます。使い方は [Claude Code でデザインプロジェクトを編集する](Docs/claude_code_designer.md) を参照してください。
 - **DDL 生成**（`DbMapping`）— モジュール定義からの決定的な CREATE TABLE / 差分 ALTER TABLE 生成。
 - **AI チャットアシスタント**（`AIChat/`）— CSS・スクリプト・SQL・モジュール設定・フィールド・レイアウト（詳細 / 一覧 / 検索）・ページフレームを自然言語で編集。
   - *タスク指向*: インテントルーターが要求を手順に分解し、各手順を適切なエディタ機能へ振り分けます。
@@ -34,7 +34,7 @@ dotnet add package Codeer.LowCode.Blazor.Designer.Standard
 protected override void OnStartup(StartupEventArgs e)
 {
     // ... アプリ固有のサービス / スクリプト型の登録 ...
-    DesignerStandard.SetupHeadless(); // テンプレート + claude-workspace CLI verb
+    DesignerStandard.SetupHeadless(); // テンプレート + ai-workspace CLI verb
 
     base.OnStartup(e);
 
@@ -70,7 +70,7 @@ Screen chats (ScreenChats)          エディタごとの入口
                                     (DesignerEnvironmentChatHost が標準実装)
 ```
 
-プロンプトは単一ソースです。フレームワークの仕様はデザイナパッケージ（`SpecDocCatalog`、実装と同一アセンブリ・同一バージョン）から、作成ガイドラインは同梱の Claude Code ワークスペース（`ClaudeWorkspace/ClaudeCodeForDesigner/Docs/`）から取得します — AI チャットと Claude Code は同じドキュメントを読みます。
+プロンプトは単一ソースです。フレームワークの仕様はデザイナパッケージ（`SpecDocCatalog`、実装と同一アセンブリ・同一バージョン）から、作成ガイドラインは同梱の Claude Code ワークスペース（`AIWorkspace/AIForDesigner/Docs/`）から取得します — AI チャットと Claude Code は同じドキュメントを読みます。
 フィールドとスクリプトオブジェクトの知識は、デザイナの `FieldCatalog` / `ScriptObjectCatalog`（拡張ライブラリが登録したドキュメントを含む）から動的に注入されるため、プロンプトを編集しなくても拡張が反映されます。
 
 ## ライセンス

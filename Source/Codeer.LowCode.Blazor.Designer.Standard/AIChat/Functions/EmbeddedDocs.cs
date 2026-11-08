@@ -7,12 +7,12 @@ namespace Codeer.LowCode.Blazor.Designer.Standard.AIChat.Functions
 {
     // AIChat のプロンプトに注入する仕様・ガイドラインの読み込みヘルパ。自前コピーは持たない (単一ソース):
     //  - Spec(...)      : フレームワーク仕様 → Designer 本体の SpecDocCatalog (実装と同一アセンブリ・同一バージョン)
-    //  - Guideline(...) : 作り方ガイドライン → このライブラリの ClaudeWorkspace.zip 内 Docs (Claude Code と同一ソース)
+    //  - Guideline(...) : 作り方ガイドライン → このライブラリの AIWorkspace.zip 内 Docs (Claude Code と同一ソース)
     // 読み込めないものはスキップして残りを返す (プロンプトは部分欠落しても動くため)。
     static class EmbeddedDocs
     {
-        const string ZipResourceName = "Codeer.LowCode.Blazor.Designer.Standard.ClaudeWorkspace.zip";
-        const string DocsPrefix = "ClaudeCodeForDesigner/Docs/";
+        const string ZipResourceName = "Codeer.LowCode.Blazor.Designer.Standard.AIWorkspace.zip";
+        const string DocsPrefix = "AIForDesigner/Docs/";
 
         // 仕様ドキュメント (SpecDocCatalog の id、例: "Layouts", "_FieldCommon", "JsonAbstractTypeFullName")
         public static string Spec(params string[] ids)
@@ -35,7 +35,7 @@ namespace Codeer.LowCode.Blazor.Designer.Standard.AIChat.Functions
             return sb.ToString();
         }
 
-        // 作り方ガイドライン (ClaudeWorkspace の Docs/ 相対名、例: "LayoutGuidelines.md")
+        // 作り方ガイドライン (AIWorkspace の Docs/ 相対名、例: "LayoutGuidelines.md")
         public static string Guideline(params string[] fileNames)
         {
             var sb = new StringBuilder();

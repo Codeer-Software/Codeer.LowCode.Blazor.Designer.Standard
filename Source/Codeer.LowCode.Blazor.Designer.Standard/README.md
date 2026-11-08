@@ -9,7 +9,7 @@ Distributed as open source under the **MIT License**.
 - **Project templates** (`StandardTemplates`) — empty / empty with auth / getting started / pattern showcase / auth patterns / inventory / SFA / project management, with bundled sample SQLite databases.
 - **Tool menus** (`StandardMenus`) — Import Modules from Database, Create DDL, Create Field Class, Create FieldData Class, Export Excel Print CheatSheet, Export PageObject (Selenium), plus the standard DB column transform (PostgreSQL `xmin` → optimistic locking).
 - **Icon candidates** (`StandardIcons`) — Bootstrap Icons list for the icon picker.
-- **Claude Code workspace** (`ClaudeWorkspaceDeploy` / Tools > Claude Code Workspace) — deploys and updates the Claude Code workspace (CLAUDE.md, docs, hooks, permission settings with the designer exe path baked in). The docs ship inside this package (`ClaudeWorkspace/`), and deployment also runs `ai-refresh` to emit the generated references (field catalog, specs, default JSONs, samples) into `ClaudeCodeForDesigner/`; a hook detects designer updates and replaces that folder wholesale, so the deployed content always matches the running designer version. Also available headless via the `claude-workspace` CLI verb. The `developer-workspace` verb (`DeveloperWorkspaceDeploy`) writes the host-development specs (`HostCustomization.md` etc.) to `<host root>/ClaudeCodeForDeveloper/_specs/` for Claude Code sessions that edit the C# host; it needs no design project and only owns the `_`-prefixed entries of that folder (`_specs/`, `_hooks/`). It also creates the root `.claude/settings.local.json` (permissions + hooks with the exe path baked in, never overwritten) so that a session started at the host root can edit the designs under `DesignProjects/*/` with the same permissions and automatic reference refresh as one started inside a design workspace.
+- **Claude Code workspace** (`AIWorkspaceDeploy` / Tools > AI Workspace) — deploys and updates the Claude Code workspace (CLAUDE.md, docs, hooks, permission settings with the designer exe path baked in). The docs ship inside this package (`AIWorkspace/`), and deployment also runs `ai-refresh` to emit the generated references (field catalog, specs, default JSONs, samples) into `AIForDesigner/`; a hook detects designer updates and replaces that folder wholesale, so the deployed content always matches the running designer version. Also available headless via the `ai-workspace` CLI verb. The `developer-workspace` verb (`DeveloperWorkspaceDeploy`) writes the host-development specs (`HostCustomization.md` etc.) to `<host root>/AIForDeveloper/_specs/` for Claude Code sessions that edit the C# host; it needs no design project and only owns the `_`-prefixed entries of that folder (`_specs/`; the `_hooks/` of older versions is removed). It also creates the root `.claude/settings.local.json` and `.codex/` from the host's template `AIForDeveloper/settings.local.json.sample` (shipped by the host template, Starter), baking in the exe path; on an existing `settings.local.json` only the hooks section and the CLI permissions are updated and user-added permissions are kept. Without the template it fails with a message (exit 2). This lets a session started at the host root can edit the designs under `DesignProjects/*/` with the same permissions and automatic reference refresh as one started inside a design workspace.
 - **DDL generation** (`DbMapping`) — deterministic CREATE TABLE / diff ALTER TABLE generation from module designs.
 - **AI chat assistant** (`AIChat/`) — natural-language editing of CSS, scripts, SQL, module settings, fields, layouts (detail / list / search), and page frames.
   - *Task-oriented*: an intent router splits a request into steps and dispatches each to the right editor function.
@@ -34,7 +34,7 @@ Register everything with two calls in your designer app — `SetupHeadless` **be
 protected override void OnStartup(StartupEventArgs e)
 {
     // ... app-specific service / script type registrations ...
-    DesignerStandard.SetupHeadless(); // templates + claude-workspace / developer-workspace / selenium CLI verbs
+    DesignerStandard.SetupHeadless(); // templates + ai-workspace / developer-workspace / selenium CLI verbs
 
     base.OnStartup(e);
 
@@ -70,7 +70,7 @@ Screen chats (ScreenChats)          per-editor entry points
                                     (DesignerEnvironmentChatHost is the standard implementation)
 ```
 
-Prompts are single-sourced: framework specifications come from the Designer package (`SpecDocCatalog`, same assembly and version as the implementation), and authoring guidelines come from the embedded Claude Code workspace (`ClaudeWorkspace/ClaudeCodeForDesigner/Docs/`) — the AI chat and Claude Code read the same documents.
+Prompts are single-sourced: framework specifications come from the Designer package (`SpecDocCatalog`, same assembly and version as the implementation), and authoring guidelines come from the embedded Claude Code workspace (`AIWorkspace/AIForDesigner/Docs/`) — the AI chat and Claude Code read the same documents.
 
 ## License
 

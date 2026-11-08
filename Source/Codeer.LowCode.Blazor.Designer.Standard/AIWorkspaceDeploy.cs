@@ -1,0 +1,477 @@
+using Codeer.LowCode.Blazor.Designer.Extensibility;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.IO.Compression;
+using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+
+namespace Codeer.LowCode.Blazor.Designer.Standard
+{
+    /// <summary>
+    /// Claude Code ワークスペースをデザイナから展開・更新する。
+    ///
+    /// 所有権はフォルダ単位で分ける:
+    ///   - フレームワーク所有 = AIForDesigner/ (Docs + ai-refresh の生成物一式) と
+    ///     ルートの CLAUDE.md / AGENTS.md (Codex・GitHub Copilot の入口) / .claude のフックと共通設定 /
+    ///     .codex/hooks.json・.codex/rules/codeer-lowcode.rules (Codex 用。settings.local.json のサンプルから作る)。
+    ///     AIForDesigner/ は展開のたびに丸ごと削除して作り直す (旧版の残骸を残さない)。
+    ///     正本はこのライブラリの埋め込みリソース (AIWorkspace.zip = AIWorkspace/ フォルダを
+    ///     ビルド時に zip 化したもの) + この exe の ai-refresh 生成物で、展開した瞬間の内容は
+    ///     常にこの exe と同一バージョンになる。
+    ///   - ユーザー所有 = Project.md / LocalEnvironment.md / .gitignore / .claude/settings.local.json /
+    ///     ddl/ / docs/ / tools/。上書きしない。無ければ生成する (Project.md は zip 内の雛形から、
+    ///     exe パスは LocalEnvironment.md / settings.local.json に焼き込む)。
+    ///     ただし exe パスを持つ行/節 (LocalEnvironment.md の DesignerExePath 行、settings.local.json の hooks 節と
+    ///     サンプル由来の CLI 許可) はこの exe に合わせて毎回更新する (exe を移した・別の exe で展開し直した・
+    ///     旧フックのままだった、のどれでも自動更新が復活するように)。
+    ///
+    /// 展開の流れ: AIForDesigner/ 削除 → zip 展開 → ユーザー所有ファイル生成 (無い場合のみ)
+    ///   → デザインプロジェクトがあれば自 exe を ai-refresh で子プロセス起動し、生成物
+    ///   (_field_catalog.md / _script_catalog.md / _defaults/ / _specs/ / _samples/) を
+    ///   AIForDesigner/ に出力 → 成功時にバイナリ署名を _ai_refresh.stamp に記録。
+    ///   フック (.claude/refresh-ai-workspace.ps1) は署名が変わったとき (= デザイナや拡張ライブラリの
+    ///   再ビルド・更新) にこの verb を叩き直し、フレームワーク所有分を丸ごと最新化する。
+    ///
+    /// headless CLI:
+    ///   <designer.exe> ai-workspace "<workspaceDir>" [--project <デザインプロジェクトのフォルダ名>] [--out "<resultJsonPath>"]
+    ///   終了コード: 0 = 成功 / 2 = 失敗。
+    ///   verb 登録 (<see cref="RegisterCli"/>) はアプリの OnStartup で base.OnStartup(e) より前に行うこと。
+    /// </summary>
+    public static class AIWorkspaceDeploy
+    {
+        public const string Verb = "ai-workspace";
+        /// <summary>旧名の verb。既に展開済みのワークスペースのフック (旧版の refresh-ai-workspace.ps1) が呼ぶので別名として残す。</summary>
+        public const string LegacyVerb = "claude-workspace";
+        /// <summary>ワークスペースから見たデザインプロジェクトのフォルダ名の既定 (--project 省略時 / プロジェクト未オープン時)。
+        /// ワークスペース = デザインプロジェクト 1 つ分のフォルダ (Project.md / ddl / docs / design) という配置に合わせている。</summary>
+        public const string DefaultProjectFolderName = "design";
+        const string ZipResourceName = "Codeer.LowCode.Blazor.Designer.Standard.AIWorkspace.zip";
+        const string ExePlaceholder = "<デザイナexeのパス>";
+        const string ProjectPlaceholder = "<デザインプロジェクトのフォルダ>";
+        const string FrameworkDirName = "AIForDesigner";
+        // 旧名 (0.8.25 まで)。展開時に片付け、.gitignore の行も差し替える
+        const string OldFrameworkDirName = "ClaudeCodeForDesigner";
+        const string StampFileName = "_ai_refresh.stamp";
+        // ワークスペース規約 (zip の CLAUDE.md) の 1 行目。展開先の CLAUDE.md がこれで始まらなければ「別の所有者 (ホストソリューション等) の CLAUDE.md」と判断して保持する
+        const string WorkspaceClaudeMdMarker = "# Codeer.LowCode.Blazor デザインワークスペース";
+        const string WorkspaceRulesFileName = "WorkspaceRules.md";
+
+        /// <summary>headless CLI に ai-workspace verb (と旧名 claude-workspace) を登録する (base.OnStartup 前に呼ぶ)。</summary>
+        public static void RegisterCli()
+        {
+            HeadlessCliVerbs.Register(Verb, RunCli);
+            HeadlessCliVerbs.Register(LegacyVerb, RunCli);
+        }
+
+        public class DeployResult
+        {
+            /// <summary>上書き展開したフレームワーク所有ファイル (ワークスペース相対)。</summary>
+            public List<string> Deployed { get; } = new();
+            /// <summary>今回新規生成したユーザー所有ファイル。</summary>
+            public List<string> Created { get; } = new();
+            /// <summary>既存のため触らなかったユーザー所有ファイル。</summary>
+            public List<string> Preserved { get; } = new();
+            /// <summary>ai-refresh (生成リファレンス一式) の結果。ok / skipped: 理由 / failed: 理由。</summary>
+            public string AiRefresh { get; set; } = "";
+        }
+
+        static int RunCli(string[] args)
+        {
+            var workspaceDir = args.Length > 1 ? args[1] : string.Empty;
+            string? outPath = null;
+            var project = DefaultProjectFolderName;
+            for (var i = 2; i < args.Length; i++)
+            {
+                switch (args[i])
+                {
+                    case "--out" when i + 1 < args.Length: outPath = args[++i]; break;
+                    case "--project" when i + 1 < args.Length: project = args[++i]; break;
+                }
+            }
+
+            try
+            {
+                if (string.IsNullOrEmpty(workspaceDir))
+                    return WriteJson(outPath, new { error = $"usage: {Verb} \"<workspaceDir>\" [--project <folder>] [--out <json>]" }, 2);
+
+                var result = Deploy(workspaceDir, project);
+                return WriteJson(outPath, new
+                {
+                    verb = Verb,
+                    workspace = workspaceDir,
+                    project,
+                    deployedCount = result.Deployed.Count,
+                    created = result.Created,
+                    preserved = result.Preserved,
+                    aiRefresh = result.AiRefresh,
+                }, 0);
+            }
+            catch (Exception ex)
+            {
+                return WriteJson(outPath, new { error = ex.ToString() }, 2);
+            }
+        }
+
+        /// <summary>
+        /// ワークスペースを workspaceDir に展開・更新する。
+        /// projectFolderName はワークスペースから見たデザインプロジェクトのフォルダ名 (フックが designcheck 等を叩く対象)。
+        /// </summary>
+        public static DeployResult Deploy(string workspaceDir, string projectFolderName = DefaultProjectFolderName)
+        {
+            var result = new DeployResult();
+            var exePath = Environment.ProcessPath
+                ?? throw new InvalidOperationException("designer exe path could not be resolved");
+
+            Directory.CreateDirectory(workspaceDir);
+
+            MigrateOldLayout(workspaceDir);
+
+            // フレームワーク所有 = AIForDesigner/ は丸ごと作り直す (旧版で消えたファイルを残さない)
+            var frameworkDir = Path.Combine(workspaceDir, FrameworkDirName);
+            if (Directory.Exists(frameworkDir)) Directory.Delete(frameworkDir, recursive: true);
+
+            // 展開先に別の所有者の CLAUDE.md (ホストソリューションのルート等) があるか。あるなら保持し、
+            // ワークスペース規約は AIForDesigner/WorkspaceRules.md に出す (その CLAUDE.md から参照してもらう)
+            var rootClaudeMd = Path.Combine(workspaceDir, "CLAUDE.md");
+            var keepForeignClaudeMd = File.Exists(rootClaudeMd) && !IsWorkspaceClaudeMd(rootClaudeMd);
+            // AGENTS.md も同じ (ホストソリューションのルートの AGENTS.md は保持する)
+            var rootAgentsMd = Path.Combine(workspaceDir, "AGENTS.md");
+            var keepForeignAgentsMd = File.Exists(rootAgentsMd) && !IsWorkspaceClaudeMd(rootAgentsMd);
+
+            // フレームワーク所有分 (zip の中身) を展開
+            using (var stream = typeof(AIWorkspaceDeploy).Assembly.GetManifestResourceStream(ZipResourceName)
+                       ?? throw new InvalidOperationException($"embedded resource not found: {ZipResourceName}"))
+            using (var zip = new ZipArchive(stream, ZipArchiveMode.Read))
+            {
+                var fullRoot = Path.GetFullPath(workspaceDir);
+                foreach (var entry in zip.Entries)
+                {
+                    if (string.IsNullOrEmpty(entry.Name)) continue; // フォルダエントリ
+                    var target = Path.GetFullPath(Path.Combine(workspaceDir, entry.FullName));
+                    if (!target.StartsWith(fullRoot, StringComparison.OrdinalIgnoreCase))
+                        throw new InvalidOperationException($"invalid zip entry path: {entry.FullName}");
+
+                    // Project.md はユーザー所有 (zip の中身は雛形)。既存なら上書きしない
+                    if (entry.FullName == "Project.md" && File.Exists(target))
+                    {
+                        result.Preserved.Add(entry.FullName);
+                        continue;
+                    }
+
+                    if (entry.FullName == "CLAUDE.md")
+                    {
+                        // 規約本文は常に AIForDesigner/WorkspaceRules.md にも出す (ルートの CLAUDE.md が別所有のときの参照先)
+                        var rules = Path.Combine(frameworkDir, WorkspaceRulesFileName);
+                        Directory.CreateDirectory(frameworkDir);
+                        entry.ExtractToFile(rules, overwrite: true);
+                        result.Deployed.Add(FrameworkDirName + "/" + WorkspaceRulesFileName);
+                        if (keepForeignClaudeMd)
+                        {
+                            result.Preserved.Add(entry.FullName);
+                            continue;
+                        }
+                    }
+
+                    if (entry.FullName == "AGENTS.md" && keepForeignAgentsMd)
+                    {
+                        result.Preserved.Add(entry.FullName);
+                        continue;
+                    }
+
+                    Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+                    entry.ExtractToFile(target, overwrite: true);
+                    if (entry.FullName == "Project.md") result.Created.Add(entry.FullName);
+                    else result.Deployed.Add(entry.FullName);
+                }
+            }
+
+            // ユーザー所有のフォルダ (無ければ作る)。ddl = テーブル定義、docs = このデザイン固有の文書 (仕様メモ等)
+            Directory.CreateDirectory(Path.Combine(workspaceDir, "ddl"));
+            Directory.CreateDirectory(Path.Combine(workspaceDir, "docs"));
+
+            // LocalEnvironment.md: マシン固有情報。DesignerExePath 行だけはこの exe のパスに保つ
+            UpdateLocalEnvironment(Path.Combine(workspaceDir, "LocalEnvironment.md"), exePath, result);
+
+            // .gitignore: フレームワーク所有 (再生成可能) とマシン固有をコミット対象外に。
+            // 無ければ生成する。既存でも 1 行目がこちらの見出しなら (= 以前の展開が生成したもの)、
+            // 足りない行だけ末尾に追記する (新しい生成物 = Codex の設定・ライセンスのキャッシュをコミットさせないため)。
+            // 見出しの無いもの (ユーザーやホストの .gitignore) は触らない
+            UpdateGitignore(Path.Combine(workspaceDir, ".gitignore"), result);
+
+            // .claude/settings.local.json: マシン固有の許可とフック。無ければサンプルに exe パスを焼き込んで生成。
+            // 既存なら、ユーザーが追加した許可などは保持したまま、フレームワーク所有の部分 (hooks 節 = この exe を
+            // 指す自動更新フック / サンプル由来の CLI 許可) だけをこの exe に合わせて更新する。
+            // 旧フック (refresh-field-catalog.ps1) や別の exe を指したままの hooks を残すと自動更新が黙って止まるため。
+            UpdateSettingsLocal(workspaceDir, exePath, projectFolderName, result);
+
+            // Codex 用の許可とフック: settings.local.json のサンプルと同じ内容から作る (フレームワーク所有。毎回この exe に合わせる)
+            if (LoadSettingsSample(workspaceDir, exePath, projectFolderName) is { } sampleText
+                && JsonNode.Parse(sampleText) is JsonObject sampleForCodex)
+                CodexWorkspaceFiles.Write(workspaceDir, sampleForCodex, overwrite: true, result.Deployed, result.Preserved);
+
+            // 生成リファレンス一式 (ai-refresh) も同じタイミングで出す。
+            // デザインプロジェクトがまだ無ければスキップ (フックがプロジェクト設置後に再実行する)
+            RunAiRefresh(workspaceDir, projectFolderName, exePath, result);
+
+            return result;
+        }
+
+        const string GitignoreHeader = "# デザイナ (ai-workspace / ai-refresh) が再生成するもの・マシン固有のもの";
+        // 旧版 (0.8.25 まで) が書いた見出し。これで始まる .gitignore も自分が生成したものとして扱い、見出しも新しいものに替える
+        const string OldGitignoreHeader = "# デザイナ (claude-workspace / ai-refresh) が再生成するもの・マシン固有のもの";
+        static readonly string[] GitignoreLines =
+        {
+            "AIForDesigner/",
+            "tools/",
+            "LocalEnvironment.md",
+            ".claude/settings.local.json",
+            ".claude/license_status.json",
+            CodexWorkspaceFiles.HooksRelativePath,
+            CodexWorkspaceFiles.RulesRelativePath,
+        };
+
+        static void UpdateGitignore(string path, DeployResult result)
+        {
+            if (!File.Exists(path))
+            {
+                File.WriteAllText(path, GitignoreHeader + "\n" + string.Join("\n", GitignoreLines) + "\n", new UTF8Encoding(false));
+                result.Created.Add(".gitignore");
+                return;
+            }
+
+            var text = File.ReadAllText(path, Encoding.UTF8);
+            var lines = text.Split('\n').Select(x => x.TrimEnd('\r')).ToList();
+            var header = lines.Count == 0 ? "" : lines[0].TrimStart('\uFEFF').Trim();
+            if (header != GitignoreHeader && header != OldGitignoreHeader)
+            {
+                result.Preserved.Add(".gitignore");
+                return;
+            }
+
+            // 旧名のフォルダの行は新名に差し替える (旧フォルダは MigrateOldLayout が片付ける)。旧い見出しも新しいものに
+            var renamed = lines.Select(x =>
+                x.Trim() == OldFrameworkDirName + "/" ? FrameworkDirName + "/" :
+                x.TrimStart('﻿').Trim() == OldGitignoreHeader ? GitignoreHeader : x).ToList();
+            var dirRenamed = lines.Any(x => x.Trim() == OldFrameworkDirName + "/");
+            var replaced = !renamed.SequenceEqual(lines, StringComparer.Ordinal);
+            var present = renamed.Select(x => x.Trim()).ToHashSet(StringComparer.Ordinal);
+            var missing = GitignoreLines.Where(x => !present.Contains(x)).ToList();
+            if (!replaced && missing.Count == 0)
+            {
+                result.Preserved.Add(".gitignore");
+                return;
+            }
+
+            var newline = text.Contains("\r\n") ? "\r\n" : "\n";
+            var sb = new StringBuilder(string.Join(newline, renamed));
+            if (sb.Length > 0 && sb[sb.Length - 1] != '\n') sb.Append(newline);
+            foreach (var line in missing) sb.Append(line).Append(newline);
+            File.WriteAllText(path, sb.ToString(), new UTF8Encoding(false));
+            var what = new List<string>();
+            if (dirRenamed) what.Add(OldFrameworkDirName + "/ → " + FrameworkDirName + "/");
+            what.AddRange(missing.Select(x => x + " を追記"));
+            if (what.Count == 0) what.Add("見出しを更新");
+            result.Created.Add(".gitignore (" + string.Join(", ", what) + ")");
+        }
+
+        // ルートの CLAUDE.md がこのワークスペースの規約 (zip 由来) か。1 行目のマーカーで判定する
+        static bool IsWorkspaceClaudeMd(string path)
+        {
+            try
+            {
+                using var reader = new StreamReader(path, Encoding.UTF8);
+                var first = reader.ReadLine();
+                return first != null && first.TrimStart('﻿').Trim() == WorkspaceClaudeMdMarker;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        // .claude/settings.local.json.sample に exe パス / プロジェクトフォルダを焼き込んだ JSON テキスト。サンプルが無ければ null
+        static string? LoadSettingsSample(string workspaceDir, string exePath, string projectFolderName)
+        {
+            var settingsSample = Path.Combine(workspaceDir, ".claude", "settings.local.json.sample");
+            if (!File.Exists(settingsSample)) return null;
+
+            // JSON 文字列内に入るため \ をエスケープする
+            return File.ReadAllText(settingsSample, Encoding.UTF8)
+                .Replace(ExePlaceholder, exePath.Replace("\\", "\\\\"))
+                .Replace(ProjectPlaceholder, projectFolderName.Replace("\\", "\\\\"));
+        }
+
+        // .claude/settings.local.json を生成・更新する (手順は AgentSettingsFile。ホストのルート向け developer-workspace と共通)。
+        static void UpdateSettingsLocal(string workspaceDir, string exePath, string projectFolderName, DeployResult result)
+        {
+            const string rel = ".claude/settings.local.json";
+            var settingsLocal = Path.Combine(workspaceDir, ".claude", "settings.local.json");
+            var sampleJson = LoadSettingsSample(workspaceDir, exePath, projectFolderName);
+            if (sampleJson == null) return;
+
+            AgentSettingsFile.CreateOrUpdate(settingsLocal, sampleJson, result.Created, result.Preserved, rel);
+        }
+
+        // 旧レイアウト (LocalEnvironment.md が ClaudeCodeForDesigner/ 内・生成物が temporary/ 内・
+        // Project.md.sample 配布・フックが refresh-field-catalog.ps1・フレームワーク所有フォルダが旧名 ClaudeCodeForDesigner/)
+        // からの移行。一度移行したら以後は何もしない
+        static void MigrateOldLayout(string workspaceDir)
+        {
+            var oldFrameworkDir = Path.Combine(workspaceDir, OldFrameworkDirName);
+            var oldLocalEnv = Path.Combine(oldFrameworkDir, "LocalEnvironment.md");
+            var newLocalEnv = Path.Combine(workspaceDir, "LocalEnvironment.md");
+            var isOldLayout = File.Exists(oldLocalEnv) || File.Exists(Path.Combine(workspaceDir, "Project.md.sample"));
+            if (File.Exists(oldLocalEnv) && !File.Exists(newLocalEnv))
+                File.Move(oldLocalEnv, newLocalEnv);
+
+            // 旧名のフレームワーク所有フォルダ (0.8.25 まで)。中身は全部再生成物なので丸ごと片付ける (新名で作り直される)
+            if (Directory.Exists(oldFrameworkDir)) Directory.Delete(oldFrameworkDir, recursive: true);
+
+            // 旧フックスクリプト (フィールドカタログ 1 本だけを更新していたもの) は refresh-ai-workspace.ps1 に置き換わった。
+            // settings.local.json の hooks 節は UpdateSettingsLocal が新フックへ書き換える
+            var oldHook = Path.Combine(workspaceDir, ".claude", "refresh-field-catalog.ps1");
+            if (File.Exists(oldHook)) File.Delete(oldHook);
+
+            // 旧 deploy が配布していた README.md / Project.md.sample を片付ける。旧レイアウトの痕跡があるときだけ
+            // (ホストソリューションのルート等、別所有の README.md を消さないため)
+            if (isOldLayout)
+            {
+                foreach (var name in new[] { "Project.md.sample", "README.md" })
+                {
+                    var path = Path.Combine(workspaceDir, name);
+                    if (File.Exists(path)) File.Delete(path);
+                }
+            }
+
+            var temporary = Path.Combine(workspaceDir, "temporary");
+            foreach (var name in new[] { "_field_catalog.md", "_field_catalog.stamp", "_script_catalog.md", "_ai_refresh.stamp" })
+            {
+                var path = Path.Combine(temporary, name);
+                if (File.Exists(path)) File.Delete(path);
+            }
+            foreach (var name in new[] { "_defaults", "_specs", "_samples" })
+            {
+                var path = Path.Combine(temporary, name);
+                if (Directory.Exists(path)) Directory.Delete(path, recursive: true);
+            }
+            // 旧 deploy が作った空の temporary/ は片付ける (中身があればユーザーの作業物なので触らない)
+            if (Directory.Exists(temporary) && !Directory.EnumerateFileSystemEntries(temporary).Any())
+                Directory.Delete(temporary);
+        }
+
+        // ai-refresh を自 exe の子プロセスで実行し、生成物を AIForDesigner/ に出力する。
+        // GUI プロセス内で直接プロジェクトを開くと開いている編集状態と衝突するため、必ず子プロセスにする。
+        // 成功時のみバイナリ署名スタンプを書く (フックはこれで再実行の要否を判定する)
+        static void RunAiRefresh(string workspaceDir, string projectFolderName, string exePath, DeployResult result)
+        {
+            var projectDir = Path.GetFullPath(Path.Combine(workspaceDir, projectFolderName));
+            if (!File.Exists(Path.Combine(projectDir, "app.clprj")))
+            {
+                result.AiRefresh = $"skipped: design project not found ({projectFolderName})";
+                return;
+            }
+
+            var frameworkDir = Path.Combine(workspaceDir, FrameworkDirName);
+            var psi = new ProcessStartInfo
+            {
+                FileName = exePath,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+            };
+            psi.ArgumentList.Add("ai-refresh");
+            psi.ArgumentList.Add(projectDir);
+            psi.ArgumentList.Add("--out-dir");
+            psi.ArgumentList.Add(frameworkDir);
+
+            using var process = Process.Start(psi)
+                ?? throw new InvalidOperationException("failed to start ai-refresh process");
+            var stdout = process.StandardOutput.ReadToEndAsync();
+            var stderr = process.StandardError.ReadToEndAsync();
+            process.WaitForExit();
+
+            if (process.ExitCode == 0)
+            {
+                File.WriteAllText(Path.Combine(frameworkDir, StampFileName),
+                    ComputeBinarySignature(exePath), new UTF8Encoding(false));
+                result.AiRefresh = "ok";
+            }
+            else
+            {
+                var detail = (stderr.Result + stdout.Result).Trim();
+                result.AiRefresh = $"failed: ai-refresh exit {process.ExitCode} {detail}";
+            }
+        }
+
+        // バイナリ署名 = exe と同フォルダの *.dll の LastWriteTimeUtc.Ticks の最大値。
+        // .claude/refresh-ai-workspace.ps1 と同一定義であること (フックが照合する)
+        static string ComputeBinarySignature(string exePath)
+        {
+            var dir = Path.GetDirectoryName(exePath)!;
+            var sig = File.GetLastWriteTimeUtc(exePath).Ticks;
+            foreach (var dll in Directory.EnumerateFiles(dir, "*.dll"))
+            {
+                var ticks = File.GetLastWriteTimeUtc(dll).Ticks;
+                if (ticks > sig) sig = ticks;
+            }
+            return sig.ToString(CultureInfo.InvariantCulture);
+        }
+
+        // LocalEnvironment.md の DesignerExePath 行を生成・更新する (他の行はユーザー所有として保持)。
+        static void UpdateLocalEnvironment(string path, string exePath, DeployResult result)
+        {
+            const string key = "DesignerExePath:";
+            var line = $"{key} {exePath}";
+
+            if (!File.Exists(path))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+                File.WriteAllText(path,
+                    "# LocalEnvironment (マシン固有・配布物に含めない / gitignore 対象)\n" +
+                    "\n" +
+                    "このファイルはマシンローカルの設定を記録する。CLAUDE.md には書かない (配布されるため)。\n" +
+                    "\n" +
+                    line + "\n",
+                    new UTF8Encoding(false));
+                result.Created.Add("LocalEnvironment.md");
+                return;
+            }
+
+            var lines = File.ReadAllLines(path, Encoding.UTF8).ToList();
+            var index = lines.FindIndex(l => l.TrimStart().StartsWith(key, StringComparison.Ordinal));
+            if (index >= 0)
+            {
+                if (lines[index].Trim() == line)
+                {
+                    result.Preserved.Add("LocalEnvironment.md");
+                    return;
+                }
+                lines[index] = line;
+            }
+            else
+            {
+                lines.Add(line);
+            }
+            File.WriteAllLines(path, lines, new UTF8Encoding(false));
+            result.Created.Add("LocalEnvironment.md (DesignerExePath 更新)");
+        }
+
+        static int WriteJson(string? outPath, object payload, int exitCode)
+        {
+            var json = JsonSerializer.Serialize(payload, new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            });
+            if (!string.IsNullOrEmpty(outPath))
+                File.WriteAllText(outPath, json, new UTF8Encoding(false));
+            else
+                Console.Out.WriteLine(json);
+            return exitCode;
+        }
+    }
+}

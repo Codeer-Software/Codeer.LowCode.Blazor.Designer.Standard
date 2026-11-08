@@ -11,8 +11,8 @@
 
         <!-- OSS / NuGet パッケージ (MIT)。 -->
         <PackageId>Codeer.LowCode.Blazor.Designer.Standard</PackageId>
-        <Version>0.8.25</Version>
-        <PackageReleaseNotes>AI workspace: Codex / GitHub Copilot support (AGENTS.md, .codex hooks and rules).</PackageReleaseNotes>
+        <Version>0.8.26</Version>
+        <PackageReleaseNotes>AI workspace: ClaudeCodeForDesigner renamed to AIForDesigner (ai-workspace verb; claude-workspace kept as alias) and ClaudeCodeForDeveloper to AIForDeveloper (developer-workspace migrates the old folder). Host root hook templates now come from the host (Starter).</PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <Company>Codeer Software</Company>
@@ -58,26 +58,16 @@
         <EmbeddedResource Include="Icons\bootstrap_icons.txt">
             <LogicalName>Codeer.LowCode.Blazor.Designer.Standard.Icons.bootstrap_icons.txt</LogicalName>
         </EmbeddedResource>
-        <!-- ホストのルート向け (developer-workspace verb): ルート用フックと settings.local.json の雛形 -->
-        <EmbeddedResource Include="DeveloperWorkspace\refresh-design-workspaces.ps1">
-            <LogicalName>Codeer.LowCode.Blazor.Designer.Standard.DeveloperWorkspace.refresh-design-workspaces.ps1</LogicalName>
-        </EmbeddedResource>
-        <EmbeddedResource Include="DeveloperWorkspace\license-guard-root.ps1">
-            <LogicalName>Codeer.LowCode.Blazor.Designer.Standard.DeveloperWorkspace.license-guard-root.ps1</LogicalName>
-        </EmbeddedResource>
-        <EmbeddedResource Include="DeveloperWorkspace\settings.local.json.sample">
-            <LogicalName>Codeer.LowCode.Blazor.Designer.Standard.DeveloperWorkspace.settings.local.json.sample</LogicalName>
-        </EmbeddedResource>
     </ItemGroup>
 
-    <!-- Claude Code ワークスペース (ClaudeWorkspace/ 配下のプロンプト・Docs・フック一式) を
-         ビルド時に zip 化して埋め込む。LogicalName は ClaudeWorkspace.ResourceName と連動。
-         リポジトリでは素のファイルとして編集し、配布はデザイナの claude-workspace verb / メニューが展開する。 -->
-    <Target Name="ZipClaudeWorkspace" BeforeTargets="BeforeBuild">
-        <ZipDirectory SourceDirectory="ClaudeWorkspace" DestinationFile="$(IntermediateOutputPath)ClaudeWorkspace.zip" Overwrite="true" />
+    <!-- Claude Code ワークスペース (AIWorkspace/ 配下のプロンプト・Docs・フック一式) を
+         ビルド時に zip 化して埋め込む。LogicalName は AIWorkspace.ResourceName と連動。
+         リポジトリでは素のファイルとして編集し、配布はデザイナの ai-workspace verb / メニューが展開する。 -->
+    <Target Name="ZipAIWorkspace" BeforeTargets="BeforeBuild">
+        <ZipDirectory SourceDirectory="AIWorkspace" DestinationFile="$(IntermediateOutputPath)AIWorkspace.zip" Overwrite="true" />
         <ItemGroup>
-            <EmbeddedResource Include="$(IntermediateOutputPath)ClaudeWorkspace.zip">
-                <LogicalName>Codeer.LowCode.Blazor.Designer.Standard.ClaudeWorkspace.zip</LogicalName>
+            <EmbeddedResource Include="$(IntermediateOutputPath)AIWorkspace.zip">
+                <LogicalName>Codeer.LowCode.Blazor.Designer.Standard.AIWorkspace.zip</LogicalName>
             </EmbeddedResource>
         </ItemGroup>
     </Target>

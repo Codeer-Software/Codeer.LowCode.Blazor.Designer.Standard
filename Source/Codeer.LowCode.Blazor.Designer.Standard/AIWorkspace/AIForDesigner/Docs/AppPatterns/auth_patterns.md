@@ -1,0 +1,33 @@
+# 認証・権限・承認のパターン
+
+業務アプリで欠かせない「**ログインユーザーの管理**」「**自分のデータだけ見せる**」「**申請 → 承認のワークフロー**」「**一般ユーザーと管理者の画面分離**」といったパターンをまとめたページです。
+
+## デザイナの「標準パターン集」テンプレートで実機確認できる
+
+デザイナで新規プロジェクトを作るときに、テンプレートから **「標準パターン集」** (内部名 `PatternShowcase`) を選ぶと、他のパターンと一緒にこれらのパターンの実装サンプルも展開されます (サイドバーの「認証・権限」「承認」グループ)。
+
+<!-- 画像参照: Manual の Image/web/patterns/create_new.png (ここではコメントアウト) -->
+
+- Cookie 認証 (プレーンな `app_users` テーブル + 独自ハッシュ。詳細は [ユーザーモジュールと認証連動](auth_user_module.md)) で alice / bob / carol / dave / admin の 5 ユーザーが seed されている (パスワード: `test`、admin は `admin`)
+- 一般ユーザー画面 (`Main` フレーム) と管理者画面 (`AdminFrame`) の 2 つの PageFrame で構成
+
+> 認証・権限・承認は、認証なしのアプリでは成り立たない (承認者・申請者・所有者を区別できない) ため、デザイナのテンプレートはすべて Cookie 認証付き (AppUser + admin/admin) で提供している。ホストは Visual Studio テンプレート `Codeer.LowCode.Blazor` (= Starter の Cookie ホスト) が前提で、認証なしのホストは提供していない。**業務アプリらしい認証/権限/ワークフローを総合的に見たいときはこのページから入る。**
+
+---
+
+## パターン一覧
+
+| パターン | 内容 |
+|---|---|
+| [ユーザーモジュールと認証連動](auth_user_module.md) | `AppUser` 定義、ログイン中ユーザー (`CurrentUser`) の参照、パスワード変更 |
+| [個人データのフィルタと権限](auth_personal_data.md) | 自分が作ったレコードだけ見せる (`DataReadCondition`)、検索初期値で自分のデータ絞り込み、投函フォーム (読み取りは管理者だけ / 書き込みは全員) |
+| [承認フローのワークフロー](auth_workflow.md) | 申請 (休暇/経費) → 承認フロー → 履歴のテンプレート駆動ワークフロー |
+| [一般画面と管理画面の分離 (複数 PageFrame)](auth_admin_frame.md) | `Main` フレームと `AdminFrame` の使い分け、`UserReadCondition` で管理者だけ入れる画面 |
+
+---
+
+## 関連ドキュメント
+
+- [標準パターン集 一覧](patterns.md) ─ 全パターンの入口
+- [認証 / 認可の概要](https://github.com/Codeer-Software/Codeer.LowCode.Blazor.Manual/blob/main/JP/authorization/authorization.md)
+- [PageFrame の設定](AIForDesigner/_specs/PageFrame.md)

@@ -35,7 +35,7 @@ public partial class App : DesignerApp
 
     protected override void OnStartup(StartupEventArgs e)
     {
-        //プロジェクトテンプレートと claude-workspace verb は headless CLI からも参照されるため、
+        //プロジェクトテンプレートと ai-workspace verb は headless CLI からも参照されるため、
         //headless 分岐が走る base.OnStartup より前に登録する (冪等)。
         DesignerStandard.SetupHeadless();
 

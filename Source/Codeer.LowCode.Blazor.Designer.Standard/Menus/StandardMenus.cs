@@ -33,16 +33,16 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
             AddCreateFieldClass(env);
             AddCreateFieldDataClass(env);
             AddExportExcelPrintCheatSheet(env);
-            AddClaudeWorkspace(env);
+            AddAIWorkspace(env);
             AddDbColumnTransformDefaults(env);
         }
 
         /// <summary>
-        /// Tools &gt; Claude Code Workspace。Claude Code 用ワークスペース (CLAUDE.md / Docs / フック一式) を
+        /// Tools &gt; AI Workspace。Claude Code 用ワークスペース (CLAUDE.md / Docs / フック一式) を
         /// 展開・更新する。ドキュメントはこの exe と同一バージョンの埋め込みリソースから出るため常に整合する。
         /// </summary>
-        public static void AddClaudeWorkspace(DesignerEnvironment env)
-            => env.AddMainMenu(() => DeployClaudeWorkspace(env), "Tools", "Claude Code Workspace");
+        public static void AddAIWorkspace(DesignerEnvironment env)
+            => env.AddMainMenu(() => DeployAIWorkspace(env), "Tools", "AI Workspace");
 
         /// <summary>Tools &gt; Import Modules from Database。DB スキーマからモジュールを生成する。</summary>
         public static void AddImportModulesFromDatabase(DesignerEnvironment env)
@@ -88,17 +88,17 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
         //(デザインプロジェクトの親フォルダに展開すると Documents 等を汚すため)。
         //プロジェクト未オープンでも実行できる (この場合はデザインプロジェクトのフォルダ名を既定の "design" とし、
         //ユーザーは展開後にこのフォルダへデザインプロジェクトを置く。生成リファレンスはフックが後追いで出す)。
-        //フレームワーク所有 (ClaudeCodeForDesigner/ = Docs + 生成リファレンス一式、ルートの CLAUDE.md 等) は
+        //フレームワーク所有 (AIForDesigner/ = Docs + 生成リファレンス一式、ルートの CLAUDE.md 等) は
         //丸ごと作り直し、ユーザー所有 (Project.md / LocalEnvironment.md / .gitignore / settings.local.json /
-        //ddl / tools) は不可侵 (詳細は ClaudeWorkspaceDeploy)。
-        static void DeployClaudeWorkspace(DesignerEnvironment env)
+        //ddl / tools) は不可侵 (詳細は AIWorkspaceDeploy)。
+        static void DeployAIWorkspace(DesignerEnvironment env)
         {
             //プロジェクトが開いていればそのフォルダを relProject の算出に使う。未オープンでも実行可。
             var projectDir = string.IsNullOrEmpty(env.CurrentFileDirectory)
                 ? null : Path.GetFullPath(env.CurrentFileDirectory);
             var dialog = new OpenFolderDialog
             {
-                Title = "Claude Code ワークスペースの場所 (空のフォルダを指定してください)",
+                Title = "AI ワークスペースの場所 (空のフォルダを指定してください)",
             };
             if (dialog.ShowDialog() != true) return;
 
@@ -108,19 +108,19 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
                 //フック (ai-refresh 等) がワークスペースから見にいくデザインプロジェクトの相対パス。
                 //プロジェクト未オープン時は既定の "design" (ユーザーが後でこのフォルダに置く)。
                 var relProject = projectDir == null
-                    ? ClaudeWorkspaceDeploy.DefaultProjectFolderName : Path.GetRelativePath(workspace, projectDir);
-                var result = ClaudeWorkspaceDeploy.Deploy(workspace, relProject);
+                    ? AIWorkspaceDeploy.DefaultProjectFolderName : Path.GetRelativePath(workspace, projectDir);
+                var result = AIWorkspaceDeploy.Deploy(workspace, relProject);
 
                 var lines = new List<string>
                 {
-                    "Claude Code ワークスペースを展開しました。",
+                    "AI ワークスペースを展開しました。",
                     string.Empty,
                     "このフォルダにデザインプロジェクトを置いてください。",
-                    "このフォルダで Claude Code を起動し、自然言語でモジュール・レイアウト・スクリプトの作成を指示できます。",
+                    "このフォルダで AI エージェント (Claude Code / Codex / GitHub Copilot) を起動し、自然言語でモジュール・レイアウト・スクリプトの作成を指示できます。",
                     string.Empty,
                     $"生成リファレンス (ai-refresh): {result.AiRefresh}",
                 };
-                ClaudeCodeWorkspaceResultDialog.Show(string.Join(Environment.NewLine, lines));
+                AIWorkspaceResultDialog.Show(string.Join(Environment.NewLine, lines));
 
                 //展開先フォルダをエクスプローラで開く (ユーザーがここにデザインプロジェクトを置ける)
                 Process.Start(new ProcessStartInfo { FileName = workspace, UseShellExecute = true });

@@ -20,11 +20,11 @@ Claude Code 用の **ワークスペース**（作業ルール `CLAUDE.md`・CLB
 
 ### 2. メニューからワークスペースを展開する
 
-メニュー **Tools > Claude Code Workspace** を実行し、展開先フォルダを選びます。ワークスペース専用の**空のフォルダ**（例: `C:\work\Test`）を選んでください。ドキュメントフォルダのように既存ファイルのある場所に展開すると、その場所がワークスペースのファイルと混ざってしまいます。展開したフォルダの中に、デザインプロジェクト（既定のフォルダ名 `design`。プロジェクトを開いた状態で実行すれば、そのフォルダとの相対位置が自動で記録されます）を置きます。ワークスペース 1 つ＝デザインプロジェクト 1 つ分の作業場（`Project.md` / `ddl` / `docs` / `design`）です。
+メニュー **Tools > AI Workspace** を実行し、展開先フォルダを選びます。ワークスペース専用の**空のフォルダ**（例: `C:\work\Test`）を選んでください。ドキュメントフォルダのように既存ファイルのある場所に展開すると、その場所がワークスペースのファイルと混ざってしまいます。展開したフォルダの中に、デザインプロジェクト（既定のフォルダ名 `design`。プロジェクトを開いた状態で実行すれば、そのフォルダとの相対位置が自動で記録されます）を置きます。ワークスペース 1 つ＝デザインプロジェクト 1 つ分の作業場（`Project.md` / `ddl` / `docs` / `design`）です。
 
 この操作は**デザインプロジェクトを開いていなくても実行できます**。先にワークスペースだけ展開しておき、あとからプロジェクトを作成しても構いません。
 
-> **ホストソリューションのフォルダに展開する場合**（[Codeer.LowCode.Blazor.Starter](https://github.com/Codeer-Software/Codeer.LowCode.Blazor.Starter) やテンプレートから作った `LowCodeApp.sln` のあるフォルダ）: Starter の推奨配置は、ホストのルート直下ではなく **`DesignProjects\<デザイン名>\`** をワークスペースにし、その中の `design\` にデザインプロジェクトを置く形です（デザインが複数あっても、デザインだけを別リポジトリに切り出しても同じ形で動きます）。ホストを触る人はルートで、デザインを作る人は `DesignProjects\<デザイン名>\` で Claude Code を起動します。ホスト側（C#）向けのリファレンスはルートの `ClaudeCodeForDeveloper\` にデザイナの `developer-workspace` コマンドが生成します。Starter の場合は `ClaudeCodeForDeveloper/claude-code-setup.md` の手順（Claude Code が実行）で、この展開まで自動で行われます。ホストのルートそのものに展開した場合は、既にある `CLAUDE.md` は上書きせず、ワークスペースの作業ルールは `ClaudeCodeForDesigner/WorkspaceRules.md` に置かれます（Designer.Standard 0.8.1 以降）。
+> **ホストソリューションのフォルダに展開する場合**（[Codeer.LowCode.Blazor.Starter](https://github.com/Codeer-Software/Codeer.LowCode.Blazor.Starter) やテンプレートから作った `LowCodeApp.sln` のあるフォルダ）: Starter の推奨配置は、ホストのルート直下ではなく **`DesignProjects\<デザイン名>\`** をワークスペースにし、その中の `design\` にデザインプロジェクトを置く形です（デザインが複数あっても、デザインだけを別リポジトリに切り出しても同じ形で動きます）。ホストを触る人はルートで、デザインを作る人は `DesignProjects\<デザイン名>\` で Claude Code を起動します。ホスト側（C#）向けのリファレンスはルートの `AIForDeveloper\` にデザイナの `developer-workspace` コマンドが生成します。Starter の場合は `AIForDeveloper/claude-code-setup.md` の手順（Claude Code が実行）で、この展開まで自動で行われます。ホストのルートそのものに展開した場合は、既にある `CLAUDE.md` は上書きせず、ワークスペースの作業ルールは `AIForDesigner/WorkspaceRules.md` に置かれます（Designer.Standard 0.8.1 以降）。
 
 展開後のフォルダ構成:
 
@@ -32,7 +32,7 @@ Claude Code 用の **ワークスペース**（作業ルール `CLAUDE.md`・CLB
 C:\work\Test\                      ← ワークスペース（この中で Claude Code を起動する）
 ├── CLAUDE.md                      ← Claude Code が起動時に自動読み込み（作業ルール）
 ├── AGENTS.md                      ← Codex / GitHub Copilot の入口（作業ルールは CLAUDE.md を共通で使う）
-├── ClaudeCodeForDesigner\         ← CLB のリファレンス一式（デザイナが丸ごと自動更新）
+├── AIForDesigner\                 ← CLB のリファレンス一式（デザイナが丸ごと自動更新）
 │   ├── CLAUDE.md                  ← 作り方の詳細指示書（規約・パターン集の索引）
 │   ├── Docs\                      ← 規約・パターン集
 │   ├── _field_catalog.md ほか     ← 自動生成リファレンス（仕様・全型のデフォルト JSON・サンプル）
@@ -53,11 +53,13 @@ C:\work\Test\                      ← ワークスペース（この中で Clau
 
 デザイナ exe のパスや、デザインチェック・SQL 実行などの CLI を Claude Code から確認なしで使うための許可設定は、**展開時に自動で書き込まれます**。手作業のセットアップはありません。
 
-> 自動生成リファレンス（フィールド型カタログ・全型のデフォルト JSON・実装サンプル等）は、展開時にデザインプロジェクトがあればその場で、無ければプロジェクト設置後の Claude Code セッションでフックが `ClaudeCodeForDesigner/` 配下に生成します。内容はインストールされているデザイナ（と拡張ライブラリ・独自フィールド）から動的に取得されるため、常に実環境と一致します。
+> 自動生成リファレンス（フィールド型カタログ・全型のデフォルト JSON・実装サンプル等）は、展開時にデザインプロジェクトがあればその場で、無ければプロジェクト設置後の Claude Code セッションでフックが `AIForDesigner/` 配下に生成します。内容はインストールされているデザイナ（と拡張ライブラリ・独自フィールド）から動的に取得されるため、常に実環境と一致します。
 
-#### `ClaudeCodeForDesigner` フォルダについて
+#### `AIForDesigner` フォルダについて
 
-`ClaudeCodeForDesigner` は、Claude Code が Codeer.LowCode.Blazor のデザインを正しく組み立てるための**リファレンス**一式です。CLB の規約・フィールド型・レイアウト・スクリプト・よくある間違い・業務アプリのパターン集・自動生成リファレンスをまとめており、Claude Code は作業前にこれを読み込みます。「使い方を教えて」「この機能はどう作る?」といった**質問にも、Claude Code はこのリファレンスをもとに答えられます**。中身はデザイナと同じバージョンに保たれます（デザイナや拡張ライブラリの更新をフックが検知して**丸ごと自動更新**。メニューの再実行でも可）。デザイナが毎回作り直すフォルダなので、ユーザーが直接編集したり、この中にファイルを置いたりしないでください。
+`AIForDesigner` は、Claude Code が Codeer.LowCode.Blazor のデザインを正しく組み立てるための**リファレンス**一式です。CLB の規約・フィールド型・レイアウト・スクリプト・よくある間違い・業務アプリのパターン集・自動生成リファレンスをまとめており、Claude Code は作業前にこれを読み込みます。「使い方を教えて」「この機能はどう作る?」といった**質問にも、Claude Code はこのリファレンスをもとに答えられます**。中身はデザイナと同じバージョンに保たれます（デザイナや拡張ライブラリの更新をフックが検知して**丸ごと自動更新**。メニューの再実行でも可）。デザイナが毎回作り直すフォルダなので、ユーザーが直接編集したり、この中にファイルを置いたりしないでください。
+
+> Designer.Standard 0.8.25 までは `ClaudeCodeForDesigner` という名前でした。新しいデザイナでワークスペースを展開・更新（メニューの再実行、またはフックの自動更新）すると `AIForDesigner` に置き換わり、旧フォルダは自動で削除されます。CLI の `claude-workspace` も `ai-workspace` に名前が変わりました（旧名も引き続き使えます）。ホストのルートの `ClaudeCodeForDeveloper` も同時に `AIForDeveloper` になりました（テンプレートの最新化で置き換わります）。
 
 ### 3. プロジェクト固有の情報を `Project.md` に蓄積する
 
@@ -89,7 +91,7 @@ claude
 
 ### Codex / GitHub Copilot で使う
 
-同じワークスペースを Codex や GitHub Copilot（VS Code のエージェント・Copilot CLI）でも使えます。ワークスペースのフォルダで起動すると、`AGENTS.md` から作業ルール（`CLAUDE.md`）とリファレンス（`ClaudeCodeForDesigner\`）を読んで作業します。
+同じワークスペースを Codex や GitHub Copilot（VS Code のエージェント・Copilot CLI）でも使えます。ワークスペースのフォルダで起動すると、`AGENTS.md` から作業ルール（`CLAUDE.md`）とリファレンス（`AIForDesigner\`）を読んで作業します。
 
 - **Codex**: 初回にこのフォルダを信頼済みのプロジェクトにしてください。`.codex\` の許可設定とフックは、信頼済みのプロジェクトでだけ読まれます。フックは `/hooks` で内容を確認して信頼すると動きます（デザイナの場所が変わってフックの中身が変わったときも確認し直します）
 - **GitHub Copilot**: フックは `.claude\` のものを使います（フックの結果は Copilot には伝わらないため、AI が作業の前に自分で最新化とライセンスの確認を行います）。デザインチェックなどのコマンドは Copilot の承認画面で許可してください（毎回の確認を減らしたいときは Copilot の自動承認の設定に追加します）
@@ -140,7 +142,7 @@ claude
 - **デザイナと並行して使う**: ビジュアルで配置を細かく調整するのはデザイナ、フィールド・スクリプトの一括追加や繰り返し作業は Claude Code、と使い分けると効率的です。
 - **指示は具体的に**: 「いい感じに」より「Title フィールドを追加し、ListLayout にも表示」など、対象モジュール・フィールド名・配置先を明示するほうが意図通りに動きます。
 - **生成結果は必ず確認**: スクリプトや SQL は実行前にデザイナでプレビューする / バージョン管理にコミットして差分を確認する運用を推奨します。
-- **リファレンスは自動で最新に保たれる**: デザイナや拡張ライブラリを更新すると、次の Claude Code セッションでフックが検知し、リファレンス一式（`ClaudeCodeForDesigner/`）をデザイナと同じバージョンに自動更新します。メニュー **Tools > Claude Code Workspace** の再実行でも同じことができます（自分で書いた `Project.md` や `design/` のデザインプロジェクトは上書きされません）。
+- **リファレンスは自動で最新に保たれる**: デザイナや拡張ライブラリを更新すると、次の Claude Code セッションでフックが検知し、リファレンス一式（`AIForDesigner/`）をデザイナと同じバージョンに自動更新します。メニュー **Tools > AI Workspace** の再実行でも同じことができます（自分で書いた `Project.md` や `design/` のデザインプロジェクトは上書きされません）。
 
 ## 注意事項
 
@@ -160,4 +162,4 @@ claude
 - [Codeer.LowCode.Blazor とは](https://github.com/Codeer-Software/Codeer.LowCode.Blazor.Manual/blob/main/JP/introduction/what_is_lowcode.md)
 - [デザイナ概要](https://github.com/Codeer-Software/Codeer.LowCode.Blazor.Manual/blob/main/JP/designer/designer.md)
 - [AI 概要](https://github.com/Codeer-Software/Codeer.LowCode.Blazor.Manual/blob/main/JP/ai/ai_overview.md)
-- [ワークスペースのソース (ClaudeWorkspace)](../Source/Codeer.LowCode.Blazor.Designer.Standard/ClaudeWorkspace)
+- [ワークスペースのソース (AIWorkspace)](../Source/Codeer.LowCode.Blazor.Designer.Standard/AIWorkspace)
