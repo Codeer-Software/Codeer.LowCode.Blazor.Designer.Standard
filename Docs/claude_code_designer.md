@@ -31,6 +31,7 @@ Claude Code 用の **ワークスペース**（作業ルール `CLAUDE.md`・CLB
 ```
 C:\work\Test\                      ← ワークスペース（この中で Claude Code を起動する）
 ├── CLAUDE.md                      ← Claude Code が起動時に自動読み込み（作業ルール）
+├── AGENTS.md                      ← Codex / GitHub Copilot の入口（作業ルールは CLAUDE.md を共通で使う）
 ├── ClaudeCodeForDesigner\         ← CLB のリファレンス一式（デザイナが丸ごと自動更新）
 │   ├── CLAUDE.md                  ← 作り方の詳細指示書（規約・パターン集の索引）
 │   ├── Docs\                      ← 規約・パターン集
@@ -38,7 +39,8 @@ C:\work\Test\                      ← ワークスペース（この中で Clau
 │   └── ...
 ├── Project.md                     ← プロジェクト固有ルールの置き場（無ければ自動生成）
 ├── LocalEnvironment.md            ← マシン固有情報（デザイナ exe のパスを自動記録）
-├── .claude\                       ← Claude Code 用の許可設定・フック（exe パス設定済み）
+├── .claude\                       ← Claude Code 用の許可設定・フック（exe パス設定済み。GitHub Copilot もフックを読む）
+├── .codex\                        ← Codex 用の許可設定・フック（exe パス設定済み）
 ├── .gitignore                     ← 再生成物・マシン固有ファイルの除外（無ければ自動生成）
 ├── ddl\                           ← テーブル作成用 SQL（DDL）を置く場所
 ├── docs\                          ← このデザイン固有の文書（仕様メモ等）を置く場所
@@ -84,6 +86,14 @@ claude
 `CLAUDE.md` がワークスペース直下にあるので、Claude Code は起動時に自動で読み込み、リファレンスや `Project.md` を参照できる状態になります。あとは自然言語で指示を出せば、`design/` 配下のデザインファイルを作成・編集してくれます。
 
 > ワークスペースの `CLAUDE.md` には、作成・編集したデザイン定義を検証する「デザインチェック」や、DB の中身確認・テストデータ投入を Claude Code から行うための手順も含まれています。
+
+### Codex / GitHub Copilot で使う
+
+同じワークスペースを Codex や GitHub Copilot（VS Code のエージェント・Copilot CLI）でも使えます。ワークスペースのフォルダで起動すると、`AGENTS.md` から作業ルール（`CLAUDE.md`）とリファレンス（`ClaudeCodeForDesigner\`）を読んで作業します。
+
+- **Codex**: 初回にこのフォルダを信頼済みのプロジェクトにしてください。`.codex\` の許可設定とフックは、信頼済みのプロジェクトでだけ読まれます。フックは `/hooks` で内容を確認して信頼すると動きます（デザイナの場所が変わってフックの中身が変わったときも確認し直します）
+- **GitHub Copilot**: フックは `.claude\` のものを使います（フックの結果は Copilot には伝わらないため、AI が作業の前に自分で最新化とライセンスの確認を行います）。デザインチェックなどのコマンドは Copilot の承認画面で許可してください（毎回の確認を減らしたいときは Copilot の自動承認の設定に追加します）
+- 接続文字列の入った `designer.settings.Development.json` を読まないよう、Claude Code では設定で確認が出ます。Codex / Copilot ではこの確認が出ないので、ファイルの内容を AI に渡したくない場合は指示に注意してください
 
 ## 使い方の例
 

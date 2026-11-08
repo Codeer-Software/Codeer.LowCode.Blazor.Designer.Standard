@@ -38,13 +38,13 @@ dotnet run --project <ホストのルート>/Source/Hosts/Cookie/LowCodeApp.Serv
 
 ## 3. Playwright のセットアップ（初回のみ）
 
-`node` / `npm install` / `npx playwright` / `dotnet run` は `.claude/settings.local.json` に許可済み（デザイナの Claude Code Workspace が生成する）。依存はワークスペースの `tools/` に入れる（`.gitignore` 済み）:
+`node` / `npm install` / `npx playwright` / `dotnet run` は許可済み（デザイナの Claude Code Workspace が生成する。Claude Code は `.claude/settings.local.json`、Codex は `.codex/rules/codeer-lowcode.rules`。GitHub Copilot は Copilot の承認で）。依存はワークスペースの `tools/` に入れる（`.gitignore` 済み）:
 
 ```
 cd <ワークスペース>/tools && npm install playwright && npx playwright install chromium
 ```
 
-スクリプトは `tools/` に置く（`node_modules` を解決するため）か、スクラッチパッドに置いて `NODE_PATH=<ワークスペース>/tools/node_modules` を付けて実行する。スクショや dump の出力先はスクラッチパッド。
+スクリプトは `tools/` に置く（`node_modules` を解決するため）か、スクラッチパッド（無ければ OS の一時フォルダ）に置いて `NODE_PATH=<ワークスペース>/tools/node_modules` を付けて実行する。スクショや dump の出力先はスクラッチパッド。
 
 ## 4. スクリプトの雛形（ログイン → ページ遷移 → スクショ + DOM）
 

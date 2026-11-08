@@ -15,7 +15,8 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
     ///
     /// 所有権はフォルダ単位で分ける:
     ///   - フレームワーク所有 = ClaudeCodeForDesigner/ (Docs + ai-refresh の生成物一式) と
-    ///     ルートの CLAUDE.md / .claude のフックと共通設定。
+    ///     ルートの CLAUDE.md / AGENTS.md (Codex・GitHub Copilot の入口) / .claude のフックと共通設定 /
+    ///     .codex/hooks.json・.codex/rules/codeer-lowcode.rules (Codex 用。settings.local.json のサンプルから作る)。
     ///     ClaudeCodeForDesigner/ は展開のたびに丸ごと削除して作り直す (旧版の残骸を残さない)。
     ///     正本はこのライブラリの埋め込みリソース (ClaudeWorkspace.zip = ClaudeWorkspace/ フォルダを
     ///     ビルド時に zip 化したもの) + この exe の ai-refresh 生成物で、展開した瞬間の内容は
@@ -128,6 +129,9 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
             // ワークスペース規約は ClaudeCodeForDesigner/WorkspaceRules.md に出す (その CLAUDE.md から参照してもらう)
             var rootClaudeMd = Path.Combine(workspaceDir, "CLAUDE.md");
             var keepForeignClaudeMd = File.Exists(rootClaudeMd) && !IsWorkspaceClaudeMd(rootClaudeMd);
+            // AGENTS.md も同じ (ホストソリューションのルートの AGENTS.md は保持する)
+            var rootAgentsMd = Path.Combine(workspaceDir, "AGENTS.md");
+            var keepForeignAgentsMd = File.Exists(rootAgentsMd) && !IsWorkspaceClaudeMd(rootAgentsMd);
 
             // フレームワーク所有分 (zip の中身) を展開
             using (var stream = typeof(ClaudeWorkspaceDeploy).Assembly.GetManifestResourceStream(ZipResourceName)
@@ -163,6 +167,12 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
                         }
                     }
 
+                    if (entry.FullName == "AGENTS.md" && keepForeignAgentsMd)
+                    {
+                        result.Preserved.Add(entry.FullName);
+                        continue;
+                    }
+
                     Directory.CreateDirectory(Path.GetDirectoryName(target)!);
                     entry.ExtractToFile(target, overwrite: true);
                     if (entry.FullName == "Project.md") result.Created.Add(entry.FullName);
@@ -178,24 +188,10 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
             UpdateLocalEnvironment(Path.Combine(workspaceDir, "LocalEnvironment.md"), exePath, result);
 
             // .gitignore: フレームワーク所有 (再生成可能) とマシン固有をコミット対象外に。
-            // ユーザーが編集している可能性があるため、無い場合のみ生成する
-            var gitignore = Path.Combine(workspaceDir, ".gitignore");
-            if (File.Exists(gitignore))
-            {
-                result.Preserved.Add(".gitignore");
-            }
-            else
-            {
-                File.WriteAllText(gitignore,
-                    "# デザイナ (claude-workspace / ai-refresh) が再生成するもの・マシン固有のもの\n" +
-                    "ClaudeCodeForDesigner/\n" +
-                    "tools/\n" +
-                    "LocalEnvironment.md\n" +
-                    ".claude/settings.local.json\n" +
-                    ".claude/license_status.json\n",
-                    new UTF8Encoding(false));
-                result.Created.Add(".gitignore");
-            }
+            // 無ければ生成する。既存でも 1 行目がこちらの見出しなら (= 以前の展開が生成したもの)、
+            // 足りない行だけ末尾に追記する (新しい生成物 = Codex の設定・ライセンスのキャッシュをコミットさせないため)。
+            // 見出しの無いもの (ユーザーやホストの .gitignore) は触らない
+            UpdateGitignore(Path.Combine(workspaceDir, ".gitignore"), result);
 
             // .claude/settings.local.json: マシン固有の許可とフック。無ければサンプルに exe パスを焼き込んで生成。
             // 既存なら、ユーザーが追加した許可などは保持したまま、フレームワーク所有の部分 (hooks 節 = この exe を
@@ -203,11 +199,61 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
             // 旧フック (refresh-field-catalog.ps1) や別の exe を指したままの hooks を残すと自動更新が黙って止まるため。
             UpdateSettingsLocal(workspaceDir, exePath, projectFolderName, result);
 
+            // Codex 用の許可とフック: settings.local.json のサンプルと同じ内容から作る (フレームワーク所有。毎回この exe に合わせる)
+            if (LoadSettingsSample(workspaceDir, exePath, projectFolderName) is { } sampleText
+                && JsonNode.Parse(sampleText) is JsonObject sampleForCodex)
+                CodexWorkspaceFiles.Write(workspaceDir, sampleForCodex, overwrite: true, result.Deployed, result.Preserved);
+
             // 生成リファレンス一式 (ai-refresh) も同じタイミングで出す。
             // デザインプロジェクトがまだ無ければスキップ (フックがプロジェクト設置後に再実行する)
             RunAiRefresh(workspaceDir, projectFolderName, exePath, result);
 
             return result;
+        }
+
+        const string GitignoreHeader = "# デザイナ (claude-workspace / ai-refresh) が再生成するもの・マシン固有のもの";
+        static readonly string[] GitignoreLines =
+        {
+            "ClaudeCodeForDesigner/",
+            "tools/",
+            "LocalEnvironment.md",
+            ".claude/settings.local.json",
+            ".claude/license_status.json",
+            CodexWorkspaceFiles.HooksRelativePath,
+            CodexWorkspaceFiles.RulesRelativePath,
+        };
+
+        static void UpdateGitignore(string path, DeployResult result)
+        {
+            if (!File.Exists(path))
+            {
+                File.WriteAllText(path, GitignoreHeader + "\n" + string.Join("\n", GitignoreLines) + "\n", new UTF8Encoding(false));
+                result.Created.Add(".gitignore");
+                return;
+            }
+
+            var text = File.ReadAllText(path, Encoding.UTF8);
+            var lines = text.Split('\n').Select(x => x.TrimEnd('\r')).ToList();
+            if (lines.Count == 0 || lines[0].TrimStart('\uFEFF').Trim() != GitignoreHeader)
+            {
+                result.Preserved.Add(".gitignore");
+                return;
+            }
+
+            var present = lines.Select(x => x.Trim()).ToHashSet(StringComparer.Ordinal);
+            var missing = GitignoreLines.Where(x => !present.Contains(x)).ToList();
+            if (missing.Count == 0)
+            {
+                result.Preserved.Add(".gitignore");
+                return;
+            }
+
+            var newline = text.Contains("\r\n") ? "\r\n" : "\n";
+            var sb = new StringBuilder(text);
+            if (text.Length > 0 && !text.EndsWith("\n")) sb.Append(newline);
+            foreach (var line in missing) sb.Append(line).Append(newline);
+            File.WriteAllText(path, sb.ToString(), new UTF8Encoding(false));
+            result.Created.Add(".gitignore (" + string.Join(", ", missing) + " を追記)");
         }
 
         // ルートの CLAUDE.md がこのワークスペースの規約 (zip 由来) か。1 行目のマーカーで判定する
@@ -225,6 +271,18 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
             }
         }
 
+        // .claude/settings.local.json.sample に exe パス / プロジェクトフォルダを焼き込んだ JSON テキスト。サンプルが無ければ null
+        static string? LoadSettingsSample(string workspaceDir, string exePath, string projectFolderName)
+        {
+            var settingsSample = Path.Combine(workspaceDir, ".claude", "settings.local.json.sample");
+            if (!File.Exists(settingsSample)) return null;
+
+            // JSON 文字列内に入るため \ をエスケープする
+            return File.ReadAllText(settingsSample, Encoding.UTF8)
+                .Replace(ExePlaceholder, exePath.Replace("\\", "\\\\"))
+                .Replace(ProjectPlaceholder, projectFolderName.Replace("\\", "\\\\"));
+        }
+
         // .claude/settings.local.json を生成・更新する。
         //   無ければ: サンプルに exe パス / プロジェクトフォルダを焼き込んで生成。
         //   あれば:   hooks 節をサンプル (= この exe を指す refresh-ai-workspace.ps1 フック) で置き換え、
@@ -234,13 +292,8 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
         {
             const string rel = ".claude/settings.local.json";
             var settingsLocal = Path.Combine(workspaceDir, ".claude", "settings.local.json");
-            var settingsSample = Path.Combine(workspaceDir, ".claude", "settings.local.json.sample");
-            if (!File.Exists(settingsSample)) return;
-
-            // JSON 文字列内に入るため \ をエスケープする
-            var sampleJson = File.ReadAllText(settingsSample, Encoding.UTF8)
-                .Replace(ExePlaceholder, exePath.Replace("\\", "\\\\"))
-                .Replace(ProjectPlaceholder, projectFolderName.Replace("\\", "\\\\"));
+            var sampleJson = LoadSettingsSample(workspaceDir, exePath, projectFolderName);
+            if (sampleJson == null) return;
 
             if (!File.Exists(settingsLocal))
             {

@@ -11,12 +11,8 @@
 
         <!-- OSS / NuGet パッケージ (MIT)。 -->
         <PackageId>Codeer.LowCode.Blazor.Designer.Standard</PackageId>
-        <Version>0.8.23</Version>
-        <PackageReleaseNotes>
-- Templates: design files rewritten in the omit-default-values form with current assembly versions (no migration prompt right after creating a project).
-- Templates: AppUser login account contract now has DbColumnSessionStamp (session_stamp column in the bundled SQLite databases).
-- Templates: AppUser detail page has a SessionRevokeButtonField (log the user out from all devices).
-        </PackageReleaseNotes>
+        <Version>0.8.25</Version>
+        <PackageReleaseNotes>AI workspace: Codex / GitHub Copilot support (AGENTS.md, .codex hooks and rules).</PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <Company>Codeer Software</Company>

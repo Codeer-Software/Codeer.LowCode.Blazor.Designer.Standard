@@ -3,11 +3,12 @@ using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Codeer.LowCode.Blazor.Designer.Standard
 {
     /// <summary>
-    /// ホストソリューション (C#) のルートで Claude Code を使うための生成物を書き出す。
+    /// ホストソリューション (C#) のルートで AI エージェント (Claude Code / Codex / GitHub Copilot) を使うための生成物を書き出す。
     ///
     /// 置き場は &lt;root&gt;/ClaudeCodeForDeveloper/。このフォルダはホスト側 (Codeer.LowCode.Blazor.Starter 等) の
     /// 静的な文書 (セットアップ手順書など・コミット対象) と、この verb が生成するもの (パッケージの版に追従する・
@@ -19,6 +20,8 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
     /// **無いときだけ**生成する (claude-workspace がデザイン側でやっているのと同じ扱い。既存は触らない)。
     /// これでルートで起動した Claude Code からも、デザインプロジェクトのフォルダで起動したときと同じ許可・
     /// 自動更新 (DesignProjects/*/ の各ワークスペースの refresh-ai-workspace.ps1 を巡回) が効く。
+    /// GitHub Copilot は同じファイルのフックを読む。Codex 用には同じ内容の .codex/hooks.json と
+    /// .codex/rules/codeer-lowcode.rules を、同じく無いときだけ生成する。
     ///
     /// デザインプロジェクトが無くても実行できる (プロジェクトを開いて生成するカタログ類は
     /// デザインプロジェクト側の ClaudeCodeForDesigner/ が持つ)。
@@ -128,6 +131,8 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
             result.Written.Add($"{FolderName}/{HooksDirName}/{LicenseGuardScriptName}");
 
             // .claude/settings.local.json: マシン固有 (exe パス焼き込み)。無いときだけ生成、既存は触らない
+            // JSON 文字列内に入るため \ をエスケープする
+            var json = LoadResource("settings.local.json.sample").Replace(ExePlaceholder, exePath.Replace("\\", "\\\\"));
             var settingsLocal = Path.Combine(rootDir, ".claude", "settings.local.json");
             if (File.Exists(settingsLocal))
             {
@@ -136,11 +141,13 @@ namespace Codeer.LowCode.Blazor.Designer.Standard
             else
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(settingsLocal)!);
-                // JSON 文字列内に入るため \ をエスケープする
-                var json = LoadResource("settings.local.json.sample").Replace(ExePlaceholder, exePath.Replace("\\", "\\\\"));
                 File.WriteAllText(settingsLocal, json, new UTF8Encoding(false));
                 result.Created.Add(".claude/settings.local.json");
             }
+
+            // Codex 用 (.codex/hooks.json・.codex/rules/codeer-lowcode.rules): 同じサンプルから。無いときだけ生成、既存は触らない
+            if (JsonNode.Parse(json) is JsonObject sample)
+                CodexWorkspaceFiles.Write(rootDir, sample, overwrite: false, result.Created, result.Preserved);
 
             return result;
         }

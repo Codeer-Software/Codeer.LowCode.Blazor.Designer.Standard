@@ -44,7 +44,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \".claude/refresh-ai-workspace.ps1\" \"<デザイナexeのパス>\" \"<デザインプロジェクトのフォルダ>\""
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \".claude/refresh-ai-workspace.ps1\" \"<デザイナexeのパス>\" \"<デザインプロジェクトのフォルダ>\"",
+            "timeout": 600
           }
         ]
       }
@@ -54,7 +55,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \".claude/refresh-ai-workspace.ps1\" \"<デザイナexeのパス>\" \"<デザインプロジェクトのフォルダ>\""
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \".claude/refresh-ai-workspace.ps1\" \"<デザイナexeのパス>\" \"<デザインプロジェクトのフォルダ>\"",
+            "timeout": 600
           }
         ]
       }

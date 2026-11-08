@@ -45,7 +45,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"ClaudeCodeForDeveloper/_hooks/refresh-design-workspaces.ps1\" \"<デザイナexeのパス>\""
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"ClaudeCodeForDeveloper/_hooks/refresh-design-workspaces.ps1\" \"<デザイナexeのパス>\"",
+            "timeout": 600
           }
         ]
       }
@@ -55,7 +56,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"ClaudeCodeForDeveloper/_hooks/refresh-design-workspaces.ps1\" \"<デザイナexeのパス>\""
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"ClaudeCodeForDeveloper/_hooks/refresh-design-workspaces.ps1\" \"<デザイナexeのパス>\"",
+            "timeout": 600
           }
         ]
       }

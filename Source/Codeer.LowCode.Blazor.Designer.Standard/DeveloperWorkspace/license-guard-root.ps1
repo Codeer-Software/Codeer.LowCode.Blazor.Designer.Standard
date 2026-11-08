@@ -1,10 +1,10 @@
-﻿# ホストソリューションのルートで Claude Code を起動したときに、配下のデザインプロジェクト
-# (DesignProjects/<名>/<デザインのフォルダ>/) への Write / Edit / MultiEdit を、そのワークスペースの
+﻿# ホストソリューションのルートでエージェント (Claude Code / Codex / GitHub Copilot) を起動したときに、配下のデザインプロジェクト
+# (DesignProjects/<名>/<デザインのフォルダ>/) へのファイル編集を、各ワークスペースの
 # .claude/license-guard.ps1 (ライセンスで編集を止める PreToolUse フック) に委ねるスクリプト。
-# 判定ロジックはそちらが持つ。デザインプロジェクトのフォルダ名は、ワークスペース直下で app.clprj を持つフォルダから求める。
+# 編集先の取り出しと判定はそちらが持つ。デザインプロジェクトのフォルダ名は、ワークスペース直下で app.clprj を持つフォルダから求める。
 #
 # hook から:  powershell -NoProfile -ExecutionPolicy Bypass -File "ClaudeCodeForDeveloper/_hooks/license-guard-root.ps1" "<デザイナexeのパス>"
-# 止めるときは委ねた先の deny (JSON) をそのまま返す。それ以外は何も出さず exit 0。デザイナの developer-workspace が生成する (手で編集しない)。
+# 委ねた先が止めたら (exit 2・理由は標準エラー) そのまま exit 2。それ以外は何も出さず exit 0。デザイナの developer-workspace が生成する (手で編集しない)。
 
 param(
     [Parameter(Mandatory = $true)][string]$Exe,
@@ -13,36 +13,39 @@ param(
 
 $ErrorActionPreference = 'SilentlyContinue'
 
+# 入出力は UTF-8 (既定の OEM コードページ / ASCII だと日本語のパスが化けて判定が素通りする)
+[Console]::InputEncoding = New-Object System.Text.UTF8Encoding $false
+$OutputEncoding = New-Object System.Text.UTF8Encoding $false
 $raw = [Console]::In.ReadToEnd()
 if ([string]::IsNullOrWhiteSpace($raw)) { exit 0 }
 try { $hook = $raw | ConvertFrom-Json } catch { exit 0 }
-$filePath = $hook.tool_input.file_path
-if ([string]::IsNullOrEmpty($filePath)) { exit 0 }
 
 if (-not (Test-Path -LiteralPath $Exe)) { exit 0 }
 if (-not (Test-Path -LiteralPath $DesignProjectsDir)) { exit 0 }
 
-$full = [System.IO.Path]::GetFullPath($filePath)
-foreach ($ws in Get-ChildItem -LiteralPath $DesignProjectsDir -Directory) {
-    $wsDir = $ws.FullName.TrimEnd('\') + '\'
-    if (-not $full.StartsWith($wsDir, [System.StringComparison]::OrdinalIgnoreCase)) { continue }
+# 委ねた先は各ワークスペースで動くので、相対パスの基準 (cwd) が入力に無ければルートを入れて渡す
+if (-not ($hook.cwd -is [string] -and $hook.cwd -ne '')) {
+    $hook | Add-Member -NotePropertyName cwd -NotePropertyValue (Get-Location).Path -Force
+    $raw = $hook | ConvertTo-Json -Compress -Depth 20
+}
 
+foreach ($ws in Get-ChildItem -LiteralPath $DesignProjectsDir -Directory) {
     $script = Join-Path $ws.FullName '.claude\license-guard.ps1'
-    if (-not (Test-Path -LiteralPath $script)) { exit 0 }
+    if (-not (Test-Path -LiteralPath $script)) { continue }
 
     $project = $null
     foreach ($d in Get-ChildItem -LiteralPath $ws.FullName -Directory) {
         if (Test-Path -LiteralPath (Join-Path $d.FullName 'app.clprj')) { $project = $d.Name; break }
     }
-    if ($null -eq $project) { exit 0 }
+    if ($null -eq $project) { continue }
 
     Push-Location -LiteralPath $ws.FullName
     try {
-        [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
         $raw | & powershell -NoProfile -ExecutionPolicy Bypass -File $script $Exe $project
+        $code = $LASTEXITCODE
     } finally {
         Pop-Location
     }
-    exit 0
+    if ($code -eq 2) { exit 2 }
 }
 exit 0

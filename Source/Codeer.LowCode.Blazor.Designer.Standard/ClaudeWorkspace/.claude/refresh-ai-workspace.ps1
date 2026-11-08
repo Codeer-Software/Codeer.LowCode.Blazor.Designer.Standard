@@ -14,7 +14,7 @@
 # ライセンス:
 #   先に .claude/license-status.ps1 でこのマシンのライセンスを見る。デザインを編集できないライセンス
 #   (サーバー / クライアント、ライセンス無しでトライアルも無効) なら、ClaudeCodeForDesigner/ (知識ベース) を消して
-#   作り直さず、その旨を標準出力に出す (SessionStart / UserPromptSubmit の標準出力は Claude の文脈に入る)。
+#   作り直さず、その旨を標準出力に出す (SessionStart / UserPromptSubmit の標準出力は Claude Code / Codex では文脈に入る。GitHub Copilot には届かないので、AGENTS.md が着手前の手動実行を指示している)。
 #   ライセンスが戻れば次のプロンプトで作り直される。
 #
 # このワークスペースはデザイナ 1.3.15 以降が前提。古い exe に未知の verb を渡すと GUI が起動してしまうため、

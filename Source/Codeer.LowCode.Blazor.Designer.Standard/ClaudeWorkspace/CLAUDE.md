@@ -1,6 +1,8 @@
 # Codeer.LowCode.Blazor デザインワークスペース
 
-このフォルダで Claude Code を起動し、Codeer.LowCode.Blazor のデザインファイル（JSON / C# スクリプト / SQL / CSS）を編集する。デザイナ（GUI アプリ）と並行して使う。
+このフォルダで AI エージェント（Claude Code / Codex / GitHub Copilot）を起動し、Codeer.LowCode.Blazor のデザインファイル（JSON / C# スクリプト / SQL / CSS）を編集する。デザイナ（GUI アプリ）と並行して使う。
+
+この文書はどのエージェントにも共通の規約（`ClaudeCodeForDesigner/` の文書も同じ。名前に Claude と付いていても共通）。エージェントごとに違うのは許可・フックの設定ファイルとツールの名前だけで、Claude Code の分は末尾の「Claude Code 固有」、Codex / GitHub Copilot の分は `AGENTS.md` にある。
 
 ## 質問にも答える（作るだけではない）
 
@@ -29,17 +31,16 @@
 ## 作業の進め方（常時このルールで動く）
 
 ### 1. 外部ツールはデザイナがセットアップ済み・以後は確認なし
-- このワークスペースは**デザイナの「Claude Code Workspace」メニュー（または `claude-workspace` CLI）が展開したもの**で、デザイナ exe のパスは `.claude/settings.local.json` と `LocalEnvironment.md` に**焼き込み済み**。exe パスを自分で探さない
-- **exe に繋がらないとき（パスに実在しない・CLI が動かない）は、ディスクを探索して勝手に直さず、ユーザーに正しいパスを確認する**。ユーザーから「exe のパスを変えて」「新しいパスは○○」と指示されたら自分で書き換えてよい: ① `LocalEnvironment.md` の `DesignerExePath:` 行 ② `.claude/settings.local.json` 内の旧パスの**全出現**（許可リストとフック。JSON 文字列内なので `\` は `\\` にエスケープ、ユーザーが追記した他の許可は温存）。書き換え後は `template-list` など軽いサブコマンドで疎通確認し、許可が効かないようならセッションの再起動を案内する。デザイナのメニュー Tools > Claude Code Workspace の再実行（`settings.local.json` を消してから実行するとパスが再生成される）を案内するのでもよい
+- このワークスペースは**デザイナの「Claude Code Workspace」メニュー（または `claude-workspace` CLI）が展開したもの**で、デザイナ exe のパスは `LocalEnvironment.md` と各エージェントの設定（Claude Code / Copilot は `.claude/settings.local.json`、Codex は `.codex/hooks.json` と `.codex/rules/codeer-lowcode.rules`）に**焼き込み済み**。exe パスを自分で探さない
+- **exe に繋がらないとき（パスに実在しない・CLI が動かない）は、ディスクを探索して勝手に直さず、ユーザーに正しいパスを確認する**。ユーザーから「exe のパスを変えて」「新しいパスは○○」と指示されたら自分で書き換えてよい: ① `LocalEnvironment.md` の `DesignerExePath:` 行 ② 上記のエージェントの設定ファイル内の旧パスの**全出現**（許可リストとフック。JSON / ルールの文字列内なので `\` は `\\` にエスケープ、ユーザーが追記した他の許可は温存）。書き換え後は `template-list` など軽いサブコマンドで疎通確認し、許可が効かないようならセッションの再起動を案内する。デザイナのメニュー Tools > Claude Code Workspace の再実行（Claude Code の `settings.local.json` は消してから実行するとパスが再生成される。Codex の `.codex/` の 2 ファイルは毎回作り直される）を案内するのでもよい
 - **`designcheck` / `sql` / `rename-*`（rename-field / rename-module / rename-pageframe / rename-layout / rename-enum / rename-enum-member / 一括の rename-batch）/ `ai-refresh` / `defaults` / `template-list` / `template-extract` / `template-create` / `api` / `license-status` / `selenium-test-init` / `pageobject` / 拡張機能のセットアップ（`*-setup`。あるものと使い方は `_field_catalog.md` の各フィールドの「セットアップ」節と、フィールドを持たない機能（監査ログ等）は `_specs/` にあるその機能の文書。デザインファイルを生成するだけで DDL は流さない）は確認なしで実行してよい**（`dotnet build` / `dotnet test` も）。`deploy`（現在のデプロイ先へ App.zip を送る＝デザイナの「送信」）も確認なしで実行してよい。どのデプロイ先へ送れるかは、そのデプロイ先の **`AllowCliDeploy`**（`designer.settings.Development.json` の `DeployInfo`。ユーザーが設定済み。方式 FileSystem / FTPS は問わない）が決め、`false` のデプロイ先には CLI からそもそも送れないので、これが安全境界。拒否されたら、デザイナの「デプロイ先の追加」で「CLIからのデプロイを許可する」を付けるか `AllowCliDeploy: true` を設定してもらうようユーザーに案内する（自分で `Development.json` を書き換えない）。どの DB に SQL を流せるかは、各データソースの `designer.settings.json` の **`AllowCliSqlAccess`**（ユーザーが設定済み）が決める。`false` のデータソースには CLI からそもそも実行できないので、これが安全境界。`sql` と `designcheck` 以外は DB 接続せず完結する（詳細は `./ClaudeCodeForDesigner/CLAUDE.md`）
-- **`designer.settings.Development.json` は基本読まない・書かない（許可制）。** 接続文字列・デプロイ設定（秘密情報）の置き場で、デザイン作業でこの中身が必要になることは無い — データソースの名前と種別は `designer.settings.json`（秘密なし）にあり、DB のスキーマ・データ確認は `sql` / `designcheck` CLI が接続文字列を内部で解決してくれる。扱うのはユーザーが明示的に依頼したときだけ（`.claude/settings.json` の ask 設定で確認が出る）。**その場合も、許可を求める前に「このファイルの内容（接続文字列やパスワード）は読むと LLM への送信と会話ログへの記録が発生する」ことを一言伝え、リスクを了解したうえで承認してもらう**。データソースやデプロイ設定の追加は、デザイナのソリューションツリーで設定ファイルを右クリック（「データソースの追加」等）からもできるので、そちらを案内するのも良い
+- **`designer.settings.Development.json` は基本読まない・書かない（許可制）。** 接続文字列・デプロイ設定（秘密情報）の置き場で、デザイン作業でこの中身が必要になることは無い — データソースの名前と種別は `designer.settings.json`（秘密なし）にあり、DB のスキーマ・データ確認は `sql` / `designcheck` CLI が接続文字列を内部で解決してくれる。扱うのはユーザーが明示的に依頼したときだけ（Claude Code では `.claude/settings.json` の ask 設定で確認が出る。それ以外のエージェントでは仕組みで止まらないので、この規則を自分で守る）。**その場合も、許可を求める前に「このファイルの内容（接続文字列やパスワード）は読むと LLM への送信と会話ログへの記録が発生する」ことを一言伝え、リスクを了解したうえで承認してもらう**。データソースやデプロイ設定の追加は、デザイナのソリューションツリーで設定ファイルを右クリック（「データソースの追加」等）からもできるので、そちらを案内するのも良い
 - **このワークスペースはデザイナ 1.3.15 以降が前提**（`template-create` / `deploy` / `api` は 1.3.24 以降）。古い exe に未知のサブコマンドを渡すと GUI が起動してしまい `--out` が生成されない。`--out` の JSON が出来ていない／ウィンドウが開いた場合は「その版が未対応」と判断し、**作業を進めずユーザーにデザイナのバージョンアップと Tools > Claude Code Workspace の再実行を促す**（ワークスペースはデザイナと同一バージョンの内容に更新される）
-- **動作確認のサーバーは、ユーザーが起動していればそれを使い、起動していなければ自分で起動してよい。ユーザーに「起動しないで」「止めて」と言われたらやめる**（自分で起動できるのはホストソリューションと同居しているとき。手順は「4. 動作確認」と `./ClaudeCodeForDesigner/Docs/BrowserTestGuide.md`）。URL はホスト側 `CLAUDE.md`「ビルドと起動」か Server プロジェクトの `Properties/launchSettings.json`（https プロファイルの `applicationUrl`）から取り、`LocalEnvironment.md` に `ServerUrl:` 行として記録して以後はそれを使う。同居していない（起動方法が分からない）ときだけ URL をユーザーに聞く。Playwright の導入（`tools/` への `npm install playwright` と `npx playwright install chromium`）、`node`、`dotnet run` は許可済みなので諮らなくてよい。それ以外の `.claude` の許可追加は勝手に広げずユーザーに諮る
+- **動作確認のサーバーは、ユーザーが起動していればそれを使い、起動していなければ自分で起動してよい。ユーザーに「起動しないで」「止めて」と言われたらやめる**（自分で起動できるのはホストソリューションと同居しているとき。手順は「4. 動作確認」と `./ClaudeCodeForDesigner/Docs/BrowserTestGuide.md`）。URL はホスト側 `CLAUDE.md`「ビルドと起動」か Server プロジェクトの `Properties/launchSettings.json`（https プロファイルの `applicationUrl`）から取り、`LocalEnvironment.md` に `ServerUrl:` 行として記録して以後はそれを使う。同居していない（起動方法が分からない）ときだけ URL をユーザーに聞く。Playwright の導入（`tools/` への `npm install playwright` と `npx playwright install chromium`）、`node`、`dotnet run` は諮らずに実行してよい（許可の設定はエージェントごと。Claude Code は末尾の固有の節、Codex / Copilot は `AGENTS.md`）。それ以外の許可の追加は勝手に広げずユーザーに諮る
 
 ### 2. ツールの使い方（許可ブロック・エラーを増やさない）
-- **スクリプトは Write/Edit ツールで作る。** シェルのヒアドキュメント（`cat > file <<EOF`）でスクリプトを量産しない（中身の `{}`・引用符が毎回ブロックされる）
-- **一覧・検索・読み込みは Read / Grep / Glob ツールを使う。** `cat` / `grep` / `ls` のワンライナーや、`for`/`while`/`if`・変数代入・パイプを詰めた複合コマンドを避ける（静的解析が通らず止まる）
-- **Bash は絶対パスで。`cd` しない**（作業ディレクトリは呼び出し間で持ち越され、相対パスが狂う）
+- **スクリプトやファイルは、エージェントにファイル作成・編集の機能があればそれで作る。** シェルのヒアドキュメント（`cat > file <<EOF`）でスクリプトを量産しない
+- **シェルは絶対パスで。`cd` しない**（作業ディレクトリは呼び出し間で持ち越され、相対パスが狂う）
 - **PowerShell は実行ファイルをリテラルパスで呼ぶ**（`& $var` の動的呼び出しは必ず止まる）。`$()` 部分式・スクリプトブロックも避け、小さく単純なコマンドに分ける
 - **広域なファイル探索をしない**（`C:\` 全走査等。遅く・アクセス拒否でエラー終了する）。必要な情報は最小の取得で済ませる
 
@@ -47,7 +48,7 @@
 - **デザインプロジェクトのフォルダ（既定 `design/`）直下には設計ファイルのみ**（`app.clprj` / `designer.settings*.json` / `Modules` / `PageFrames` / `Enums` / `Resources`）。作業ファイルを混ぜない。デプロイ（App.zip）に入るのはこのフォルダの中身だけ
 - **DDL（CREATE TABLE 等）→ `ddl/`**
 - **このデザイン固有の文書（仕様メモ・決定事項・ユーザー向けの説明）→ `docs/`**。ワークスペース直下に散らさない
-- **作業物（seed SQL・CLI の `--out` JSON・スクショ・検証スクリプト）→ 自分のスクラッチパッド（セッションの一時領域）**。ワークスペースに作業ファイルを置かない
+- **作業物（seed SQL・CLI の `--out` JSON・スクショ・検証スクリプト）→ 自分のスクラッチパッド（セッションの一時領域。エージェントに無ければ OS の一時フォルダ）**。ワークスペースに作業ファイルを置かない
 - **依存（Playwright 等の `npm install`）→ `tools/`**。プロジェクト直下に `node_modules` を作らない
 
 ### 4. 動作確認（ブラウザ / Playwright）は作業の一部として行う
@@ -76,20 +77,29 @@
 - 実行にはサーバーが起動している必要がある。URL は既存ルールどおりユーザーに確認して `testsettings.json` の `BaseUrl` に書く
 
 ### 8. ホストソリューション (C#) と同居しているとき
-- Codeer.LowCode.Blazor.Starter（またはテンプレートから作った `LowCodeApp.sln`）のフォルダでは、このワークスペースは **`DesignProjects/<デザイン名>/`**（`Project.md` / `ddl/` / `docs/` / `design/` とこの規約一式）としてホストのルートの下に置かれ、デザイン担当者はこのフォルダで Claude Code を起動する。ホストのルートにある `CLAUDE.md` は**ホスト側の所有**（ホストを触る人向けの構成・ビルド・起動・appsettings の説明）。両方に従う（矛盾したらホスト側の `CLAUDE.md` が優先）
+- Codeer.LowCode.Blazor.Starter（またはテンプレートから作った `LowCodeApp.sln`）のフォルダでは、このワークスペースは **`DesignProjects/<デザイン名>/`**（`Project.md` / `ddl/` / `docs/` / `design/` とこの規約一式）としてホストのルートの下に置かれ、デザイン担当者はこのフォルダでエージェントを起動する。ホストのルートにある `CLAUDE.md` は**ホスト側の所有**（ホストを触る人向けの構成・ビルド・起動・appsettings の説明）。両方に従う（矛盾したらホスト側の `CLAUDE.md` が優先）
 - 旧配置（ワークスペースがホストのルートそのものに展開されている場合）では、ルートの `CLAUDE.md` はホスト所有で、この規約は `./ClaudeCodeForDesigner/WorkspaceRules.md` として置かれている。扱いは同じ
 - デザイン作業でホストの再ビルドは要らない（デザインファイルは `deploy` で反映、スクリプト変更はサーバー再起動）。動作確認用サーバーの起動コマンドと URL はホスト側 `CLAUDE.md`「ビルドと起動」にある（Starter なら `dotnet run --project Source/Hosts/Cookie/LowCodeApp.Server --launch-profile https`、`https://localhost:7137`、初期ユーザー `admin`/`admin`）
 - ホストが配信するデザインは 1 つ（appsettings の `DesignFileDirectory` にある App.zip）。サンプルから自分のアプリへ移るなど、別のデザインプロジェクトに切り替えるときは、ホスト側 `CLAUDE.md` の「デザインプロジェクトの切り替え」に従う（デプロイ先の App.zip と接続文字列の向き先を変える）
 - C# に手を入れるのは上記「基本姿勢」の最後の手段に該当するときだけ。ライブラリの拡張点は `<ホストのルート>/ClaudeCodeForDeveloper/_specs/HostCustomization.md`（デザイナの `developer-workspace` が生成。`./ClaudeCodeForDesigner/_specs/HostCustomization.md` も同じ内容）。入れたら `dotnet build` が通る状態で止め、サーバー／デザイナの再起動が必要なことをユーザーに伝える
 
 ### 9. ライセンス（編集できる状態かをフックが伝える）
-- セッション開始と各プロンプトのフック（`.claude/refresh-ai-workspace.ps1`）が、デザイナ exe の `license-status` でこのマシンのライセンスを確かめる。デザインを編集できるのは**開発・メンテナンス・組込みのライセンスか、トライアル中**。サーバー / クライアントのライセンス、ライセンス無しでトライアルも無効（未開始・期間終了）なら編集できない
-- 編集できないときはフックが `[ライセンス] このマシンではデザインを編集できません: ...` を文脈に出す。その状態では**デザインプロジェクトのフォルダ（`design/`）を編集しない**（PreToolUse のフック `.claude/license-guard.ps1` が Write / Edit を止める。CLI も `license: true` のエラーで拒否される）。`ClaudeCodeForDesigner/`（仕様・カタログ）も置かれない。質問への回答・`docs/` の整理など、デザインに触らない作業は続けてよい
+- セッション開始と各プロンプトのフック（`.claude/refresh-ai-workspace.ps1`。Claude Code / Copilot は `.claude/settings.local.json`、Codex は `.codex/hooks.json` から呼ばれる）が、デザイナ exe の `license-status` でこのマシンのライセンスを確かめる。デザインを編集できるのは**開発・メンテナンス・組込みのライセンスか、トライアル中**。サーバー / クライアントのライセンス、ライセンス無しでトライアルも無効（未開始・期間終了）なら編集できない
+- 編集できないときはフックが `[ライセンス] このマシンではデザインを編集できません: ...` を文脈に出す（Claude Code / Codex。GitHub Copilot にはフックの出力が届かないので、`AGENTS.md` の手順で自分で実行して確かめる）。その状態では**デザインプロジェクトのフォルダ（`design/`）を編集しない**（PreToolUse のフック `.claude/license-guard.ps1` がファイル編集を止める。CLI も `license: true` のエラーで拒否される）。`ClaudeCodeForDesigner/`（仕様・カタログ）も置かれない。質問への回答・`docs/` の整理など、デザインに触らない作業は続けてよい
 - 編集できないと分かったら、作業を進めずユーザーに次を案内する:
   - **ライセンスが無くトライアルも未開始**（新しいマシン）: デザイナ（GUI）を起動するか、ホストソリューションをビルドすればトライアル（30 日）が自動で登録される。CLI からはトライアルを始めない
-  - **トライアルが終了している / サーバー・クライアントのライセンスが入っている**: 開発またはメンテナンスのライセンスを登録する。デザイナを起動すると登録画面が出る（管理者権限の確認が出る）。GUI が使えない環境では、ホストソリューションの `LowCodeApp.LicenseRegisterCli`（Licensing だけを参照するので常にビルドできる）を `dotnet build` し、**管理者権限のターミナルで** `LicenseRegisterCli.exe activate -k "<ライセンスキー>" -c "<登録名>"` を実行してもらう（レジストリ HKLM に書くため昇格が要る。Claude は昇格できないので、コマンドを示して実行してもらう）。オフライン環境の手順は `activate -o` で登録データを作り、別の端末で取得したライセンス文字列を `import -i` で取り込む（詳細はオンラインマニュアルの「ライセンス」）
+  - **トライアルが終了している / サーバー・クライアントのライセンスが入っている**: 開発またはメンテナンスのライセンスを登録する。デザイナを起動すると登録画面が出る（管理者権限の確認が出る）。GUI が使えない環境では、ホストソリューションの `LowCodeApp.LicenseRegisterCli`（Licensing だけを参照するので常にビルドできる）を `dotnet build` し、**管理者権限のターミナルで** `LicenseRegisterCli.exe activate -k "<ライセンスキー>" -c "<登録名>"` を実行してもらう（レジストリ HKLM に書くため昇格が要る。AI は昇格できないので、コマンドを示して実行してもらう）。オフライン環境の手順は `activate -o` で登録データを作り、別の端末で取得したライセンス文字列を `import -i` で取り込む（詳細はオンラインマニュアルの「ライセンス」）
   - 登録が済んだら、次のプロンプトでフックが再確認して編集できる状態に戻る（編集できる結果は 10 分キャッシュされるが、編集できない結果はキャッシュしないので登録直後から反映される）
 
 ## プロジェクト固有の知見を貯める
 
 作業中に得た業務ルール・命名・接続先などは、ユーザーに確認のうえ `./Project.md` に追記して蓄積する。
+
+## Claude Code 固有
+
+Claude Code で使うときだけの話。Codex / GitHub Copilot はこの節を読み飛ばし、`AGENTS.md` に従う。
+
+- 許可とフックは `.claude/settings.json`（共通の許可。`designer.settings.Development.json` の読み書きは ask）と `.claude/settings.local.json`（このマシンの exe パス入りの許可リストとフック。デザイナが生成）にある
+- ファイルの作成・編集は Write / Edit、読み込み・検索は Read / Grep / Glob を使う。`cat` / `grep` / `ls` のワンライナーや、`for`/`while`/`if`・変数代入・パイプを詰めた複合コマンド、ヒアドキュメントは Bash の許可の静的解析が通らず止まるので避ける
+- デザイナ exe の CLI は Bash から `"<exe>" designcheck ...` の形で呼べる（終了を待てる）
+- `.claude/settings.local.json` は次のセッションから効く。書き換えたら、ターミナルなら `/exit` して `claude`、デスクトップアプリ・VS Code なら新しいセッションを始めるよう案内する

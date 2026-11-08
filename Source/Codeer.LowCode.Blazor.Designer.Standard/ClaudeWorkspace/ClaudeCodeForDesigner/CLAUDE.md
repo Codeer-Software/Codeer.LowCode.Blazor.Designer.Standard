@@ -1,13 +1,13 @@
-# Codeer.LowCode.Blazor - Claude Code によるデザインファイル作成・編集
+# Codeer.LowCode.Blazor - AI エージェントによるデザインファイル作成・編集
 
 ## 目的
 
-Codeer.LowCode.Blazor のデザインファイル（設定ファイル）を Claude Code で作成・編集する。
+Codeer.LowCode.Blazor のデザインファイル（設定ファイル）を AI エージェント（Claude Code / Codex / GitHub Copilot）で作成・編集する。
 デザインファイルはすべてテキストベース（JSON, SQL, C#スクリプト）であるため、
-Claude Code が直接読み書きできる。
+エージェントが直接読み書きできる。この文書はどのエージェントにも共通（名前に Claude と付いていても同じ）。
 
 従来はGUIデザイナー（WPFアプリ）でのみ作成していたが、
-Claude Code を活用することで、自然言語の指示からアプリケーション定義を生成可能になる。
+AI エージェントを活用することで、自然言語の指示からアプリケーション定義を生成可能になる。
 
 > **注意: この `ClaudeCodeForDesigner/` フォルダはデザイナが丸ごと再生成する（手で編集・追加したものは消える）。** ワークスペースの展開・更新（Tools > Claude Code Workspace / `claude-workspace` / フックの自動更新）のたびに削除して作り直される。恒久的なメモはワークスペース直下の `Project.md`（プロジェクト共有）か `LocalEnvironment.md`（マシン固有）へ。
 
@@ -71,6 +71,14 @@ Blazor向け動的ローコードフレームワーク。テキストベース�
 - `--out` … 結果を書き出す JSON ファイルのパス (UTF-8)。指定しない場合は何も出力されない (終了コードのみ)
 - **終了コード**: `0` = エラーなし / `1` = エラーあり / `2` = 実行失敗 (引数不正・読込失敗・例外)
 
+> **PowerShell から呼ぶとき** (Codex / GitHub Copilot は Windows では PowerShell でコマンドを実行する): デザイナ exe は GUI アプリなので `& "<exe>" designcheck ...` では終了を待たず、`--out` の JSON ができる前に次へ進んでしまう。必ず `Start-Process` で待つ:
+>
+> ```powershell
+> Start-Process -FilePath "<デザイナexeのパス>" -Wait -WindowStyle Hidden -ArgumentList @("designcheck", "<プロジェクトのルートフォルダ>", "--out", "<結果JSONの出力先パス>")
+> ```
+>
+> 他のサブコマンド (`sql` / `rename-*` / `deploy` / `template-create` 等) も同じ。Bash (Claude Code) からは上の形でそのまま待てる。
+
 結果 JSON は読みやすさのため UTF-8・整形済みで出力される:
 
 ```json
@@ -106,7 +114,7 @@ Blazor向け動的ローコードフレームワーク。テキストベース�
 
 ### デザイナ exe のパス
 
-[LocalEnvironment.md](LocalEnvironment.md) の `DesignerExePath:` 行にある (このワークスペースを展開したデザイナ自身のパスを claude-workspace が自動記録している)。無い・実在しない・CLI が動かない場合は、**ディスクを探索して勝手に直さず、ユーザーに正しいパスを確認する**。ユーザーから新パスを指示されたら `LocalEnvironment.md` の `DesignerExePath:` 行と `.claude/settings.local.json` 内の旧パス全出現を書き換えてよい (手順の詳細はルートの CLAUDE.md)。デザイナのメニュー **Tools > Claude Code Workspace** の再実行を案内するのでもよい。
+[LocalEnvironment.md](LocalEnvironment.md) の `DesignerExePath:` 行にある (このワークスペースを展開したデザイナ自身のパスを claude-workspace が自動記録している)。無い・実在しない・CLI が動かない場合は、**ディスクを探索して勝手に直さず、ユーザーに正しいパスを確認する**。ユーザーから新パスを指示されたら `LocalEnvironment.md` の `DesignerExePath:` 行と、各エージェントの設定（`.claude/settings.local.json`、Codex は `.codex/hooks.json`・`.codex/rules/codeer-lowcode.rules`）内の旧パス全出現を書き換えてよい (手順の詳細はルートの CLAUDE.md)。デザイナのメニュー **Tools > Claude Code Workspace** の再実行を案内するのでもよい。
 
 > 補足: デザイナ GUI が起動中でも、別引数 (`designcheck ...`) でもう一つ起動するのは問題ない (別プロセスでプロジェクトを読むだけ。GUI 側には干渉しない)。
 
@@ -292,8 +300,8 @@ CLI 実行後は必ず次で成否を判定する:
 
 これらは次のタイミングで生成・更新される (どちらも `ClaudeCodeForDesigner/` を**丸ごと作り直す** = 旧版の残骸が残らない。1 回のプロジェクト読込で全部出る):
 
-- **ワークスペースの展開・更新時** — デザイナのメニュー **Tools > Claude Code Workspace** (または `claude-workspace "<workspaceDir>"` サブコマンド) が Docs 一式を展開し、続けて `ai-refresh` で生成リファレンスを出力する。ユーザー所有 (Project.md / LocalEnvironment.md / .gitignore / settings.local.json / ddl / docs / tools) は保持される (ただし exe パスを持つ箇所 = LocalEnvironment.md の `DesignerExePath:` 行と settings.local.json の hooks 節・CLI 許可は、展開したデザイナ exe に合わせて更新される)
-- **デザイナ・拡張ライブラリの更新検知時** — `.claude/refresh-ai-workspace.ps1` フック (SessionStart / UserPromptSubmit) がバイナリの変化を検知して `claude-workspace` を叩き直す (詳細は後述「自動再生成」)
+- **ワークスペースの展開・更新時** — デザイナのメニュー **Tools > Claude Code Workspace** (または `claude-workspace "<workspaceDir>"` サブコマンド) が Docs 一式を展開し、続けて `ai-refresh` で生成リファレンスを出力する。ユーザー所有 (Project.md / LocalEnvironment.md / .gitignore / settings.local.json / ddl / docs / tools) は保持される (ただし exe パスを持つ箇所 = LocalEnvironment.md の `DesignerExePath:` 行と settings.local.json の hooks 節・CLI 許可は、展開したデザイナ exe に合わせて更新される。Codex 用の `.codex/hooks.json`・`.codex/rules/codeer-lowcode.rules` は毎回作り直される)
+- **デザイナ・拡張ライブラリの更新検知時** — `.claude/refresh-ai-workspace.ps1` フック (SessionStart / UserPromptSubmit。Codex は `.codex/hooks.json` から) がバイナリの変化を検知して `claude-workspace` を叩き直す (詳細は後述「自動再生成」)
 
 ファイルが無い・古い疑いがあるときは手動で実行してよい (許可リスト済み・DB 接続不要):
 
@@ -328,7 +336,7 @@ CLI 実行後は必ず次で成否を判定する:
 
 ### 自動再生成（ビルド検知）
 
-`.claude/settings.local.json`（claude-workspace が exe パス入りで自動生成）の **SessionStart / UserPromptSubmit フック**が `.claude/refresh-ai-workspace.ps1` を呼び、次の仕組みで**必要なときだけ** `claude-workspace` を叩き直し、`ClaudeCodeForDesigner/`（Docs も本カタログ含む生成リファレンスも）を丸ごと最新化する:
+`.claude/settings.local.json`（claude-workspace が exe パス入りで自動生成。GitHub Copilot も読む。Codex は同じ内容の `.codex/hooks.json`）の **SessionStart / UserPromptSubmit フック**が `.claude/refresh-ai-workspace.ps1` を呼び、次の仕組みで**必要なときだけ** `claude-workspace` を叩き直し、`ClaudeCodeForDesigner/`（Docs も本カタログ含む生成リファレンスも）を丸ごと最新化する:
 
 - デザイナ exe は独自フィールドライブラリを参照してビルドされるため、フィールドの追加/削除は**再ビルド = exe と同フォルダ DLL のタイムスタンプ更新**として現れる。
 - フックはそのタイムスタンプ最大値を `ClaudeCodeForDesigner/_ai_refresh.stamp`（ai-refresh 成功時に deploy が記録）と照合し、**前回と同じならスキップ・変化していれば丸ごと入れ替え**る。フォルダごと作り直すので、**削除されたフィールドやドキュメントも消える**。
