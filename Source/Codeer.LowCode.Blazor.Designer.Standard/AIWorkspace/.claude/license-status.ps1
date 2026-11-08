@@ -17,6 +17,9 @@ param(
 
 $ErrorActionPreference = 'SilentlyContinue'
 
+# 相対パスはワークスペース (このスクリプトのフォルダ .claude の 1 つ上) を基準にする。呼び出し元の作業フォルダには依存しない
+Set-Location -LiteralPath (Split-Path -Parent $PSScriptRoot)
+
 $cache = '.claude/license_status.json'
 $cacheMinutes = 10
 

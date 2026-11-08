@@ -8,14 +8,14 @@
 
 - URL は `LocalEnvironment.md` の `ServerUrl:` 行にあればそれを使う。無ければホスト側 `CLAUDE.md`「ビルドと起動」か、Server プロジェクトの `Properties/launchSettings.json`（https プロファイルの `applicationUrl`）から取り、`LocalEnvironment.md` に `ServerUrl: https://localhost:7137` の形で記録しておく（マシン固有・配布されない）
 - 起きているかは、下の Playwright スクリプトで `page.goto` してみればわかる（接続拒否なら起きていない）。起きていればそれを使う
-- **起きていなければ自分で起動する**（ホストソリューションと同居しているとき）。Bash ツールのバックグラウンド実行で
+- **起きていなければ自分で起動する**（ホストソリューションと同居しているとき）。エージェントのバックグラウンド実行（Claude Code は Bash のバックグラウンド実行、Copilot は非同期の実行）で、ホスト側 `CLAUDE.md`「ビルドと起動」の `dotnet run` を流す。アプリのフォルダ（Starter の書き出し）なら
 
 ```
-dotnet run --project <ホストのルート>/Source/Hosts/Cookie/LowCodeApp.Server --launch-profile https
+dotnet run --project <ホストのルート>/Source/LowCodeApp.Server --launch-profile https
 ```
 
-  を流し、URL に応答が返るまで待つ（起動に 10〜20 秒）。プロジェクトのパスはホスト側 `CLAUDE.md` に合わせる。ホストが同居していない（起動方法が分からない）ときだけ URL をユーザーに聞く
-- 自分で起動したサーバーは、`*.mod.cs` / スキーマ変更のときは止めて起動し直し、作業の終わりに止める（バックグラウンドタスクの停止で止まる）。**ユーザーが起動しているサーバーは勝手に止めない**。再起動が必要ならその旨を伝える
+  （Starter リポジトリそのものでは `Source/Hosts/Cookie/LowCodeApp.Server`）。URL に応答が返るまで待つ（起動に 10〜20 秒）。ホストが同居していない（起動方法が分からない）ときだけ URL をユーザーに聞く
+- 自分で起動したサーバーは、`*.mod.cs` / スキーマ変更のときは止めて起動し直し、作業の終わりに止める。Claude Code はバックグラウンドタスクの停止で止まる。それ以外のエージェントは起動時にプロセス Id を控え（`$p = Start-Process dotnet -ArgumentList 'run','--project','<ホストのルート>/Source/LowCodeApp.Server','--launch-profile','https' -PassThru; $p.Id`）、終わりに子プロセスごと止める（`Get-CimInstance Win32_Process -Filter "ParentProcessId=<Id>" | ForEach-Object { Stop-Process -Id $_.ProcessId }; Stop-Process -Id <Id>`）。**ユーザーが起動しているサーバーは勝手に止めない**。再起動が必要ならその旨を伝える
 - 標準テンプレートから作ったデザインは Cookie 認証付き。初期ユーザーは `admin` / `admin`（テンプレートの SQLite に入っている）
 
 ## 2. 自分の編集を反映する（deploy）
@@ -38,10 +38,13 @@ dotnet run --project <ホストのルート>/Source/Hosts/Cookie/LowCodeApp.Serv
 
 ## 3. Playwright のセットアップ（初回のみ）
 
-`node` / `npm install` / `npx playwright` / `dotnet run` は許可済み（デザイナの AI Workspace が生成する。許可の所在はエージェントごと: ルートの `CLAUDE.md`「Claude Code 固有」/ `AGENTS.md`）。依存はワークスペースの `tools/` に入れる（`.gitignore` 済み）:
+ブラウザを操作するツールを持つエージェント（VS Code の GitHub Copilot など）は、それで 4 と同じこと（ログイン → 対象ページ → DOM の値とスクショ）をしてよい。そのときはこの節と 4 の雛形は要らない。
+
+`node` / `npm install` / `npx playwright` / `dotnet run` は許可済み（デザイナの AI Workspace が生成する。許可の所在はエージェントごと: ルートの `CLAUDE.md`「Claude Code 固有」/ `AGENTS.md`）。依存はワークスペースの `tools/` に入れる（`.gitignore` 済み）。`cd` せずに、フォルダを引数で渡す:
 
 ```
-cd <ワークスペース>/tools && npm install playwright && npx playwright install chromium
+npm install --prefix "<ワークスペース>/tools" playwright
+node "<ワークスペース>/tools/node_modules/playwright/cli.js" install chromium
 ```
 
 スクリプトは `tools/` に置く（`node_modules` を解決するため）か、スクラッチパッド（無ければ OS の一時フォルダ）に置いて `NODE_PATH=<ワークスペース>/tools/node_modules` を付けて実行する。スクショや dump の出力先はスクラッチパッド。
@@ -70,11 +73,12 @@ const BASE = process.env.SERVER_URL || 'https://localhost:7137';
   await page.waitForTimeout(15000);
 
   // まず構造を dump してセレクタを確定する (決め打ちは複製・非表示要素で外れる)
-  const links = await page.locator('.sidebar-nav a').allInnerTexts();
+  // サイドバーは PC 用とモバイル用の 2 つが描画され、片方は非表示。:visible で見えている方だけを取る
+  const links = await page.locator('.sidebar-nav a:visible').allInnerTexts();
   console.log(JSON.stringify(links));
 
   // 対象ページへ
-  await page.locator('.sidebar-nav a', { hasText: '対象ページ名' }).first().click();
+  await page.locator('.sidebar-nav a:visible', { hasText: '対象ページ名' }).first().click();
   await page.waitForTimeout(3000);
 
   // DOM から検証値を取る (件数・テキスト・位置)
@@ -95,6 +99,9 @@ const BASE = process.env.SERVER_URL || 'https://localhost:7137';
 - **ページ遷移後も待機を入れる** — クリック後に 2〜3 秒待つと描画が安定する
 - **検索初期化スクリプト（`OnSearchInitialization`）を試すときは URL に `?initialize_search=true` を付ける**（サイドバーからの遷移では自動で付く）
 - `playwright` 本体と `@playwright/test` は別物。導入したパッケージと使う API を一致させる
+- **ボタンに見えても `button` 要素とは限らない**（一覧の「Create」など）。`getByRole('button', { name: ... })` で見つからなければ `getByText('Create', { exact: true })` で取る。迷ったら DOM を dump して確かめる
+- **一覧の明細行の入力**は `table tbody tr` の中の `input:visible` で取れる。数量などの入力から計算する値は、入力後に `blur()`（フォーカスを外す）してから読む
+- スクリプトのファイルは、作り終えてから実行する（作成と実行を同じ並列の呼び出しに入れると、まだ無いファイルを実行して失敗する）
 
 ## 5. 結果の判定
 

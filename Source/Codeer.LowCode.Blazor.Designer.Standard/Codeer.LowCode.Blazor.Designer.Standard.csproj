@@ -11,8 +11,8 @@
 
         <!-- OSS / NuGet パッケージ (MIT)。 -->
         <PackageId>Codeer.LowCode.Blazor.Designer.Standard</PackageId>
-        <Version>0.8.26</Version>
-        <PackageReleaseNotes>AI workspace: ClaudeCodeForDesigner renamed to AIForDesigner (ai-workspace verb; claude-workspace kept as alias) and ClaudeCodeForDeveloper to AIForDeveloper (developer-workspace migrates the old folder). Host root hook templates now come from the host (Starter).</PackageReleaseNotes>
+        <Version>0.8.27</Version>
+        <PackageReleaseNotes>AI workspace hooks no longer depend on the caller's working directory.</PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <Company>Codeer Software</Company>

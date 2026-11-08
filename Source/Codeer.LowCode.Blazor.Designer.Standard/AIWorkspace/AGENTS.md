@@ -27,8 +27,20 @@
 - **フックの出力は Copilot には届かない**（最新化の結果・`[ライセンス]` の知らせ）。着手前に自分で最新化とライセンスの確認を実行する（exe のパスは `LocalEnvironment.md` の `DesignerExePath:`、デザインプロジェクトのフォルダは既定 `design`）:
   `powershell -NoProfile -ExecutionPolicy Bypass -File ".claude/refresh-ai-workspace.ps1" "<デザイナexeのパス>" "<デザインプロジェクトのフォルダ>"`
   出力に `[ライセンス]` があれば、`CLAUDE.md` の「ライセンス」に従う（デザインは編集しない）。ファイル編集を止めるフック自体は Copilot でも動く
-- コマンドの許可は Copilot の承認で行う（このワークスペースは Copilot の許可設定を生成しない）。デザイナ exe の CLI を毎回確認したくないなら、ユーザーに Copilot の自動承認の設定（VS Code なら `chat.tools.terminal.autoApprove`）へ足してもらう
-- デザイナ exe の CLI は PowerShell から `Start-Process -Wait` で呼ぶ（`CLAUDE.md`「実行方法」の PowerShell の注意）
+- **`.claude/settings.local.json` の許可リストは Copilot では効かない。** コマンドの許可は Copilot の承認で行う（このワークスペースは Copilot の許可設定を生成しない）。承認が多いとユーザーが言ったら、または最初の CLI の前に一度、VS Code の**ユーザー設定**（`settings.json`）の `chat.tools.terminal.autoApprove` に次を足すよう案内する（`<exe のパスを正規表現にしたもの>` は `LocalEnvironment.md` の `DesignerExePath:` を正規表現にエスケープし、さらに JSON の文字列なので `\` を `\\` に二重化して埋めてから見せる。例: `C:\Apps\LowCodeApp.Designer.exe` → `C:\\\\Apps\\\\LowCodeApp\\.Designer\\.exe`）:
+  ```json
+  "chat.tools.terminal.autoApprove": {
+    "/^Start-Process\\s+-FilePath\\s+[\"']?<exe のパスを正規表現にしたもの>[\"']?\\s/": true,
+    "/^dotnet (build|test|run)\\b/": true,
+    "/^node\\s/": true,
+    "/^npm install\\b/": true
+  }
+  ```
+  デザイナ exe の CLI が危険な操作をしないのは、exe 側の境界（`sql` は `AllowCliSqlAccess`、`deploy` は `AllowCliDeploy` が `true` の先だけ）による。上の 4 つ以外（削除・`git push`・外部への通信など）は足さず、承認を残す。全部を無承認にする設定は勧めない
+- デザイナ exe の CLI は PowerShell から `Start-Process -FilePath "<exe>" -Wait -ArgumentList ...` の形で呼ぶ（`CLAUDE.md`「実行方法」の PowerShell の注意。`-FilePath` を先頭に置くと上の自動承認に当たる）
+- ファイルの作成・編集は Copilot の作成・編集ツールで行う（シェルで書かない）。作ったファイルを使うコマンドは、作成が終わってから実行する（同じ並列の呼び出しに入れない）
+- 作業物（`--out` の JSON・スクショ・検証スクリプト）の置き場は `CLAUDE.md` の「作業物」の規則（Copilot にはセッションの一時領域が無いので、ホストと同居していれば `Local\scratch\`）
+- ブラウザでの確認は、VS Code のブラウザを操作するツールがあればそれを使ってよい（`AIForDesigner/Docs/BrowserTestGuide.md` の 3）
 
 ## 共通の注意
 

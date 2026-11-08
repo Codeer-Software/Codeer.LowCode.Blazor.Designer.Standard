@@ -17,6 +17,11 @@ param(
 
 $ErrorActionPreference = 'SilentlyContinue'
 
+# 編集先の相対パスの基準 (入力に cwd が無いとき) は呼び出し元の作業フォルダ。それ以外の相対パスはワークスペース
+# (このスクリプトのフォルダ .claude の 1 つ上) を基準にする
+$callerDir = (Get-Location).Path
+Set-Location -LiteralPath (Split-Path -Parent $PSScriptRoot)
+
 # 入力は UTF-8 (既定の OEM コードページで読むと日本語のパスが化けて判定が素通りする)
 [Console]::InputEncoding = New-Object System.Text.UTF8Encoding $false
 $raw = [Console]::In.ReadToEnd()
@@ -40,8 +45,8 @@ if ($null -ne $toolInput) {
 }
 if ($paths.Count -eq 0) { exit 0 }
 
-# 相対パスの基準: 入力の cwd (無ければこのフックの作業フォルダ)
-$base = (Get-Location).Path
+# 相対パスの基準: 入力の cwd (無ければ呼び出し元の作業フォルダ)
+$base = $callerDir
 if ($hook.cwd -is [string] -and $hook.cwd -ne '') { $base = $hook.cwd }
 
 # デザインプロジェクトの中か (大文字小文字を区別しない)

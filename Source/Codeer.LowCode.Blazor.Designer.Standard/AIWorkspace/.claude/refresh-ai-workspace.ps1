@@ -31,6 +31,9 @@ param(
 
 $ErrorActionPreference = 'SilentlyContinue'
 
+# 相対パスはワークスペース (このスクリプトのフォルダ .claude の 1 つ上) を基準にする。呼び出し元の作業フォルダには依存しない
+Set-Location -LiteralPath (Split-Path -Parent $PSScriptRoot)
+
 $stamp = 'AIForDesigner/_ai_refresh.stamp'
 
 # exe が未配置なら何もしない (パス未確定でもセッションは続行させる)。
