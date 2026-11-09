@@ -103,4 +103,4 @@ Claude Code で使うときだけの話。Codex / GitHub Copilot はこの節を
 - 許可とフックは `.claude/settings.json`（共通の許可。`designer.settings.Development.json` の読み書きは ask）と `.claude/settings.local.json`（このマシンの exe パス入りの許可リストとフック。デザイナが生成）にある
 - ファイルの作成・編集は Write / Edit、読み込み・検索は Read / Grep / Glob を使う。`cat` / `grep` / `ls` のワンライナーや、`for`/`while`/`if`・変数代入・パイプを詰めた複合コマンド、ヒアドキュメントは Bash の許可の静的解析が通らず止まるので避ける
 - デザイナ exe の CLI は Bash から `"<exe>" designcheck ...` の形で呼べる（終了を待てる）
-- `.claude/settings.local.json` は次のセッションから効く。書き換えたら、ターミナルなら `/exit` して `claude`、デスクトップアプリ・VS Code なら新しいセッションを始めるよう案内する
+- `.claude/settings.local.json` は次のセッションから効く。同じセッションではデザイナの CLI のたびに確認が出るだけなので、そのまま続けてよい（再起動の案内は要らない）
