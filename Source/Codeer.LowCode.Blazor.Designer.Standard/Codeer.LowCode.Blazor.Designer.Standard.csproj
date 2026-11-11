@@ -11,8 +11,8 @@
 
         <!-- OSS / NuGet パッケージ (MIT)。 -->
         <PackageId>Codeer.LowCode.Blazor.Designer.Standard</PackageId>
-        <Version>0.8.28</Version>
-        <PackageReleaseNotes>AI workspace: no session restart needed after setting up permissions and hooks.</PackageReleaseNotes>
+        <Version>0.8.29</Version>
+        <PackageReleaseNotes>Removed unused sample databases from the package.</PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <Company>Codeer Software</Company>
