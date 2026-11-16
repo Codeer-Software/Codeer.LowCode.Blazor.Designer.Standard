@@ -23,7 +23,7 @@ AI エージェントを活用することで、自然言語の指示からア�
 
 デザインファイルは「JSON 構文として妥当」でも「業務的に間違い」になりうる。`LimitCount: 0` で明細が 0 件になる、システム項目を編集欄に出す、といった**意味的バグは designcheck では検出できない**（JSON として妥当なため素通りする）。これを着手段階で防ぐためのルール:
 
-0. **まず設定、次にスクリプト、C# は最後の手段**。フィールド／レイアウト／検索条件／権限条件などの**デザイン設定で表現できることはスクリプトを書かない**（`IsEnabled` 条件・`VisibleCondition`・リンク・集計フィールド等で足りることが多い）。スクリプトは設定で表せない挙動だけに最小限で書き、書く前に「既存フィールド／プロパティで代替できないか」を必ず問う。ホスト (C#) を触るのは、フィールド型そのものが無い・性能をコードで改善したい・独自 API が要るなど、ローコードの範囲で不可能と確定したときだけ（[AIForDesigner/_specs/HostCustomization.md](AIForDesigner/_specs/HostCustomization.md)）。例外として、定期処理・一括取込（バッチ）は今はホストの C# ジョブ（ホストの Server プロジェクトの `Jobs/`（`LowCodeApp.Server/Jobs/`）に `IJob`。モジュールを扱う C# クラスは `poco` CLI で生成。手順は [AIForDesigner/_specs/HostCustomization.md](AIForDesigner/_specs/HostCustomization.md) の「C# からデータを読み書きする」とホストの `Server/Jobs/README.md`）。ローコードでのフロー定義は今後。
+0. **まず設定、次にスクリプト、C# は最後の手段**。フィールド／レイアウト／検索条件／権限条件などの**デザイン設定で表現できることはスクリプトを書かない**（`IsEnabled` 条件・`VisibleCondition`・リンク・集計フィールド等で足りることが多い）。スクリプトは設定で表せない挙動だけに最小限で書き、書く前に「既存フィールド／プロパティで代替できないか」を必ず問う。ホスト (C#) を触るのは、フィールド型そのものが無い・性能をコードで改善したい・独自 API が要るなど、ローコードの範囲で不可能と確定したときだけ（[AIForDesigner/_specs/HostCustomization.md](AIForDesigner/_specs/HostCustomization.md)）。定期処理・一括処理（バッチ）は、C# を書かずにデザインの Job スクリプト（`Jobs/{ジョブ名}.job.cs`。後述「7. Job スクリプト」と [AIForDesigner/_specs/Jobs.md](AIForDesigner/_specs/Jobs.md)）で書く。Job スクリプトで書けない処理だけホストの C# ジョブ（ホストの Server プロジェクトの `Jobs/`（`LowCodeApp.Server/Jobs/`）に `IJob`。モジュールを扱う C# クラスは `poco` CLI で生成。手順は [AIForDesigner/_specs/HostCustomization.md](AIForDesigner/_specs/HostCustomization.md) の「C# からデータを読み書きする」とホストの `Server/Jobs/README.md`）。ローコードでのフロー定義は今後。
 1. **規約（Guidelines）が正、JSON 例は参考**。両者が食い違う場合は必ず Guidelines に従う。各 Fields ドキュメントの JSON 例は最小サンプルであり、値が常に最適とは限らない。
 2. **着手前に最低限これを読む**: [Docs/CommonMistakes.md](Docs/CommonMistakes.md) / [Docs/LayoutGuidelines.md](Docs/LayoutGuidelines.md) / [Docs/SearchConditionGuidelines.md](Docs/SearchConditionGuidelines.md) / [Docs/ScriptGuidelines.md](Docs/ScriptGuidelines.md) ＋ 作るものに該当する [Docs/AppPatterns/](Docs/AppPatterns/) のパターン。必要箇所だけ grep で拾うのではなく、関連 Guidelines を通読してから書く。
 3. **既存をコピーして改変する（ゼロから JSON を組まない）**。
@@ -295,7 +295,7 @@ CLI 実行後は必ず次で成否を判定する:
 |---|---|
 | [AIForDesigner/_field_catalog.md](AIForDesigner/_field_catalog.md) | 全フィールド型カタログ (次節) |
 | [AIForDesigner/_script_catalog.md](AIForDesigner/_script_catalog.md) | スクリプトオブジェクトカタログ (後述) |
-| `AIForDesigner/_specs/*.md` | **フレームワーク仕様リファレンス**: ModuleDesign / Layouts / PageFrame / SearchConditions / Scripts / ScriptExtensions / QueryAndSql / AppCss / Authorization / ProjectSettings / BorderStyleGuide / DesignEnums / HostCustomization (ホスト C# 側の拡張点。最後の手段) / _FieldCommon / _ScriptApi、拡張ライブラリが登録した機能別の仕様 (入っている場合のみ。例: 監査ログ `AuditLog`) と、リフレクション生成の Enums (全列挙型・使用箇所付き) / JsonAbstractTypeFullName (全 TypeFullName 一覧) |
+| `AIForDesigner/_specs/*.md` | **フレームワーク仕様リファレンス**: ModuleDesign / Layouts / PageFrame / SearchConditions / Scripts / Jobs (Job スクリプト) / ScriptExtensions / QueryAndSql / AppCss / Authorization / ProjectSettings / BorderStyleGuide / DesignEnums / HostCustomization (ホスト C# 側の拡張点。最後の手段) / _FieldCommon / _ScriptApi、拡張ライブラリが登録した機能別の仕様 (入っている場合のみ。例: 監査ログ `AuditLog`) と、リフレクション生成の Enums (全列挙型・使用箇所付き) / JsonAbstractTypeFullName (全 TypeFullName 一覧) |
 | `AIForDesigner/_app/*.md` | **アプリ固有ドキュメント** (存在する場合のみ): このデザイナが業務アプリ (生産管理パッケージ等) の一部として配布されているとき、そのアプリのドメイン用語・データモデルの考え方・設計原則・推奨/禁止パターン。**存在するときは最初に `_app/README.md` を読み、書かれている前提・原則をフレームワークの一般論より優先して設計する**。素の Codeer.LowCode.Blazor ではこのフォルダは存在しない |
 | `AIForDesigner/_defaults/{型名}.json` | 全デザイン型の**デフォルト状態 JSON** (デザイナが新規追加時に書き出すものと一致。独自フィールドも含む)。ファイルのルート文書型 (`ModuleDesign` = *.mod.json / `PageFrameDesign` = *.frm.json / `EnumDesign` = *.enum.json / `AppSettingsDesign` = app.clprj) と、レイアウト定義の単位 (`DetailLayoutDesign` / `ListLayoutDesign` / `SearchLayoutDesign` / `GridRow`。空行・空セル入り) も含む。新しい定義はゼロから書かず、これをコピーして必要なプロパティだけ上書きする |
 | `AIForDesigner/_samples/{FolderName}/` | 参照用サンプルプロジェクト (新規作成テンプレートと同一物): `PatternShowcase` (標準パターン集。認証・権限・承認を含む) / `GettingStarted` / `InventoryManagement` / `SFA` / `ProjectManagement` / `Empty`。いずれも Cookie 認証ホスト向け (AppUser + admin/admin)。各フォルダ直下の `_template.md` が説明 |
@@ -384,6 +384,7 @@ field-catalog と同じ扱い: **出力先は `AIForDesigner/_script_catalog.md`
 | [AIForDesigner/_specs/SearchConditions.md](AIForDesigner/_specs/SearchConditions.md) | 検索条件 (FieldValueMatch, FieldVariableMatch, MultiMatch) |
 | [AIForDesigner/_specs/QueryAndSql.md](AIForDesigner/_specs/QueryAndSql.md) | クエリとSQL実行の総合ガイド（QueryField / ExecuteSqlField） |
 | [AIForDesigner/_specs/Scripts.md](AIForDesigner/_specs/Scripts.md) | C#スクリプト (*.mod.cs) 文法リファレンス、組み込みサービス、Module/Field API |
+| [AIForDesigner/_specs/Jobs.md](AIForDesigner/_specs/Jobs.md) | **Job スクリプト (`Jobs/*.job.cs`)**: サーバーで動く定期処理・一括処理のスクリプト。入口 `Run(JobArguments)`・`Fail`・使える/使えない API・Raw 系の読み・`ModuleSubmitter` での書き・権限・起動 |
 | [AIForDesigner/_specs/ScriptExtensions.md](AIForDesigner/_specs/ScriptExtensions.md) | スクリプト拡張の仕組みと独自拡張の追加方法 (登録済みサービスの一覧・使い方は `AIForDesigner/_script_catalog.md`) |
 | [AIForDesigner/_specs/ProjectSettings.md](AIForDesigner/_specs/ProjectSettings.md) | プロジェクト設定 (app.clprj, designer.settings.json) |
 | [AIForDesigner/_specs/Authorization.md](AIForDesigner/_specs/Authorization.md) | **認可** (ライブラリの担当): ホストとの境界 (ホストが渡すユーザー id → `CurrentUserModuleDesignName` のモジュールの行 = `CurrentUser`)・モジュール/行/PageFrame の権限条件の階層とサーバーでの強制・画面の出し分け・`AppUser` に UserRead/Write 条件を付けない理由。認証 (ログインの仕組み) はホスト側 → [ユーザーモジュールと認証連動](Docs/AppPatterns/auth_user_module.md) |
@@ -442,6 +443,8 @@ App/                                  # アプリケーションルート
 │   └── *.frm.json                    # ページフレーム定義ファイル (JSON)
 ├── Enums/                            # デザイン enum 定義（オプション）
 │   └── *.enum.json                   # 列挙型定義 (JSON)。詳細: _specs/DesignEnums.md
+├── Jobs/                             # Job スクリプト（オプション。直下のみ・サブフォルダ不可）
+│   └── *.job.cs                      # サーバーで動くスクリプト (C#)。ファイル名がジョブ名。詳細: _specs/Jobs.md
 └── Resources/                        # リソースファイル（画像等）
 ```
 
@@ -1200,6 +1203,37 @@ void Search_OnSearchDataChanged()
 - QuerySetting.Parameters: **出力列を `IsParameter: false`** で全て定義、入力パラメータは `IsParameter: true` で定義
 - 各フィールドの `DbColumn`: Parameters の `Name` と一致させる
 - システムページングパラメータ（`rows_per_page`, `offset`）は明示的宣言不要
+
+### 7. Job スクリプト (`Jobs/*.job.cs`)
+
+定期処理・一括処理をサーバーで動かすスクリプト。`Jobs/` 直下に `{ジョブ名}.job.cs` で置く（ファイル名の最初のドットより前がジョブ名。サブフォルダ不可。ブラウザには配られない）。
+言語・文法は `*.mod.cs` と同じだが、**画面（Module）が無い**ので、フィールド・`MessageBox`・`NavigationService`・ダイアログ・`new Order()` は使えず（designcheck でエラー）、データは型付きのデータ `モジュール名.Data` で読み書きする。
+起動方法（コマンドライン・画面のボタン・定期実行）はホストの C# のジョブ（`IJob`）と同じ。
+
+```csharp
+// Jobs/CloseOrders.job.cs
+string Run(JobArguments args)               // 入口は Run 固定。戻り値は成功したときの文言 (void も可)
+{
+    var search = new ModuleSearcher<Order>();
+    search.AddEquals(e => e.Status.Value, Order.StatusOpen);
+    var rows = search.ExecuteRaw();          // 読みは Raw 系 (Execute() は使えない)
+    var submit = new ModuleSubmitter();
+    foreach (var row in rows)
+    {
+        var change = new Order.Data();       // 空のデータ。書くフィールドの FieldData を載せる
+        change.Id = new IdFieldData();
+        change.Id.Value = row.Id.Value;
+        change.Status = new TextFieldData();
+        change.Status.Value = Order.StatusClosed;
+        submit.Update(change);               // 載せたフィールドだけ書く
+    }
+    var result = submit.Execute();           // 失敗は例外でなく結果で返る。実行全体が 1 トランザクション (正常終了で確定・失敗で取り消し)
+    if (!result.Succeeded) Fail(result.Error);
+    return $"{rows.Count} 件を締めました";
+}
+```
+
+入口・`JobArguments`・使える API・権限・他のスクリプトの呼び出しは [AIForDesigner/_specs/Jobs.md](AIForDesigner/_specs/Jobs.md)、書き方の注意は [Docs/ScriptGuidelines.md](Docs/ScriptGuidelines.md) の「Job スクリプト」。
 
 ## 検索条件の構造 (MatchCondition)
 

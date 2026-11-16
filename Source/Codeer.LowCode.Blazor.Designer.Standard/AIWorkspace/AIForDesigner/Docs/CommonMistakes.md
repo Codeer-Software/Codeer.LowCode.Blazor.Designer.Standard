@@ -1938,3 +1938,63 @@ var group = Math.Floor((i - 1) / 4) + 1;
 
 **ルール:** 整数の商が欲しい割り算は必ず `Math.Floor` を通す。剰余 (`%`) はそのまま使える。
 
+---
+
+## 60. Job スクリプトで `new Order()` や `search.Execute()` を書く (画面のスクリプトの書き方を持ち込む)
+
+**症状:** `Jobs/*.job.cs` で、画面のスクリプトと同じ感覚で `new Order()`・`search.Execute()`・`ExecuteFirstOrDefault()`・`MessageBox.Show(...)` を書き、designcheck でエラーになる。
+
+**原因:** Job スクリプトはサーバーで動き、画面 (Module) を持たない。Module を作る・返す API と画面を操作する API (`MessageBox` / `NavigationService` / ダイアログ / Toaster / `BatchSearcher` 等) は使えない。
+
+```csharp
+// ❌ Job では使えない
+var rows = search.Execute();                 // List<Module> を返す
+var order = new Order();                     // Module の生成
+
+// ✅ Raw 系で ModuleData として読む
+var rows = search.ExecuteRaw();              // List<ModuleData>。row.Id.Value のように読める
+var first = search.ExecuteRawFirstOrDefault();
+```
+
+**ルール:** Job の読みは `ExecuteRaw()` / `ExecuteRawPage(pageIndex)` / `ExecuteRawFirstOrDefault()`、書きは `ModuleSubmitter`、ログは `Logger`。詳細は [AIForDesigner/_specs/Jobs.md](AIForDesigner/_specs/Jobs.md)。
+
+## 61. Job スクリプトで `new Order.Data()` に FieldData を載せずに `.Value` を代入する
+
+**症状:** `var change = new Order.Data(); change.Status.Value = "Closed";` と書くと、実行時エラーでジョブが失敗する。
+
+**原因:** `new Order.Data()` は空のデータで、フィールドが 1 つも載っていない。`change.Status` 自体が無いので `.Value` に代入できない。
+
+```csharp
+// ❌ Status が載っていない
+var change = new Order.Data();
+change.Status.Value = Order.StatusClosed;
+
+// ✅ 書くフィールドごとに FieldData を明示して載せる
+var change = new Order.Data();
+change.Id = new IdFieldData();
+change.Id.Value = row.Id.Value;
+change.Status = new TextFieldData();
+change.Status.Value = Order.StatusClosed;
+submit.Update(change);                       // 載せたフィールド (Status) だけ書かれる
+```
+
+**ルール:** 書くフィールドだけを載せる (`Update` は載せたフィールドだけ書く)。更新・削除では Id を載せる。
+
+## 62. Job スクリプトで `ModuleSubmitter.Execute()` の結果を見ない
+
+**症状:** 権限や制約で保存に失敗しているのに、ジョブは成功で終わり、成功の文言まで返る。
+
+**原因:** `ModuleSubmitter.Execute()` は失敗しても例外にならず、結果 (`ModuleSubmitterResult`) の `Succeeded` / `Error` で返す。見なければ失敗に気づかない。失敗した `Execute()` は、最後の `DBService.Commit()` (無ければ実行の始め) 以降の書き込みをそれまでの `Execute()` の分ごと取り消すので、そのまま続けると一部だけ書かれた状態で「成功」になる。
+
+```csharp
+// ❌ 失敗しても Run はそのまま成功を返す
+submit.Execute();
+return "締めました";
+
+// ✅ 失敗なら Fail でジョブを失敗にする
+var result = submit.Execute();
+if (!result.Succeeded) Fail(result.Error);
+return "締めました";
+```
+
+**ルール:** `Execute()` の戻り値は必ず見て、失敗なら `Fail(result.Error)`。Job スクリプトに `throw` は無い。

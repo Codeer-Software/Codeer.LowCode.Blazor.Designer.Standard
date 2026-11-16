@@ -792,3 +792,21 @@ var ret = Editor.ChildModule.Submit();
 if (ret == true) Items.Reload();
 // 失敗時は無言なのでユーザ気づけない
 ```
+
+---
+
+## Job スクリプト (`Jobs/*.job.cs`) で気をつけること
+
+Job スクリプトは定期処理・一括処理を **C# を書かずに**デザインの中に書く手段（サーバーで動く）。言語は `.mod.cs` と同じで、この文書の言語上の規則（インタプリタ実行なのでループと I/O を減らす・名前付き引数が無い等）もそのまま掛かる。ただし画面が無いので、次の点が画面のスクリプトと違う。仕様（入口 `Run`・`JobArguments`・使える API の一覧・権限）は `_specs/Jobs.md` を見る。
+
+- **画面の API は無い。** フィールド・レイアウト・`MessageBox`・`NavigationService`・ダイアログ・Toaster・`new Order()`（Module の生成）・`BatchSearcher` は使えない（designcheck でエラー）。進捗や件数を残したいときは `Logger`
+- **読みは Raw 系だけ。** `ModuleSearcher` は `ExecuteRaw()` / `ExecuteRawPage(pageIndex)` / `ExecuteRawFirstOrDefault()` で `ModuleData` として受ける（`Execute()` / `ExecutePage()` / `ExecuteFirstOrDefault()` は Module を返すので使えない）。集計は `ModuleAggregator`
+- **書きは `ModuleSubmitter`。** `Add` / `Update` / `Delete` でためて `Execute()`
+- **トランザクションはジョブの実行全体で 1 つ。** 正常に終われば確定、`Fail`・実行時エラーなら取り消し。`Execute()` が失敗したときも、それまでの `Execute()` の分ごと取り消される。大量データを途中まで確定させたいときは、区切りで `DBService.Commit()` を呼ぶ（そこまでが確定し、後で失敗しても残る）
+- **書くデータは FieldData を明示して載せる。** `new Order.Data()` は空なので、書くフィールドごとに `change.Status = new TextFieldData();` を載せてから `.Value` に代入する。`Update` は載せたフィールドだけ書く（Id は必ず載せる）
+- **失敗は `Fail("理由")`。** `Execute()` は失敗しても例外にならないので、戻り値の `Succeeded` を見て `Fail(result.Error)` する。`throw` は無い
+
+```csharp
+var result = submit.Execute();
+if (!result.Succeeded) Fail(result.Error);   // 見ないと、保存に失敗してもジョブは「成功」で終わる
+```
