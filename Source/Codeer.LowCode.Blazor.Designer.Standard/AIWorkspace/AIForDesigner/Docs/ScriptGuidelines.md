@@ -792,3 +792,17 @@ var ret = Editor.ChildModule.Submit();
 if (ret == true) Items.Reload();
 // 失敗時は無言なのでユーザ気づけない
 ```
+
+---
+
+## Job スクリプト (`Jobs/*.job.cs`) で気をつけること
+
+Job スクリプトは定期処理・一括処理を **C# を書かずに**デザインの中に書く手段（サーバーで動く）。言語は `.mod.cs` と同じで、この文書の言語上の規則（インタプリタ実行なのでループと I/O を減らす・名前付き引数が無い等）もそのまま掛かる。ただし画面が無いので、次の点が画面のスクリプトと違う。仕様（入口 `Run`・`JobArguments`・使える API の一覧・権限）は `_specs/Jobs.md` を見る。
+
+- **画面の API は無い。** フィールド・レイアウト・`MessageBox`・`NavigationService`・ダイアログ・Toaster・`new Order()`（Module の生成）・`BatchSearcher` は使えない（designcheck でエラー）。進捗や件数を残したいときは `Logger`
+- **読みは Raw 系だけ。** `ModuleSearcher` は `ExecuteRaw()` / `ExecuteRawPage(pageIndex)` / `ExecuteRawFirstOrDefault()` で `ModuleData` として受ける（`Execute()` / `ExecutePage()` / `ExecuteFirstOrDefault()` は Module を返すので使えない）。集計は `ModuleAggregator`
+- **書きは `DBService`。** `Add` / `Update` / `Delete` で 1 件ずつ、呼んだその場で保存する。`Add` の後は `data.Id.Value` が採番された Id になるので、親子は親を先に `Add` して子の項目に親の Id を入れる。タイミングが新規作成時・更新時・削除時の ExecuteSql はこれらで一緒に走る。「単独」だけ `DBService.ExecuteStandaloneSql(data)` で呼ぶ
+- **トランザクションはジョブの実行全体で 1 つ。** 正常に終われば確定、`Fail`・実行時エラー・保存の失敗なら取り消し。大量データを途中まで確定させたいときは、区切りで `DBService.Commit()` を呼ぶ（そこまでが確定し、後で失敗しても残る）
+- **書くデータは FieldData を明示して載せる。** `new Order.Data()` は空なので、書くフィールドごとに `change.Status = new TextFieldData();` を載せてから `.Value` に代入する。`Update` は載せたフィールドだけ書く（Id は必ず載せる）。楽観ロックのあるモジュールの `Update` / `Delete` では、読んだ行の版も載せる（`change.OptimisticLocking = row.OptimisticLocking;`。載せないとジョブの失敗になる）
+- **失敗は `Fail("理由")`。** 保存の失敗はそれだけでジョブの失敗になる（戻り値を見る必要は無い。失敗を受けて続けることはできない）。`throw` / `try` は無い
+- **起動した画面に返すものは `args.Result`（`JsonObject`）。** 作ったファイルを渡すときは `FileService.SaveTemporary(モジュール名, 項目名, ファイル名, 内容)` の戻り値の `FileGuid` / `FileName` を入れて返す。画面のスクリプトは、保存せずダウンロードだけなら `FileService.DownloadTemporaryFile(モジュール名, 項目名, r.FileGuid, r.FileName)`、添付の項目に入れるなら FileField の `SetTemporaryFile(r.FileGuid, r.FileName)`

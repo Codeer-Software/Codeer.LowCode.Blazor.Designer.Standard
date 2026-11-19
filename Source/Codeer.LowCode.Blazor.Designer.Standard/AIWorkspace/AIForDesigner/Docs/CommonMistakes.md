@@ -1938,3 +1938,60 @@ var group = Math.Floor((i - 1) / 4) + 1;
 
 **ルール:** 整数の商が欲しい割り算は必ず `Math.Floor` を通す。剰余 (`%`) はそのまま使える。
 
+---
+
+## 60. Job スクリプトで `new Order()` や `search.Execute()` を書く (画面のスクリプトの書き方を持ち込む)
+
+**症状:** `Jobs/*.job.cs` で、画面のスクリプトと同じ感覚で `new Order()`・`search.Execute()`・`ExecuteFirstOrDefault()`・`MessageBox.Show(...)` を書き、designcheck でエラーになる。
+
+**原因:** Job スクリプトはサーバーで動き、画面 (Module) を持たない。Module を作る・返す API と画面を操作する API (`MessageBox` / `NavigationService` / ダイアログ / Toaster / `BatchSearcher` 等) は使えない。
+
+```csharp
+// ❌ Job では使えない
+var rows = search.Execute();                 // List<Module> を返す
+var order = new Order();                     // Module の生成
+
+// ✅ Raw 系で ModuleData として読む
+var rows = search.ExecuteRaw();              // List<ModuleData>。row.Id.Value のように読める
+var first = search.ExecuteRawFirstOrDefault();
+```
+
+**ルール:** Job の読みは `ExecuteRaw()` / `ExecuteRawPage(pageIndex)` / `ExecuteRawFirstOrDefault()`、書きは `DBService.Add` / `Update` / `Delete`、ログは `Logger`。詳細は [AIForDesigner/_specs/Jobs.md](AIForDesigner/_specs/Jobs.md)。
+
+## 61. Job スクリプトで `new Order.Data()` に FieldData を載せずに `.Value` を代入する
+
+**症状:** `var change = new Order.Data(); change.Status.Value = "Closed";` と書くと、実行時エラーでジョブが失敗する。
+
+**原因:** `new Order.Data()` は空のデータで、フィールドが 1 つも載っていない。`change.Status` 自体が無いので `.Value` に代入できない。
+
+```csharp
+// ❌ Status が載っていない
+var change = new Order.Data();
+change.Status.Value = Order.StatusClosed;
+
+// ✅ 書くフィールドごとに FieldData を明示して載せる
+var change = new Order.Data();
+change.Id = new IdFieldData();
+change.Id.Value = row.Id.Value;
+change.Status = new TextFieldData();
+change.Status.Value = Order.StatusClosed;
+DBService.Update(change);                    // 載せたフィールド (Status) だけ書かれる
+```
+
+**ルール:** 書くフィールドだけを載せる (`Update` は載せたフィールドだけ書く)。更新・削除では Id を載せる。楽観ロックのあるモジュール (`OptimisticLocking` フィールドを持つモジュール) の更新・削除では、読んだ行の版も載せる (`change.OptimisticLocking = row.OptimisticLocking;`。載せないとジョブの失敗になる)。
+
+## 62. Job スクリプトでタイミングが「単独」(Standalone) の ExecuteSql が走らない
+
+**症状:** ExecuteSqlField のタイミングを「単独」にしたモジュールのデータを `DBService.Add` / `Update` で保存しても、SQL が走らない。
+
+**原因:** タイミングが新規作成時・更新時・削除時の ExecuteSql は `DBService.Add` / `Update` / `Delete` で一緒に走る。「単独」は追加・更新・削除の無い保存で走るもので、Job では `DBService.ExecuteStandaloneSql(data)` で呼ぶ。
+
+```csharp
+// ✅ 単独の SQL を、data の値をパラメータにして実行する
+var data = new Recalc.Data();
+data.TargetMonth = new TextFieldData();
+data.TargetMonth.Value = "2026-10";
+DBService.ExecuteStandaloneSql(data);
+```
+
+**ルール:** 「単独」だけ `DBService.ExecuteStandaloneSql(data)`。SQL のパラメータは `data` に載せた項目から取る。単独の ExecuteSql が無いモジュールの `data` を渡すとジョブの失敗。

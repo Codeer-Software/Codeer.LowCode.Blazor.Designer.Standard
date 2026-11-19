@@ -11,8 +11,8 @@
 
         <!-- OSS / NuGet パッケージ (MIT)。 -->
         <PackageId>Codeer.LowCode.Blazor.Designer.Standard</PackageId>
-        <Version>0.8.29</Version>
-        <PackageReleaseNotes>Removed unused sample databases from the package.</PackageReleaseNotes>
+        <Version>0.8.30</Version>
+        <PackageReleaseNotes>Add job script guidance to the AI workspace.</PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <Company>Codeer Software</Company>
