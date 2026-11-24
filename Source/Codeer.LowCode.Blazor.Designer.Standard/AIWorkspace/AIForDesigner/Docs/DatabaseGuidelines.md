@@ -96,7 +96,9 @@ SQLite は型なし DB だが、CLB は宣言型 (`PRAGMA table_info` で取得)
 - `DATE` → `DateOnly`
 - `DATETIME` / `TIMESTAMP` → `DateTime`
 - `TIME` → `TimeOnly`
-- `TEXT` → `string` ← これだと CLB が DateOnly を `obj.ToString()` で InvariantCulture (MM/dd/yyyy) 文字列化し、SQLite TEXT 比較が cross-year で破綻する。範囲検索が壊れる
+- `TEXT` → `string` ← これだと CLB が DateOnly を `obj.ToString()` で文字列化する。書式はサーバーのプロセスのカルチャで決まり (日本語の Windows は `2023/01/01`、Invariant の環境 = Linux コンテナ等は `01/01/2023`)、環境によって保存される形が変わる。`MM/dd/yyyy` になる環境では SQLite TEXT 比較が cross-year で破綻し、範囲検索が壊れる
+
+`DATE` の列には `2023-01-01 00:00:00` の形 (0 時つき) で保存される (読み出しは DateOnly に戻るので画面・検索に時刻は出ない)。検索条件の値も同じ形で渡して文字列として比べるので、トリガー等で `2023-01-01` に切り詰めない (一致・範囲の開始日が当たらなくなる)。DB を直接見るときは `date(列)` で日付だけにする。
 
 ```sql
 -- ✅ 正しい
