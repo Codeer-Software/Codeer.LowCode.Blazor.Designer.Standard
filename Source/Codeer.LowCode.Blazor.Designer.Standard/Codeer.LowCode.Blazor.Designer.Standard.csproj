@@ -11,8 +11,8 @@
 
         <!-- OSS / NuGet パッケージ (MIT)。 -->
         <PackageId>Codeer.LowCode.Blazor.Designer.Standard</PackageId>
-        <Version>0.8.31</Version>
-        <PackageReleaseNotes>Update the AI workspace guidance (date columns in SQLite, ListField ReplaceMode All).</PackageReleaseNotes>
+        <Version>0.8.32</Version>
+        <PackageReleaseNotes>Fix design check errors in the Pattern Showcase and Getting Started templates.</PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <Company>Codeer Software</Company>

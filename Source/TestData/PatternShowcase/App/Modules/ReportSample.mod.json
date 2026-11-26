@@ -62,7 +62,6 @@
         }
       },
       "PagerPosition": "Bottom",
-      "DeleteTogether": true,
       "CanCreate": true,
       "CanUpdate": true,
       "CanDelete": true,
